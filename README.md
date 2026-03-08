@@ -2,6 +2,11 @@
 
 A full-stack testing playground designed to experiment with automation, AI agents and CI/CD pipelines.
 
+## Documentation
+
+- **[API](./docs/API.md)** – Endpoints, authentication, request/response format, and basic behavior.
+- **[About the project](./docs/SOBRE-O-PROJETO.md)** – How the project started (advanced JavaScript + MCP/agents), current state, and next steps.
+
 ## Architecture
 
 - Frontend: Next.js
