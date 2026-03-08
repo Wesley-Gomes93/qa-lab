@@ -1,83 +1,209 @@
 const express = require("express");
+const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+const { pool, initDb, ADMIN_EMAIL } = require("./db");
 
 const app = express();
 
-app.use(express.json());
+const REGISTROS_FILE = path.join(__dirname, "registros.txt");
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "admin-qa-lab";
 
-// Simples storage em memória para usuários de teste
-let nextUserId = 1;
-const users = [];
+function appendRegistro(user) {
+  const line = `${new Date().toISOString()} | ${user.id} | ${user.name} | ${user.email}\n`;
+  if (!fs.existsSync(REGISTROS_FILE)) {
+    fs.writeFileSync(REGISTROS_FILE, "data | id | nome | email\n", "utf8");
+  }
+  fs.appendFileSync(REGISTROS_FILE, line, "utf8");
+}
+
+function isAdminAuth(req) {
+  const auth = req.headers.authorization;
+  return auth === `Bearer ${ADMIN_TOKEN}`;
+}
+
+app.use(cors());
+app.use(express.json());
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Criar usuário (registro)
-app.post("/auth/register", (req, res) => {
+// Criar usuário (registro) — persiste no PostgreSQL
+app.post("/auth/register", async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: "email e password são obrigatórios" });
   }
 
-  const existing = users.find((u) => u.email === email);
-  if (existing) {
-    return res.status(409).json({ error: "Usuário já existe" });
+  try {
+    const result = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, idade, ativo, created_at, updated_at",
+      [name ?? "", email, password]
+    );
+    const user = result.rows[0];
+    appendRegistro(user);
+    return res.status(201).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      idade: user.idade,
+      ativo: user.ativo,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+    });
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "Usuário já existe" });
+    }
+    throw err;
   }
-
-  const user = {
-    id: nextUserId++,
-    name: name ?? "",
-    email,
-    password, // apenas para ambiente de laboratório; não use assim em produção
-  };
-
-  users.push(user);
-
-  res.status(201).json({ id: user.id, name: user.name, email: user.email });
 });
 
 // Login de usuário
-app.post("/auth/login", (req, res) => {
+app.post("/auth/login", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: "email e password são obrigatórios" });
   }
 
-  const user = users.find((u) => u.email === email && u.password === password);
+  const result = await pool.query(
+    "SELECT id, name, email, password FROM users WHERE email = $1",
+    [email]
+  );
+  const user = result.rows[0];
 
-  if (!user) {
+  if (!user || user.password !== password) {
     return res.status(401).json({ error: "Credenciais inválidas" });
   }
 
-  // Para laboratório, devolvemos um token estático e dados básicos
+  const isAdmin = user.email === ADMIN_EMAIL;
+
   res.json({
-    token: "fake-token",
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
+    token: isAdmin ? ADMIN_TOKEN : "fake-token",
+    user: { id: user.id, name: user.name, email: user.email },
+    isAdmin: !!isAdmin,
   });
 });
 
+// Listar todos os usuários (apenas admin)
+app.get("/users", async (req, res) => {
+  if (!isAdminAuth(req)) {
+    return res.status(403).json({ error: "Acesso negado. Apenas admin." });
+  }
+
+  const result = await pool.query(
+    `SELECT id, name, email, idade, ativo, created_at, updated_at
+     FROM users ORDER BY id`
+  );
+  res.json(result.rows);
+});
+
 // Buscar usuário por ID
-app.get("/users/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const user = users.find((u) => u.id === id);
+app.get("/users/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+
+  const result = await pool.query(
+    "SELECT id, name, email, idade, ativo, created_at, updated_at FROM users WHERE id = $1",
+    [id]
+  );
+  const user = result.rows[0];
 
   if (!user) {
     return res.status(404).json({ error: "Usuário não encontrado" });
   }
 
-  res.json({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  });
+  res.json(user);
 });
 
-app.listen(4000, () => {
-  console.log("API rodando na porta 4000");
+// Atualizar usuário (apenas admin)
+app.put("/users/:id", async (req, res) => {
+  if (!isAdminAuth(req)) {
+    return res.status(403).json({ error: "Acesso negado. Apenas admin." });
+  }
+
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+
+  const { name, email, idade, ativo } = req.body;
+
+  if (idade != null) {
+    const num = Number(idade);
+    if (Number.isNaN(num) || num < 18 || num > 80) {
+      return res.status(400).json({
+        error: "Idade deve ser entre 18 e 80",
+      });
+    }
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE users
+       SET name = COALESCE($1, name),
+           email = COALESCE($2, email),
+           idade = $3,
+           ativo = COALESCE($4, ativo),
+           updated_at = NOW()
+       WHERE id = $5
+       RETURNING id, name, email, idade, ativo, created_at, updated_at`,
+      [name ?? null, email ?? null, idade != null ? idade : null, ativo != null ? !!ativo : null, id]
+    );
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    res.json(user);
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "E-mail já em uso" });
+    }
+    throw err;
+  }
 });
+
+// Excluir usuário (apenas admin) — admin não pode ser excluído
+app.delete("/users/:id", async (req, res) => {
+  if (!isAdminAuth(req)) {
+    return res.status(403).json({ error: "Acesso negado. Apenas admin." });
+  }
+
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+
+  const userResult = await pool.query(
+    "SELECT id, email FROM users WHERE id = $1",
+    [id]
+  );
+  const user = userResult.rows[0];
+  if (!user) {
+    return res.status(404).json({ error: "Usuário não encontrado" });
+  }
+  if (user.email === ADMIN_EMAIL) {
+    return res.status(403).json({ error: "Admin não pode ser excluído" });
+  }
+
+  await pool.query("DELETE FROM users WHERE id = $1", [id]);
+  res.status(204).send();
+});
+
+const PORT = process.env.PORT || 4000;
+
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log("API rodando na porta", PORT);
+    });
+  })
+  .catch((err) => {
+    console.error("Erro ao conectar no banco:", err.message);
+    process.exit(1);
+  });

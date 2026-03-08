@@ -1,4 +1,7 @@
-describe('Healthcheck da API', () => {
+/**
+ * Testes de API: healthcheck.
+ */
+describe('API - Healthcheck', () => {
   it('deve responder com status ok', () => {
     cy.request('/health').then((response) => {
       expect(response.status).to.eq(200);
@@ -6,4 +9,3 @@ describe('Healthcheck da API', () => {
     });
   });
 });
-
