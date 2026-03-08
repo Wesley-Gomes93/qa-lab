@@ -13,14 +13,27 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-function runCypressTests({ suite } = {}) {
-  const testsDir = path.resolve(__dirname, "../tests");
+function runCypressTests({ suite, spec: specPath } = {}) {
+  const testsDir = path.resolve(__dirname, "../../tests");
+
+  const specBySuite = {
+    admin: "cypress/e2e/admin/**/*.cy.js",
+    auth: "cypress/e2e/auth/**/*.cy.js",
+    api: "cypress/e2e/api/**/*.cy.js",
+    ui: "cypress/e2e/ui/**/*.cy.js",
+  };
+
+  const isAll = !suite || suite === "all";
+  const spec = specPath || (!isAll && specBySuite[suite] ? specBySuite[suite] : null);
 
   return new Promise((resolve) => {
-    const args = ["test"];
 
-    // Futuramente você pode usar `suite` para passar tags/ambientes específicos via env.
-    const child = spawn("npm", args, {
+    const args = spec
+      ? ["cypress", "run", "--spec", spec]
+      : ["test"];
+    const cmd = spec ? "npx" : "npm";
+
+    const child = spawn(cmd, args, {
       cwd: testsDir,
       stdio: "inherit",
       shell: process.platform === "win32",
@@ -46,7 +59,11 @@ server.registerTool(
       suite: z
         .string()
         .optional()
-        .describe("Nome da suíte ou perfil de testes, por exemplo: 'smoke'."),
+        .describe("Suíte: 'all', 'admin', 'auth', 'api', 'ui'."),
+      spec: z
+        .string()
+        .optional()
+        .describe("Caminho do arquivo de spec (ex: cypress/e2e/admin/admin-dashboard-idade-inativo.cy.js)."),
     }),
     outputSchema: z.object({
       status: z.enum(["passed", "failed"]),
@@ -54,8 +71,9 @@ server.registerTool(
       exitCode: z.number(),
     }),
   },
-  async ({ suite }) => {
-    const { code } = await runCypressTests({ suite });
+  async ({ suite, spec: specPath }) => {
+    const suiteParam = specPath ? undefined : (suite || "all");
+    const { code } = await runCypressTests({ suite: suiteParam, spec: specPath });
     const passed = code === 0;
 
     const structured = {

@@ -1,0 +1,15 @@
+{
+  "name": "qa-lab-agents",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:mcp": "node mcp-server/server.js",
+    "agent": "node qa-agent.js",
+    "agent:run-tests": "node qa-agent.js run_tests"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.25.0"
+  }
+}
