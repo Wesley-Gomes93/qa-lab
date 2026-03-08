@@ -8,7 +8,7 @@ const {
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
   API_BASE,
-  randomAgeBetween18And80,
+  getEditIdade,
 } = require('../../support/helpers');
 
 describe('Admin Dashboard - Suite completa (idade, inativo, filtro, exclusão)', () => {
@@ -43,7 +43,7 @@ describe('Admin Dashboard - Suite completa (idade, inativo, filtro, exclusão)',
 
   describe('Edição de idade (18–80)', () => {
     it('edita idade do usuário id 1 para valor entre 18 e 80', () => {
-      const novaIdade = randomAgeBetween18And80();
+      const novaIdade = getEditIdade();
       cy.get('[data-testid="btn-edit-1"]').click();
       cy.get('[data-testid="modal-edit-idade"]').clear().type(String(novaIdade));
       cy.get('[data-testid="modal-edit-save"]').click();
@@ -52,7 +52,7 @@ describe('Admin Dashboard - Suite completa (idade, inativo, filtro, exclusão)',
     });
 
     it('edita idade do usuário id 2 para valor entre 18 e 80', () => {
-      const novaIdade = randomAgeBetween18And80();
+      const novaIdade = getEditIdade();
       cy.get('[data-testid="btn-edit-2"]').click();
       cy.get('[data-testid="modal-edit-idade"]').clear().type(String(novaIdade));
       cy.get('[data-testid="modal-edit-save"]').click();
@@ -61,7 +61,7 @@ describe('Admin Dashboard - Suite completa (idade, inativo, filtro, exclusão)',
     });
 
     it('edita idade do usuário id 3 para valor entre 18 e 80', () => {
-      const novaIdade = randomAgeBetween18And80();
+      const novaIdade = getEditIdade();
       cy.get('[data-testid="btn-edit-3"]').click();
       cy.get('[data-testid="modal-edit-idade"]').clear().type(String(novaIdade));
       cy.get('[data-testid="modal-edit-save"]').click();

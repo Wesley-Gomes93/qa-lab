@@ -1,0 +1,10 @@
+{
+  "name": "qa-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playground full-stack para testes e automação (MCP + agente)",
+  "scripts": {
+    "agent:run-tests": "cd agents && node qa-agent.js run_tests",
+    "agent": "cd agents && node qa-agent.js"
+  }
+}

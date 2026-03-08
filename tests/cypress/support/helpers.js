@@ -12,6 +12,14 @@ function randomAgeBetween18And80() {
   return Math.floor(Math.random() * (80 - 18 + 1)) + 18;
 }
 
+/** Idade para edição: usa CYPRESS_EDIT_IDADE (18–80) se definida, senão aleatória. */
+function getEditIdade() {
+  const env = typeof Cypress !== 'undefined' && Cypress.env && Cypress.env('EDIT_IDADE');
+  const n = env != null ? parseInt(env, 10) : NaN;
+  if (Number.isFinite(n) && n >= 18 && n <= 80) return n;
+  return randomAgeBetween18And80();
+}
+
 function randomEmail() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@teste.com`;
 }
@@ -42,6 +50,7 @@ module.exports = {
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
   randomAgeBetween18And80,
+  getEditIdade,
   randomEmail,
   randomName,
   ensureAdminTestUsers,

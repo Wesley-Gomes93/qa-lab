@@ -2,7 +2,7 @@
  * E2E: Edição de idade do usuário id 3 (valor entre 18 e 80).
  */
 const Playground = require('../../pages/PlaygroundPage');
-const { ensureAdminTestUsers, ADMIN_EMAIL, ADMIN_PASSWORD, randomAgeBetween18And80 } = require('../../support/helpers');
+const { ensureAdminTestUsers, ADMIN_EMAIL, ADMIN_PASSWORD, getEditIdade } = require('../../support/helpers');
 
 describe('Admin Dashboard - Editar idade usuário id 3', () => {
   before(() => {
@@ -19,7 +19,7 @@ describe('Admin Dashboard - Editar idade usuário id 3', () => {
   });
 
   it('edita idade do usuário id 3 para valor entre 18 e 80', () => {
-    const novaIdade = randomAgeBetween18And80();
+    const novaIdade = getEditIdade();
     cy.get('[data-testid="btn-edit-3"]').click();
     cy.get('[data-testid="modal-edit-idade"]').clear().type(String(novaIdade));
     cy.get('[data-testid="modal-edit-save"]').click();

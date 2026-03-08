@@ -6,12 +6,12 @@ describe('Registro - fluxo completo na UI', () => {
     Playground.getFormRegister().should('be.visible');
 
     Playground.fillRegisterForm({
-      name: Playground.getRandomName(),
-      email: Playground.getRandomEmail(),
-      password: 'minhasenha123',
+      name: Playground.getRegisterName(),
+      email: Playground.getRegisterEmail(),
+      password: Playground.getRegisterPassword(),
     });
 
     Playground.clickRegister();
-    Playground.assertRegisterSuccessVisible();
+    Playground.assertRegisterSuccessOrAlreadyExists();
   });
 });

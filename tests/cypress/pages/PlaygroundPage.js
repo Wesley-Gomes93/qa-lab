@@ -25,7 +25,25 @@ function getRandomEmail() {
   return `user_${suffix}@teste.com`;
 }
 
-/** Mapeamento de todos os elementos da tela (locators) */
+/**
+ * Dados para registro/login: usa variáveis de ambiente (imersão) se definidas,
+ * senão gera aleatório. Para passar dados ao rodar o teste:
+ *   CYPRESS_REGISTER_NAME=João CYPRESS_REGISTER_EMAIL=joao@teste.com cypress run ...
+ */
+function getRegisterName() {
+  const env = typeof Cypress !== 'undefined' && Cypress.env && Cypress.env('REGISTER_NAME');
+  return env && String(env).trim() ? String(env).trim() : getRandomName();
+}
+
+function getRegisterEmail() {
+  const env = typeof Cypress !== 'undefined' && Cypress.env && Cypress.env('REGISTER_EMAIL');
+  return env && String(env).trim() ? String(env).trim() : getRandomEmail();
+}
+
+function getRegisterPassword() {
+  const env = typeof Cypress !== 'undefined' && Cypress.env && Cypress.env('REGISTER_PASSWORD');
+  return env && String(env).trim() ? String(env).trim() : 'senha123';
+}
 const selectors = {
   // Header
   header: 'header',
@@ -70,6 +88,9 @@ const texts = {
   status400: 'Status: 400',
   status201: 'Status: 201',
   status200: 'Status: 200',
+  status409: 'Status: 409',
+  errorAlreadyExists: 'já existe',
+  errorEmailInUse: 'já em uso',
 };
 
 /**
@@ -265,6 +286,26 @@ function assertValidationErrorVisible() {
 }
 
 /**
+ * Verifica se o registro foi bem-sucedido (Status: 201) ou se o usuário já existe (409).
+ * Útil para reexecuções com os mesmos dados de imersão (e-mail já cadastrado).
+ */
+function assertRegisterSuccessOrAlreadyExists() {
+  cy.get(selectors.formRegister)
+    .parent()
+    .find('pre')
+    .should('be.visible');
+  cy.get(selectors.formRegister)
+    .parent()
+    .find('pre')
+    .then(($pre) => {
+      const text = $pre.text();
+      const is201 = text.includes(texts.status201) && text.includes('"id"') && text.includes('"email"');
+      const is409 = text.includes(texts.status409) && (text.includes(texts.errorAlreadyExists) || text.includes(texts.errorEmailInUse));
+      expect(is201 || is409, 'esperado Status 201 (criado) ou 409 (já existe)').to.be.true;
+    });
+}
+
+/**
  * Verifica se o registro foi bem-sucedido (Status: 201 e resumo do usuário no pre).
  */
 function assertRegisterSuccessVisible() {
@@ -306,6 +347,9 @@ module.exports = {
   texts,
   getRandomName,
   getRandomEmail,
+  getRegisterName,
+  getRegisterEmail,
+  getRegisterPassword,
   visit,
   getHeader,
   getBtnHealthcheck,
@@ -323,6 +367,7 @@ module.exports = {
   assertAllElementsVisible,
   assertValidationErrorVisible,
   assertRegisterSuccessVisible,
+  assertRegisterSuccessOrAlreadyExists,
   assertLoginSuccessVisible,
   assertRegisterFormFieldsVisible,
 };

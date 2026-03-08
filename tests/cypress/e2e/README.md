@@ -26,14 +26,17 @@ e2e/
 │   ├── register-title.cy.js
 │   ├── register-fill-combinations.cy.js
 │   └── register-full-flow.cy.js
-└── ui/                       # Elementos e layout da tela inicial
-    └── ui-elements.cy.js
+├── ui/                       # Elementos e layout da tela inicial
+│   └── ui-elements.cy.js
+└── performance/              # Performance no caminho crítico (TICTAC)
+    └── tictac.cy.js          # Tempo de load, health, form visível, dashboard após login
 ```
 
 ## Uso
 
 - **Um cenário por arquivo (admin):** cada spec em `admin/` cobre um único fluxo (ex.: editar idade id 1, validar idade, etc.) para facilitar execução isolada e relatórios.
 - **Suite completa:** `admin/admin-dashboard-idade-inativo.cy.js` executa todos os cenários de admin em sequência (idade 1–3, validação, inativo, filtro, exclusão).
+- **Performance (TICTAC):** `performance/tictac.cy.js` mede tempos no caminho crítico (load, health, form visível, dashboard). Ver `docs/TESTE-PERFORMANCE-TICTAC.md`.
 - **Helpers:** constantes e funções compartilhadas ficam em `support/helpers.js` (ex.: `ADMIN_EMAIL`, `randomAgeBetween18And80`, `ensureAdminTestUsers`).
 
 ## Rodar
@@ -53,4 +56,7 @@ npx cypress run --spec "cypress/e2e/auth/**/*.cy.js"
 
 # Só API
 npx cypress run --spec "cypress/e2e/api/**/*.cy.js"
+
+# Só performance (TICTAC)
+npx cypress run --spec "cypress/e2e/performance/tictac.cy.js"
 ```

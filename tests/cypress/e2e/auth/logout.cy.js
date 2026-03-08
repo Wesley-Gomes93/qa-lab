@@ -11,7 +11,7 @@ describe('Logout', () => {
     Playground.getFormRegister().should('be.visible');
     Playground.fillRegisterForm({ name, email, password });
     Playground.clickRegister();
-    Playground.assertRegisterSuccessVisible();
+    Playground.assertRegisterSuccessOrAlreadyExists();
 
     Playground.fillLoginForm({ email, password });
     Playground.clickLogin();

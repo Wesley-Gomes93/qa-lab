@@ -11,6 +11,7 @@
     :root {
       --bg: #0a0b0f;
       --surface: #12141c;
+      --surface-hover: #1a1d28;
       --border: #2a2d3a;
       --text: #e8eaef;
       --muted: #8b8f9e;
@@ -19,6 +20,9 @@
       --agent: #a78bfa;
       --manual: #38bdf8;
       --danger: #f87171;
+      --amber: #f59e0b;
+      --cyan: #06b6d4;
+      --pink: #ec4899;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -47,6 +51,32 @@
       font-size: 1rem;
       margin-bottom: 2rem;
     }
+
+    /* Intro / Sobre o projeto */
+    .intro {
+      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(167,139,250,0.08));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 2rem;
+    }
+    .intro h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .intro p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+    .intro p:last-child { margin-bottom: 0; }
+    .intro strong { color: var(--text); }
+
     section {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -65,27 +95,76 @@
       align-items: center;
       gap: 0.5rem;
     }
+
+    /* Arquitetura interativa */
     .arch {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 0.75rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
     .arch .box {
       background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
       text-align: center;
       font-size: 0.8rem;
       font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .arch .box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
     .arch .box.frontend { border-color: var(--manual); color: var(--manual); }
+    .arch .box.frontend:hover { border-color: var(--manual); box-shadow: 0 6px 20px rgba(56,189,248,0.2); }
     .arch .box.backend { border-color: var(--accent); color: var(--accent); }
-    .arch .box.db { border-color: #f59e0b; color: #f59e0b; }
-    .arch .box.tests { border-color: #06b6d4; color: #06b6d4; }
+    .arch .box.backend:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(34,197,94,0.2); }
+    .arch .box.db { border-color: var(--amber); color: var(--amber); }
+    .arch .box.db:hover { border-color: var(--amber); box-shadow: 0 6px 20px rgba(245,158,11,0.2); }
+    .arch .box.tests { border-color: var(--cyan); color: var(--cyan); }
+    .arch .box.tests:hover { border-color: var(--cyan); box-shadow: 0 6px 20px rgba(6,182,212,0.2); }
     .arch .box.mcp { border-color: var(--agent); color: var(--agent); }
-    .arch .box.agent { border-color: #ec4899; color: #ec4899; }
+    .arch .box.mcp:hover { border-color: var(--agent); box-shadow: 0 6px 20px rgba(167,139,250,0.2); }
+    .arch .box.agent { border-color: var(--pink); color: var(--pink); }
+    .arch .box.agent:hover { border-color: var(--pink); box-shadow: 0 6px 20px rgba(236,72,153,0.2); }
+    .arch .box[aria-pressed="true"] { border-style: dashed; }
+
+    .arch-detail {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg);
+      border-radius: 10px;
+      border-left: 4px solid var(--border);
+    }
+    .arch-detail.show { display: block; }
+    .arch-detail.frontend { border-left-color: var(--manual); }
+    .arch-detail.backend { border-left-color: var(--accent); }
+    .arch-detail.db { border-left-color: var(--amber); }
+    .arch-detail.tests { border-left-color: var(--cyan); }
+    .arch-detail.mcp { border-left-color: var(--agent); }
+    .arch-detail.agent { border-left-color: var(--pink); }
+    .arch-detail h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .arch-detail p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .arch-detail p:last-child { margin-bottom: 0; }
+    .arch-detail .responsabilidades {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .arch-detail .responsabilidades strong { color: var(--muted); }
+
     .tabs {
       display: flex;
       gap: 0.5rem;
@@ -167,6 +246,42 @@
       white-space: pre-wrap;
     }
     .menu-preview span { color: var(--agent); }
+
+    /* Registro de cliques */
+    .clicks-section {
+      margin-top: 1rem;
+    }
+    .clicks-section h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .clicks-log {
+      max-height: 140px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--muted);
+    }
+    .clicks-log:empty::before { content: 'Nenhum clique registrado ainda.'; }
+    .clicks-log .click-item {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+    .clicks-log .click-item .time { color: var(--amber); min-width: 60px; }
+    .clicks-log .click-item .target { color: var(--accent); }
+    .clicks-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
     .cta {
       text-align: center;
       margin-top: 2rem;
@@ -189,19 +304,69 @@
     <h1>QA Lab – Como tudo se desenrola</h1>
     <p class="subtitle">Full-stack + testes automatizados + agente com menu interativo (MCP)</p>
 
+    <section class="intro">
+      <h2>Sobre o projeto</h2>
+      <p>
+        O <strong>QA Lab</strong> é um playground full-stack para aprender e praticar automação de testes, JavaScript avançado e integração com agentes (MCP). 
+        Aqui você encontra uma aplicação completa: frontend (Next.js), backend (Express), banco (PostgreSQL) e uma suíte de testes Cypress organizada por cenário.
+      </p>
+      <p>
+        Além de rodar os testes manualmente no terminal, você pode usar o <strong>agente</strong>: um menu interativo que se conecta ao servidor MCP e permite escolher qual suíte ou qual arquivo de teste executar, com opção de informar dados para imersão (nome, e-mail, senha, idade).
+      </p>
+      <p>
+        <strong>Clique nos blocos da arquitetura</strong> abaixo para ver o que cada parte faz e qual é a responsabilidade de cada uma.
+      </p>
+    </section>
+
     <section>
       <h2>Arquitetura</h2>
-      <div class="arch">
-        <div class="box frontend">Frontend<br>Next.js</div>
-        <div class="box backend">Backend<br>Express</div>
-        <div class="box db">PostgreSQL</div>
-        <div class="box tests">Cypress<br>E2E + API</div>
-        <div class="box mcp">MCP Server<br>run_tests</div>
-        <div class="box agent">Agente<br>Menu</div>
-      </div>
-      <p style="color: var(--muted); font-size: 0.9rem;">
-        Você pode rodar os testes de <strong style="color: var(--manual);">duas formas</strong>: manual (terminal + Cypress) ou pelo <strong style="color: var(--agent);">agente</strong>, que se conecta ao MCP e abre um menu para você escolher qual suíte ou qual arquivo executar.
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Clique em cada bloco para ver a explicação. Você pode rodar os testes de <strong style="color: var(--manual);">duas formas</strong>: manual (terminal + Cypress) ou pelo <strong style="color: var(--agent);">agente</strong> (menu MCP).
       </p>
+      <div class="arch">
+        <div class="box frontend" data-arch="frontend" role="button" tabindex="0" aria-pressed="false">Frontend<br>Next.js</div>
+        <div class="box backend" data-arch="backend" role="button" tabindex="0" aria-pressed="false">Backend<br>Express</div>
+        <div class="box db" data-arch="db" role="button" tabindex="0" aria-pressed="false">PostgreSQL</div>
+        <div class="box tests" data-arch="tests" role="button" tabindex="0" aria-pressed="false">Cypress<br>E2E + API</div>
+        <div class="box mcp" data-arch="mcp" role="button" tabindex="0" aria-pressed="false">MCP Server<br>run_tests</div>
+        <div class="box agent" data-arch="agent" role="button" tabindex="0" aria-pressed="false">Agente<br>Menu</div>
+      </div>
+      <div id="arch-detail-frontend" class="arch-detail frontend" aria-hidden="true">
+        <h3>Frontend (Next.js)</h3>
+        <p>Interface do usuário: tela inicial (Playground) com registro, login e healthcheck da API; dashboard para administradores.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> exibir formulários, chamar a API, redirecionar após login, listar/editar/excluir usuários (admin), filtro de pesquisa e validação de idade (18–80).</div>
+      </div>
+      <div id="arch-detail-backend" class="arch-detail backend" aria-hidden="true">
+        <h3>Backend (Express)</h3>
+        <p>API REST em Node.js: autenticação (registro, login com JWT), CRUD de usuários, validações e regras de negócio.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> persistir usuários no PostgreSQL, validar idade 18–80, impedir exclusão do admin, retornar tokens e dados consistentes para o frontend.</div>
+      </div>
+      <div id="arch-detail-db" class="arch-detail db" aria-hidden="true">
+        <h3>PostgreSQL</h3>
+        <p>Banco de dados relacional que armazena usuários e garante persistência entre reinícios do backend.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> tabela de usuários (id, nome, email, senha hash, idade, ativo), integridade dos dados e suporte às consultas da API.</div>
+      </div>
+      <div id="arch-detail-tests" class="arch-detail tests" aria-hidden="true">
+        <h3>Cypress (E2E + API)</h3>
+        <p>Testes automatizados organizados em pastas: auth, api, admin, ui. Usam page objects e helpers compartilhados.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> validar fluxos de registro, login, logout, healthcheck, criação de usuários via API, dashboard admin (editar idade, validação, inativo, filtro, exclusão) e elementos da UI; aceitar dados de imersão via variáveis de ambiente (CYPRESS_*).</div>
+      </div>
+      <div id="arch-detail-mcp" class="arch-detail mcp" aria-hidden="true">
+        <h3>MCP Server (run_tests)</h3>
+        <p>Servidor que implementa o protocolo MCP e expõe a ferramenta <code>run_tests</code> para executar o Cypress com suíte ou spec específico.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> receber chamadas do agente (suite ou spec + dados opcionais de imersão), repassar variáveis de ambiente ao Cypress e devolver o resultado da execução.</div>
+      </div>
+      <div id="arch-detail-agent" class="arch-detail agent" aria-hidden="true">
+        <h3>Agente (Menu)</h3>
+        <p>Script Node que se conecta ao MCP, lista ferramentas e oferece um menu interativo para escolher o que rodar.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> perguntar se o usuário quer informar dados para imersão (nome, e-mail, senha, idade), exibir opções de suíte e arquivos com descrições em português, chamar run_tests com os parâmetros escolhidos e exibir o resultado.</div>
+      </div>
+
+      <div class="clicks-section">
+        <h3>Registro de cliques</h3>
+        <div id="clicks-log" class="clicks-log"></div>
+        <p id="clicks-count" class="clicks-count">Total de cliques nesta sessão: 0</p>
+      </div>
     </section>
 
     <section>
@@ -305,22 +470,116 @@
       </p>
     </section>
 
+    <section class="intro">
+      <h2>Como usar os prompts de imersão?</h2>
+      <p>
+        O projeto tem um guia em <strong>docs/prompts-imersao-testes.md</strong>. Ele <strong>não é um script</strong> que você executa no terminal: é um conjunto de <strong>prompts para colar numa conversa com uma IA</strong> (Cursor, ChatGPT, Claude, etc.).
+      </p>
+      <p>
+        <strong>Como “executar”:</strong> (1) Abra um chat com a IA e cole o <strong>prompt de contexto</strong> do arquivo (aquele que começa com “Você é meu assistente de QA no projeto QA Lab…”). (2) Diga qual teste quer rodar (ex.: registro, login, edição de idade). (3) A IA pergunta se você quer <strong>manual</strong> (passo a passo no site) ou <strong>automatizado</strong> (Cypress aberto para ver o navegador rodando) e se os dados você digita ou ela usa aleatórios. (4) Você responde e a IA te guia: se manual, te manda o passo a passo para abrir o site e preencher; se automatizado, te passa o comando para abrir o Cypress e te diz para clicar em <strong>Run</strong> para assistir ao teste na tela.
+      </p>
+      <p>
+        Resumindo: você “executa” o guia <strong>colando o prompt no chat</strong> e conversando com a IA; ela te orienta e te diz exatamente o que fazer (manual no site ou Cypress em modo aberto).
+      </p>
+    </section>
+
     <div class="cta">
       <p>Projeto open-source: documentação e código no repositório.</p>
       <a href="https://github.com/seu-usuario/qa-lab" id="repo-link" target="_blank" rel="noopener">Ver repositório →</a>
     </div>
   </div>
   <script>
-    // Substitua a URL acima pela do seu repositório
-    document.getElementById('repo-link').href = 'https://github.com/seu-usuario/qa-lab';
-    document.querySelectorAll('.tabs button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.flow-panel').forEach(p => p.classList.remove('show'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.panel).classList.add('show');
+    (function () {
+      const REPO_URL = 'https://github.com/seu-usuario/qa-lab';
+      document.getElementById('repo-link').href = REPO_URL;
+
+      const CLICKS_KEY = 'qa-lab-visual-clicks';
+      const MAX_LOG = 50;
+
+      function getClicks() {
+        try {
+          const raw = localStorage.getItem(CLICKS_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (_) { return []; }
+      }
+      function saveClicks(clicks) {
+        try { localStorage.setItem(CLICKS_KEY, JSON.stringify(clicks)); } catch (_) {}
+      }
+      function addClick(target, label) {
+        const now = new Date();
+        const time = now.toTimeString().slice(0, 8);
+        const item = { time, target, label, ts: now.getTime() };
+        let clicks = getClicks();
+        clicks.unshift(item);
+        if (clicks.length > MAX_LOG) clicks = clicks.slice(0, MAX_LOG);
+        saveClicks(clicks);
+        renderClicks(clicks);
+      }
+      function renderClicks(clicks) {
+        const logEl = document.getElementById('clicks-log');
+        const countEl = document.getElementById('clicks-count');
+        if (!logEl || !countEl) return;
+        logEl.innerHTML = clicks.length === 0
+          ? ''
+          : clicks.map(function (c) {
+              return '<div class="click-item"><span class="time">' + c.time + '</span><span class="target">' + (c.label || c.target) + '</span></div>';
+            }).join('');
+        countEl.textContent = 'Total de cliques registrados: ' + clicks.length + (clicks.length >= MAX_LOG ? ' (máx. ' + MAX_LOG + ')' : '');
+      }
+      renderClicks(getClicks());
+
+      function registerClick(target, label) {
+        addClick(target, label);
+      }
+
+      document.querySelectorAll('.arch .box').forEach(function (box) {
+        const id = box.dataset.arch;
+        const label = box.textContent.trim().replace(/\s+/g, ' ');
+        box.addEventListener('click', function () {
+          registerClick('arch:' + id, 'Arquitetura: ' + label);
+          document.querySelectorAll('.arch .box').forEach(function (b) {
+            b.setAttribute('aria-pressed', b === box ? 'true' : 'false');
+          });
+          document.querySelectorAll('.arch-detail').forEach(function (d) {
+            d.classList.remove('show');
+            d.setAttribute('aria-hidden', 'true');
+          });
+          var detail = document.getElementById('arch-detail-' + id);
+          if (detail) {
+            detail.classList.add('show');
+            detail.setAttribute('aria-hidden', 'false');
+          }
+        });
+        box.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            box.click();
+          }
+        });
       });
-    });
+
+      document.querySelectorAll('.tabs button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          registerClick('tab', btn.textContent.trim());
+          document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.remove('active'); });
+          document.querySelectorAll('.flow-panel').forEach(function (p) { p.classList.remove('show'); });
+          btn.classList.add('active');
+          var panel = document.getElementById(btn.dataset.panel);
+          if (panel) panel.classList.add('show');
+        });
+      });
+
+      document.querySelectorAll('.flow-step').forEach(function (step) {
+        step.addEventListener('click', function () {
+          var strong = step.querySelector('.body strong');
+          registerClick('flow-step', strong ? strong.textContent.trim() : 'Passo');
+        });
+      });
+
+      document.getElementById('repo-link').addEventListener('click', function () {
+        registerClick('link', 'Ver repositório');
+      });
+    })();
   </script>
 </body>
 </html>
