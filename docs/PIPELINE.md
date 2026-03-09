@@ -5,7 +5,16 @@
 - **GitHub Actions:** https://github.com/Wesley-Gomes93/qa-lab/actions
 - Cada push/PR na `main` dispara os workflows **CI** e **Pipeline**
 
-## Estrutura da Pipeline
+## Estrutura da Pipeline (fluxo SDET)
+
+```
+lint → build → [tests || e2e] → report
+```
+
+- **lint** roda primeiro – se falhar, build e testes não executam
+- **build** depende de lint – valida compilação antes dos testes
+- **tests** (Cypress) e **e2e** (Playwright) rodam em paralelo após o build
+- **report** consolida os resultados
 
 | Job | O que faz | Se falhar |
 |-----|-----------|-----------|

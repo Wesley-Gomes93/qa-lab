@@ -5,6 +5,9 @@ A full-stack testing playground designed to experiment with automation, AI agent
 ## Documentation
 
 - **[API](./docs/API.md)** – Endpoints, authentication, request/response format, and basic behavior.
+- **[Pipeline & Maintenance](./docs/PIPELINE.md)** – How to maintain the CI/CD pipeline, understand errors, and fix them.
+- **[SDET & Evolution](./docs/SDET-EVOLUCAO.md)** – SDET mindset, measuring project evolution, and tips for posts.
+- **[Reports](./docs/RELATORIOS.md)** – Cypress, Playwright, and unified reports.
 - **[About the project](./docs/SOBRE-O-PROJETO.md)** – How the project started (advanced JavaScript + MCP/agents), current state, and next steps.
 
 ## Architecture
