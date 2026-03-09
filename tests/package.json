@@ -5,11 +5,15 @@
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
+    "pw:test": "playwright test",
+    "pw:ui": "playwright test --ui",
+    "pw:report": "playwright show-report",
     "test": "cypress run",
     "test:report": "cypress run && node scripts/report-to-api.js",
     "report-to-api": "node scripts/report-to-api.js"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "cypress": "^15.11.0",
     "cypress-mochawesome-reporter": "^3.8.4"
   }
