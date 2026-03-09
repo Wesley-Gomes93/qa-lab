@@ -22,7 +22,7 @@ export default function Home() {
       const res = await fetch(`${API_URL}/health`);
       const data = await res.json();
       setHealth(JSON.stringify(data, null, 2));
-    } catch (err) {
+    } catch {
       setHealthError("Não foi possível conectar na API.");
     }
   }
@@ -47,7 +47,7 @@ export default function Home() {
       setRegisterResult(
         `Status: ${res.status}\nResposta: ${JSON.stringify(data, null, 2)}`
       );
-    } catch (err) {
+    } catch {
       setRegisterResult("Erro ao chamar /auth/register");
     }
   }
@@ -85,7 +85,7 @@ export default function Home() {
       setLoginResult(
         `Status: ${res.status}\nResposta: ${JSON.stringify(data, null, 2)}`
       );
-    } catch (err) {
+    } catch {
       setLoginResult("Erro ao chamar /auth/login");
     }
   }

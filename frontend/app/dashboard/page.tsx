@@ -91,11 +91,6 @@ export default function DashboardPage() {
     if (user) document.title = session?.isAdmin ? "Admin | QA Lab" : "Dashboard | QA Lab";
   }, [session?.isAdmin, user]);
 
-  function handleLogout() {
-    window.localStorage.removeItem(SESSION_KEY);
-    router.replace("/");
-  }
-
   function openEdit(u: UserFull) {
     setEditingUser(u);
     setForm({

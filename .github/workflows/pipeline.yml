@@ -41,7 +41,6 @@ jobs:
 
       - name: Lint frontend
         run: cd frontend && npm run lint
-        continue-on-error: true
 
   tests:
     name: tests
