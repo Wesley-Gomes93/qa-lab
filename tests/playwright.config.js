@@ -1,8 +1,11 @@
-const { defineConfig } = require("@playwright/test");
+const { defineConfig, devices } = require("@playwright/test");
 const configuredWorkers = parseInt(process.env.PW_WORKERS || "1", 10);
 
 module.exports = defineConfig({
   testDir: "./playwright/e2e",
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+  ],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
