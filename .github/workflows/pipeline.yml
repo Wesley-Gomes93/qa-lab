@@ -20,7 +20,7 @@ jobs:
           node-version: "20"
 
       - name: Install frontend deps
-        run: cd frontend && npm ci
+        run: cd frontend && npm install --prefer-offline --no-audit
 
       - name: Build frontend
         run: cd frontend && npm run build
@@ -37,7 +37,7 @@ jobs:
           node-version: "20"
 
       - name: Install frontend deps
-        run: cd frontend && npm ci
+        run: cd frontend && npm install --prefer-offline --no-audit
 
       - name: Lint frontend
         run: cd frontend && npm run lint
@@ -56,7 +56,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd frontend && npm ci
+          cd frontend && npm install --prefer-offline --no-audit
           cd ../backend && npm ci
           cd ../tests && npm ci
 
@@ -109,7 +109,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd frontend && npm ci
+          cd frontend && npm install --prefer-offline --no-audit
           cd ../backend && npm ci
           cd ../tests && npm ci
 
