@@ -1,0 +1,59 @@
+# QA Lab – Agente de Análise (execução manual)
+# Roda o Failure Analyzer Agent para análise de falhas dos testes.
+# Trigger: Actions → Agent Analysis → Run workflow
+
+name: Agent Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "Suíte (all, admin, auth, api, ui, performance) ou path do spec"
+        required: false
+        default: "all"
+
+jobs:
+  agent:
+    name: agent
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          cd frontend && npm install --prefer-offline --no-audit
+          cd ../backend && npm ci
+          cd ../tests && npm ci
+          cd ../agents && npm install
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d --name qa-lab-db -e POSTGRES_USER=qa -e POSTGRES_PASSWORD=qa123 -e POSTGRES_DB=qalab -p 5432:5432 postgres:15
+          sleep 3
+
+      - name: Start API
+        run: |
+          cd backend && cp .env.example .env 2>/dev/null || true
+          npm run dev &
+          sleep 5
+        env:
+          DATABASE_URL: postgresql://qa:qa123@localhost:5432/qalab
+          PORT: 4000
+
+      - name: Start frontend
+        run: |
+          cd frontend && PORT=3000 npm run start &
+          sleep 8
+
+      - name: Run Failure Analyzer Agent
+        run: cd agents && node failure-analyzer-agent.js ${{ github.event.inputs.suite || 'all' }}
+        env:
+          CYPRESS_BASE_URL: http://localhost:3000

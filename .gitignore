@@ -6,5 +6,7 @@ coverage
 cypress/videos
 cypress/screenshots
 cypress/reports
+tests/playwright-report
+tests/qa-lab-reports
 .DS_Store
 backend/registros.txt

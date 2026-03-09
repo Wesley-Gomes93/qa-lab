@@ -13,6 +13,7 @@ module.exports = defineConfig({
   reporter: [
     ["list"],
     ["html", { outputFolder: "playwright-report", open: "never" }],
+    ["json", { outputFile: "playwright-report/results.json" }],
   ],
   use: {
     baseURL: process.env.FRONTEND_URL || "http://localhost:3000",
