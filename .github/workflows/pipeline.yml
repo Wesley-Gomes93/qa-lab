@@ -56,8 +56,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd backend && npm ci
+          cd frontend && npm ci
+          cd ../backend && npm ci
           cd ../tests && npm ci
+
+      - name: Build frontend
+        run: cd frontend && npm run build
 
       - name: Start PostgreSQL
         run: |
@@ -73,10 +77,15 @@ jobs:
           DATABASE_URL: postgresql://qa:qa123@localhost:5432/qalab
           PORT: 4000
 
+      - name: Start frontend
+        run: |
+          cd frontend && PORT=3000 npm run start &
+          sleep 8
+
       - name: Run Cypress
         run: cd tests && npx cypress run --browser chrome 2>/dev/null || npx cypress run
         env:
-          CYPRESS_BASE_URL: http://localhost:4000
+          CYPRESS_BASE_URL: http://localhost:3000
 
       - name: Upload Cypress report
         if: always()
