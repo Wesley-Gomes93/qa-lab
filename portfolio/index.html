@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wesley — QA & Automação</title>
+  <title>Wesley — QA & Test Automation | SDET</title>
+  <meta name="description" content="QA Engineer focused on test automation, E2E (Cypress & Playwright), CI/CD pipelines, and AI agents for QA. Portfolio & projects.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -24,7 +25,7 @@
   <main>
     <section id="inicio" class="hero">
       <h1>QA & Automação de Testes</h1>
-      <p class="hero-subtitle">Construindo laboratórios reais para experimentar automação, E2E, MCP e agentes de IA.</p>
+      <p class="hero-subtitle">Laboratórios práticos para evoluir em automação E2E, CI/CD, MCP e agentes de IA. Técnico, mas acessível.</p>
     </section>
 
     <section id="sobre" class="section">
@@ -44,23 +45,31 @@
         <div class="project-badge">Destaque</div>
         <h3>QA Lab</h3>
         <p class="project-desc">
-          Laboratório full-stack para treinar automação, E2E, API e agentes. Playground com Next.js, Express, PostgreSQL e suite Cypress organizada.
+          Laboratório full-stack para treinar automação E2E, API, CI/CD e agentes de IA. Playground com Next.js, Express, PostgreSQL, Cypress e Playwright.
         </p>
         <ul class="project-highlights">
-          <li>MCP server + agente interativo para rodar testes sem decorar comandos</li>
-          <li>Testes de performance (TICTAC) no caminho crítico</li>
-          <li>API REST documentada + dashboard admin</li>
-          <li>Page objects, helpers e um spec por cenário</li>
+          <li>Pipeline CI/CD: lint → build → testes (Cypress + Playwright) → relatórios</li>
+          <li>Cypress e Playwright em paralelo (auth, API, admin, UI, performance)</li>
+          <li>MCP server + agente que analisa falhas e sugere correções</li>
+          <li>API REST documentada + dashboard admin + testes de performance (TICTAC)</li>
         </ul>
+        <div class="pipeline-preview">
+          <p class="pipeline-label">Pipeline em produção</p>
+          <img src="images/pipeline-verde.png" alt="Pipeline CI/CD passando: lint, build, tests, e2e, report" class="pipeline-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling?.classList?.remove('hidden');">
+          <p class="pipeline-fallback hidden">Screenshot da pipeline disponível no repositório.</p>
+        </div>
         <div class="project-stack">
           <span>Next.js</span>
           <span>Express</span>
           <span>PostgreSQL</span>
           <span>Cypress</span>
+          <span>Playwright</span>
+          <span>CI/CD</span>
           <span>MCP</span>
         </div>
         <div class="project-links">
-          <a href="https://github.com/wesley-gomes93/qa-lab" target="_blank" rel="noopener" class="btn btn-primary">Ver no GitHub</a>
+          <a href="https://github.com/Wesley-Gomes93/qa-lab" target="_blank" rel="noopener" class="btn btn-primary">Ver no GitHub</a>
+          <a href="https://github.com/Wesley-Gomes93/qa-lab/actions" target="_blank" rel="noopener" class="btn btn-secondary">Ver Pipeline</a>
         </div>
       </article>
 

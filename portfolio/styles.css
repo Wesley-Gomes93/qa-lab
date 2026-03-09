@@ -221,6 +221,51 @@ main {
   filter: brightness(1.1);
 }
 
+.btn-secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-soft);
+}
+
+/* Pipeline preview */
+.pipeline-preview {
+  margin: 1.25rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.pipeline-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pipeline-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.pipeline-fallback {
+  padding: 1rem;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .project-grid {
   margin-top: 1.5rem;
 }

@@ -302,19 +302,19 @@
 <body>
   <div class="wrap">
     <h1>QA Lab – Como tudo se desenrola</h1>
-    <p class="subtitle">Full-stack + testes automatizados + agente com menu interativo (MCP)</p>
+    <p class="subtitle">Full-stack + Cypress + Playwright + Pipeline CI/CD + agente MCP</p>
 
     <section class="intro">
       <h2>Sobre o projeto</h2>
       <p>
-        O <strong>QA Lab</strong> é um playground full-stack para aprender e praticar automação de testes, JavaScript avançado e integração com agentes (MCP). 
-        Aqui você encontra uma aplicação completa: frontend (Next.js), backend (Express), banco (PostgreSQL) e uma suíte de testes Cypress organizada por cenário.
+        O <strong>QA Lab</strong> é um playground full-stack para aprender e praticar automação de testes, CI/CD e agentes (MCP). 
+        Aplicação completa: frontend (Next.js), backend (Express), banco (PostgreSQL), suíte Cypress e Playwright, pipeline CI/CD (lint → build → testes → report) e agente interativo.
       </p>
       <p>
-        Além de rodar os testes manualmente no terminal, você pode usar o <strong>agente</strong>: um menu interativo que se conecta ao servidor MCP e permite escolher qual suíte ou qual arquivo de teste executar, com opção de informar dados para imersão (nome, e-mail, senha, idade).
+        Você pode rodar os testes <strong>manualmente</strong>, via <strong>agente</strong> (menu MCP) ou deixar a <strong>pipeline</strong> rodar no GitHub Actions. O agente oferece menu para escolher suíte ou arquivo específico, com dados de imersão opcionais.
       </p>
       <p>
-        <strong>Clique nos blocos da arquitetura</strong> abaixo para ver o que cada parte faz e qual é a responsabilidade de cada uma.
+        <strong>Clique nos blocos da arquitetura</strong> abaixo para ver o que cada parte faz.
       </p>
     </section>
 
@@ -327,7 +327,7 @@
         <div class="box frontend" data-arch="frontend" role="button" tabindex="0" aria-pressed="false">Frontend<br>Next.js</div>
         <div class="box backend" data-arch="backend" role="button" tabindex="0" aria-pressed="false">Backend<br>Express</div>
         <div class="box db" data-arch="db" role="button" tabindex="0" aria-pressed="false">PostgreSQL</div>
-        <div class="box tests" data-arch="tests" role="button" tabindex="0" aria-pressed="false">Cypress<br>E2E + API</div>
+        <div class="box tests" data-arch="tests" role="button" tabindex="0" aria-pressed="false">Cypress +<br>Playwright</div>
         <div class="box mcp" data-arch="mcp" role="button" tabindex="0" aria-pressed="false">MCP Server<br>run_tests</div>
         <div class="box agent" data-arch="agent" role="button" tabindex="0" aria-pressed="false">Agente<br>Menu</div>
       </div>
@@ -347,9 +347,9 @@
         <div class="responsabilidades"><strong>Responsável por:</strong> tabela de usuários (id, nome, email, senha hash, idade, ativo), integridade dos dados e suporte às consultas da API.</div>
       </div>
       <div id="arch-detail-tests" class="arch-detail tests" aria-hidden="true">
-        <h3>Cypress (E2E + API)</h3>
-        <p>Testes automatizados organizados em pastas: auth, api, admin, ui, performance. Usam page objects e helpers compartilhados.</p>
-        <div class="responsabilidades"><strong>Responsável por:</strong> validar fluxos de registro, login, logout, healthcheck, criação de usuários via API, dashboard admin (editar idade, validação, inativo, filtro, exclusão), elementos da UI e performance (TICTAC: load da página, health, form visível, dashboard após login); aceitar dados de imersão via variáveis de ambiente (CYPRESS_*).</div>
+        <h3>Cypress + Playwright (E2E + API)</h3>
+        <p>Duas suítes de testes em paralelo: Cypress e Playwright cobrindo auth, api, admin, ui e performance. Page objects, helpers e specs organizados por cenário.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> fluxos de registro, login, logout, healthcheck, API, dashboard admin (editar idade, validação 18-80, inativo, filtro, exclusão), UI e performance (TICTAC). Pipeline CI/CD: lint → build → testes → report.</div>
       </div>
       <div id="arch-detail-mcp" class="arch-detail mcp" aria-hidden="true">
         <h3>MCP Server (run_tests)</h3>
@@ -489,6 +489,8 @@
     <div class="cta">
       <p>Projeto open-source: documentação e código no repositório.</p>
       <a href="https://github.com/Wesley-Gomes93/qa-lab" id="repo-link" target="_blank" rel="noopener">Ver repositório GitHub →</a>
+      <span style="margin: 0 0.5rem;">|</span>
+      <a href="https://github.com/Wesley-Gomes93/qa-lab/actions" target="_blank" rel="noopener" style="color: var(--accent);">Ver Pipeline CI/CD →</a>
     </div>
   </div>
   <script>

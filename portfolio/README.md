@@ -1,6 +1,17 @@
- # Meu portfólio
+# Meu portfólio
 
 Portfólio pessoal em HTML/CSS estático, com destaque para o QA Lab.
+
+## Screenshot da pipeline
+
+Para exibir o print da pipeline no portfolio:
+
+1. Acesse https://github.com/Wesley-Gomes93/qa-lab/actions
+2. Abra um run que passou (verde)
+3. Faça um screenshot mostrando lint, build, tests, e2e, report
+4. Salve em `portfolio/images/pipeline-verde.png`
+
+Se o arquivo não existir, o portfolio mostra uma mensagem alternativa.
 
 ## Deploy na Vercel
 
@@ -34,7 +45,7 @@ Siga as instruções no terminal e faça login se solicitado.
 
 Edite `index.html` e ajuste:
 
-- **Links do GitHub:** substitua `wesley-gomes93` pelo seu usuário real
-- **LinkedIn:** substitua `wesley-gomes93` pela URL do seu perfil
-- **E-mail:** troque `seu-email@exemplo.com` pelo seu e-mail
+- **GitHub:** já configurado para `Wesley-Gomes93/qa-lab`
+- **LinkedIn:** já configurado para `wesley-gomes93`
+- **E-mail:** troque `seu-email@exemplo.com` pelo seu e-mail real
 - **Nome e texto:** adapte a seção "Sobre" e "Hero" ao seu gosto
