@@ -6,6 +6,6 @@ test.describe("Login como Admin", () => {
     await loginAsAdmin(page);
 
     await expect(page.getByText("(Admin)")).toBeVisible();
-    await expect(page.getByText("Todos os usuários")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Todos os usuários" })).toBeVisible();
   });
 });
