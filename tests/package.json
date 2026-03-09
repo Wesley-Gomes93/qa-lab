@@ -5,9 +5,12 @@
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test": "cypress run"
+    "test": "cypress run",
+    "test:report": "cypress run && node scripts/report-to-api.js",
+    "report-to-api": "node scripts/report-to-api.js"
   },
   "devDependencies": {
-    "cypress": "^15.11.0"
+    "cypress": "^15.11.0",
+    "cypress-mochawesome-reporter": "^3.8.4"
   }
 }

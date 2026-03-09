@@ -1,8 +1,9 @@
 /**
  * E2E: Alteração de status de usuário para inativo.
+ * Usa 1ª linha não-admin (índice 1) em vez de id fixo.
  */
 const Playground = require('../../pages/PlaygroundPage');
-const { ensureAdminTestUsers, ADMIN_EMAIL, ADMIN_PASSWORD } = require('../../support/helpers');
+const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, getUserRow, ADMIN_EMAIL, ADMIN_PASSWORD } = require('../../support/helpers');
 
 describe('Admin Dashboard - Status inativo', () => {
   before(() => {
@@ -16,13 +17,14 @@ describe('Admin Dashboard - Status inativo', () => {
     Playground.clickLogin();
     cy.url().should('include', '/dashboard');
     cy.get('[data-testid="filter-users"]').should('be.visible');
+    waitForDashboardUsers();
   });
 
   it('altera status de um usuário para inativo', () => {
-    cy.get('[data-testid="btn-edit-2"]').click();
-    cy.get('[data-testid="modal-edit-ativo"]').uncheck();
+    clickEditOnRow(1);
+    cy.get('[data-testid="modal-edit-ativo"]').uncheck({ force: true });
     cy.get('[data-testid="modal-edit-save"]').click();
     cy.get('[data-testid="modal-edit-idade"]').should('not.exist');
-    cy.get('[data-testid="row-user-2"]').contains('Não');
+    getUserRow(1).contains('Não');
   });
 });

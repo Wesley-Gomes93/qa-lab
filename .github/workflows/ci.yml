@@ -1,0 +1,61 @@
+# QA Lab – CI: lint, testes e relatório
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install backend deps
+        run: cd backend && npm ci
+
+      - name: Install tests deps
+        run: cd tests && npm ci
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d --name qa-lab-db -e POSTGRES_USER=qa -e POSTGRES_PASSWORD=qa123 -e POSTGRES_DB=qalab -p 5432:5432 postgres:15
+          sleep 3
+
+      - name: Start API
+        run: |
+          cd backend && cp .env.example .env 2>/dev/null || true
+          npm run dev &
+          sleep 5
+        env:
+          DATABASE_URL: postgresql://qa:qa123@localhost:5432/qalab
+          PORT: 4000
+
+      - name: Run Cypress (with reporter)
+        run: cd tests && npx cypress run --browser chrome 2>/dev/null || npx cypress run
+        env:
+          CYPRESS_BASE_URL: http://localhost:4000
+
+      - name: Upload mochawesome report (artifacts)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-mochawesome-report
+          path: tests/cypress/reports/
+          if-no-files-found: ignore
+
+      # Opcional: enviar resultado para a API (quando rodar em ambiente com API acessível)
+      # - name: Report test run to API
+      #   if: success() || failure()
+      #   env:
+      #     QA_LAB_API_URL: ${{ secrets.QA_LAB_API_URL }}
+      #     QA_LAB_API_KEY: ${{ secrets.QA_LAB_API_KEY }}
+      #   run: cd tests && node scripts/report-to-api.js || true

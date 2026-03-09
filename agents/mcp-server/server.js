@@ -59,7 +59,6 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
   if (editIdade != null && editIdade >= 18 && editIdade <= 80) env.CYPRESS_EDIT_IDADE = String(editIdade);
 
   return new Promise((resolve) => {
-
     const args = spec
       ? ["cypress", "run", "--spec", spec]
       : ["test"];
@@ -67,13 +66,31 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
 
     const child = spawn(cmd, args, {
       cwd: testsDir,
-      stdio: "inherit",
+      stdio: ["inherit", "pipe", "pipe"],
       shell: process.platform === "win32",
       env,
     });
 
+    let stdout = "";
+    let stderr = "";
+    if (child.stdout) {
+      child.stdout.on("data", (d) => {
+        const s = d.toString();
+        stdout += s;
+        process.stdout.write(s);
+      });
+    }
+    if (child.stderr) {
+      child.stderr.on("data", (d) => {
+        const s = d.toString();
+        stderr += s;
+        process.stderr.write(s);
+      });
+    }
+
     child.on("close", (code) => {
-      resolve({ code: code ?? 1 });
+      const runOutput = [stdout, stderr].filter(Boolean).join("\n").trim();
+      resolve({ code: code ?? 1, runOutput: runOutput || undefined });
     });
   });
 }
@@ -102,11 +119,12 @@ server.registerTool(
       status: z.enum(["passed", "failed"]),
       message: z.string(),
       exitCode: z.number(),
+      runOutput: z.string().optional().describe("Output do Cypress quando falhou (para analyze_failures)."),
     }),
   },
   async ({ suite, spec: specPath, registerName, registerEmail, registerPassword, editIdade }) => {
     const suiteParam = specPath ? undefined : (suite || "all");
-    const { code } = await runCypressTests({
+    const { code, runOutput } = await runCypressTests({
       suite: suiteParam,
       spec: specPath,
       registerName,
@@ -122,6 +140,7 @@ server.registerTool(
         ? "Testes Cypress executados com sucesso."
         : "Falha na execução dos testes Cypress. Verifique os logs.",
       exitCode: code,
+      ...(runOutput && !passed && { runOutput }),
     };
 
     return {
@@ -154,6 +173,282 @@ server.registerTool(
     return {
       content: [{ type: "text", text: summary }],
       structuredContent: { ok, total, summary, error },
+    };
+  }
+);
+
+// ----- AI QA Engineer tools (read PR, generate tests, analyze failures, create bug report)
+
+server.registerTool(
+  "read_pr",
+  {
+    title: "Ler Pull Request",
+    description: "Lê o diff ou contexto de um PR (URL ou texto do diff) e retorna resumo dos arquivos alterados para uso pelo Test Generator.",
+    inputSchema: z.object({
+      prUrl: z.string().optional().describe("URL do PR (ex: GitHub)."),
+      diffText: z.string().optional().describe("Texto do diff colado (git diff ou patch)."),
+    }),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      summary: z.string(),
+      filesChanged: z.array(z.string()).optional(),
+      error: z.string().optional(),
+    }),
+  },
+  async ({ prUrl, diffText }) => {
+    if (!prUrl && !diffText) {
+      return {
+        content: [{ type: "text", text: "Forneça prUrl ou diffText. Para integração real: use GitHub API ou git diff e passe o resultado aqui." }],
+        structuredContent: { ok: false, summary: "Missing prUrl or diffText", error: "Missing input" },
+      };
+    }
+    const summary = prUrl
+      ? `PR URL recebido: ${prUrl}. Para implementação completa: integre com GitHub API (GET /repos/:owner/:repo/pulls/:number/files) e retorne arquivos alterados.`
+      : `Diff recebido (${(diffText || "").split("\n").length} linhas). Para implementação completa: parse do diff para extrair arquivos e trechos alterados.`;
+    const filesChanged = diffText
+      ? [...new Set((diffText.match(/^diff --git a\/(.+?) b\//gm) || []).map((m) => m.replace(/^diff --git a\/(.+?) b\/.*/, "$1")))]
+      : [];
+    return {
+      content: [{ type: "text", text: summary }],
+      structuredContent: { ok: true, summary, filesChanged: filesChanged.length ? filesChanged : undefined },
+    };
+  }
+);
+
+server.registerTool(
+  "generate_tests",
+  {
+    title: "Gerar testes (sugestão)",
+    description: "Recebe contexto (código ou resumo de PR) e retorna sugestão de specs Cypress. Integre com LLM para geração real.",
+    inputSchema: z.object({
+      context: z.string().describe("Contexto: diff, arquivo de código ou descrição do fluxo a testar."),
+      target: z.enum(["e2e", "api"]).optional().describe("Alvo: e2e (Cypress) ou api."),
+    }),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      suggestion: z.string(),
+      suggestedSpec: z.string().optional(),
+      error: z.string().optional(),
+    }),
+  },
+  async ({ context, target = "e2e" }) => {
+    const suggestion = `Contexto recebido (${context.length} chars). Para gerar testes de verdade: envie 'context' para um LLM com prompt tipo "Gere um spec Cypress para: ..." e salve o resultado em tests/cypress/e2e/.\nTarget: ${target}.`;
+    return {
+      content: [{ type: "text", text: suggestion }],
+      structuredContent: { ok: true, suggestion, suggestedSpec: undefined },
+    };
+  }
+);
+
+/** Parse Cypress/Mocha output to extract failures (spec, title, message, selector). */
+function parseCypressFailures(runOutput) {
+  const failures = [];
+  const lines = runOutput.split("\n");
+
+  // AssertionError: Timed out retrying... Expected to find element: `[data-testid="btn-edit-2"]`, but never found it.
+  const elementNotFoundRe = /Expected to find element:\s*`([^`]+)`,\s*but never found it/i;
+  const specFileRe = /at Context\.eval \(.*?\.\/(.+?)\)|Running:\s+(.+?)(?:\s+\(|\s*$)/;
+  const assertErrorRe = /AssertionError:\s*(.+)/;
+
+  let currentSpec = "";
+  let currentTitle = "";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const runningMatch = line.match(/Running:\s+(.+?)(?:\s+\(\d|$)/);
+    if (runningMatch) currentSpec = runningMatch[1].trim();
+
+    const specMatch = line.match(/^\s+(\d+\)\s+.+?)\s*$/);
+    if (specMatch && currentSpec) currentTitle = specMatch[1].trim();
+
+    const elemMatch = line.match(elementNotFoundRe);
+    if (elemMatch) {
+      const selector = elemMatch[1];
+      failures.push({
+        spec: currentSpec || "unknown",
+        title: currentTitle || "Element not found",
+        message: line.trim(),
+        selector,
+        possibleCause: `Elemento \`${selector}\` não encontrado. Possíveis causas: id dinâmico, elemento fora da view ou ainda não renderizado.`,
+        fixSuggestion: "use_selectors_por_posição_ou_prefixo",
+      });
+    }
+
+    const assertMatch = line.match(assertErrorRe);
+    if (assertMatch && failures.length === 0) {
+      const msg = assertMatch[1].trim();
+      const elemFromMsg = msg.match(elementNotFoundRe);
+      if (elemFromMsg) continue;
+      failures.push({
+        spec: currentSpec || "unknown",
+        title: currentTitle || "Assertion failed",
+        message: msg,
+        possibleCause: "Erro de asserção. Verifique o valor esperado e o estado do DOM.",
+      });
+    }
+  }
+
+  if (failures.length === 0 && /fail|error|AssertionError/i.test(runOutput)) {
+    failures.push({
+      spec: "unknown",
+      title: "Falha detectada",
+      message: lines.filter((l) => /fail|error|Assertion/i.test(l)).slice(0, 3).join(" "),
+      possibleCause: "Verifique o stack trace e o spec indicado.",
+    });
+  }
+  return failures;
+}
+
+server.registerTool(
+  "analyze_failures",
+  {
+    title: "Analisar falhas de testes",
+    description: "Recebe o output do Cypress e retorna análise estruturada (spec, assertion, seletor, possível causa).",
+    inputSchema: z.object({
+      runOutput: z.string().describe("Saída do Cypress ou resumo das falhas (stack trace, mensagens)."),
+    }),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      summary: z.string(),
+      failures: z.array(z.object({
+        spec: z.string().optional(),
+        title: z.string().optional(),
+        message: z.string().optional(),
+        selector: z.string().optional(),
+        possibleCause: z.string().optional(),
+        fixSuggestion: z.string().optional(),
+      })).optional(),
+      error: z.string().optional(),
+    }),
+  },
+  async ({ runOutput }) => {
+    const failures = parseCypressFailures(runOutput || "");
+    const summary = failures.length
+      ? `Encontradas ${failures.length} falha(s). Use suggest_fix para obter correção sugerida.`
+      : "Nenhuma falha estruturada detectada no output.";
+    return {
+      content: [{ type: "text", text: summary + "\n\n" + JSON.stringify(failures, null, 2) }],
+      structuredContent: { ok: true, summary, failures: failures.length ? failures : undefined },
+    };
+  }
+);
+
+server.registerTool(
+  "suggest_fix",
+  {
+    title: "Sugerir correção para falhas de teste",
+    description: "Recebe análise de falhas e opcionalmente o conteúdo do spec; retorna patch ou instruções para corrigir.",
+    inputSchema: z.object({
+      analysis: z.union([
+        z.string().describe("Output bruto do Cypress ou JSON string da análise."),
+        z.object({
+          failures: z.array(z.object({
+            spec: z.string().optional(),
+            selector: z.string().optional(),
+            message: z.string().optional(),
+            fixSuggestion: z.string().optional(),
+          })),
+        }),
+      ]).describe("Resultado de analyze_failures ou runOutput."),
+      specContent: z.string().optional().describe("Conteúdo do arquivo de spec para aplicar sugestão contextual."),
+    }),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      suggestions: z.array(z.object({
+        spec: z.string().optional(),
+        description: z.string(),
+        patch: z.string().optional(),
+        explanation: z.string().optional(),
+      })),
+      error: z.string().optional(),
+    }),
+  },
+  async ({ analysis, specContent }) => {
+    let failures = [];
+    if (typeof analysis === "string") {
+      try {
+        const parsed = JSON.parse(analysis);
+        failures = parsed.failures || [];
+      } catch {
+        failures = parseCypressFailures(analysis);
+      }
+    } else if (analysis?.failures) {
+      failures = analysis.failures;
+    }
+
+    const suggestions = [];
+    for (const f of failures) {
+      const selector = f.selector;
+      const spec = f.spec || "unknown";
+
+      if (selector && /data-testid=["']btn-edit-\d+["']/.test(selector)) {
+        const idMatch = selector.match(/btn-edit-(\d+)/);
+        const tip = idMatch
+          ? `Substitua \`[data-testid="btn-edit-${idMatch[1]}"]\` por seleção por posição na tabela.`
+          : "Use seleção por posição (clickEditOnRow, getUserRow) em vez de id fixo.";
+        suggestions.push({
+          spec,
+          description: "Elemento btn-edit-X não encontrado — id dinâmico ou usuário inexistente.",
+          patch: specContent && /btn-edit-\d+|get\(.*testid.*btn-edit/.test(specContent)
+            ? `// 1. Adicione aos requires: clickEditOnRow, getUserRow (de support/helpers)
+// 2. Substitua cy.get('[data-testid="btn-edit-2"]').click() por:
+clickEditOnRow(1);  // 1 = primeira linha não-admin, 0 = admin
+// 3. Para asserts na linha: getUserRow(1).contains('valor')`
+            : tip,
+          explanation: "IDs fixos (btn-edit-2, btn-edit-3) quebram quando a ordem ou existência de usuários muda. Use helpers clickEditOnRow(index) e getUserRow(index).",
+        });
+      } else if (selector && /data-testid=["']btn-delete-\d+["']/.test(selector)) {
+        suggestions.push({
+          spec,
+          description: "Elemento btn-delete-X não encontrado.",
+          patch: `// Use seleção por posição: cy.get('tbody tr').eq(index).within(() => cy.get('[data-testid^="btn-delete-"]').click())`,
+          explanation: "Evite ids fixos em btn-delete. Prefira [data-testid^=\"btn-delete-\"] dentro da linha.",
+        });
+      } else if (selector) {
+        suggestions.push({
+          spec,
+          description: `Elemento não encontrado: ${selector}`,
+          patch: `// Tente: [data-testid^="prefixo"] para match parcial, ou { force: true } se elemento estiver coberto por overlay.`,
+          explanation: "Elemento pode não existir, estar oculto ou ter ID/atributo dinâmico.",
+        });
+      } else {
+        suggestions.push({
+          spec,
+          description: f.message || "Falha detectada",
+          patch: "Revise o spec e a stack trace. Considere aumentar timeout ou adicionar cy.wait/cy.intercept.",
+          explanation: f.possibleCause || "Causa desconhecida.",
+        });
+      }
+    }
+
+    return {
+      content: [{ type: "text", text: JSON.stringify({ ok: true, suggestions }, null, 2) }],
+      structuredContent: { ok: true, suggestions },
+    };
+  }
+);
+
+server.registerTool(
+  "create_bug_report",
+  {
+    title: "Criar relatório de bug",
+    description: "Gera um bug report (texto/estrutura) a partir da análise de falhas. Integre com LLM para descrição rica.",
+    inputSchema: z.object({
+      analysisSummary: z.string().describe("Resumo da análise de falhas (saída de analyze_failures)."),
+      title: z.string().optional().describe("Título sugerido do bug."),
+    }),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      report: z.string(),
+      title: z.string().optional(),
+      error: z.string().optional(),
+    }),
+  },
+  async ({ analysisSummary, title }) => {
+    const report = `## Bug Report\n\n**Título:** ${title || "Falha em testes automatizados"}\n\n**Resumo da análise:**\n${analysisSummary}\n\n---\n*Para relatório rico: envie analysisSummary + contexto para um LLM e formate como issue (steps to reproduce, expected vs actual).*`;
+    return {
+      content: [{ type: "text", text: report }],
+      structuredContent: { ok: true, report, title: title || "Falha em testes automatizados" },
     };
   }
 );

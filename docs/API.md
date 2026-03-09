@@ -29,17 +29,30 @@ API REST do QA Lab: registro, login, gestão de usuários (admin) e healthcheck.
 
 ## Endpoints
 
-### 1. Healthcheck
+### 1. Healthcheck (detalhado)
 
-Verifica se a API está no ar.
+Verifica se a API está no ar, o banco e métricas agregadas.
 
 **`GET /health`**
 
 - **Auth:** não.
 - **Resposta:** `200 OK`
   ```json
-  { "status": "ok" }
+  {
+    "status": "ok",
+    "uptime": 123.45,
+    "db": "ok",
+    "metrics": {
+      "apiResponseTimeMs": 12,
+      "apiLastRequestMs": 8,
+      "authSuccessRate": 0.85,
+      "authTotalAttempts": 20,
+      "testFailureRate": 0.1,
+      "testRunsSampled": 50
+    }
+  }
   ```
+  `db` pode ser `"ok"` ou `"error"`. Métricas vêm de logs em memória (API, auth) e da tabela `test_runs` (últimos 100 runs para testFailureRate).
 
 ---
 
@@ -198,6 +211,71 @@ Remove um usuário. Apenas admin. **O usuário admin (e-mail fixo do seed) não 
   - `400 Bad Request` – ID inválido.
   - `403 Forbidden` – não admin ou tentativa de excluir o admin. Ex.: `{ "error": "Admin não pode ser excluído" }`.
   - `404 Not Found` – usuário não encontrado.
+
+---
+
+## API de observabilidade e histórico de testes
+
+### GET /api/metrics
+
+Retorna métricas em memória (API response time, auth success rate). Apenas admin.
+
+- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Resposta:** `200 OK`
+  ```json
+  {
+    "api": { "avgMs": 15, "lastMs": 12, "sampleCount": 50 },
+    "auth": { "rate": 0.9, "success": 18, "failure": 2, "total": 20 }
+  }
+  ```
+
+### GET /api/test-runs
+
+Lista o histórico de execuções de testes (paginação). Apenas admin.
+
+- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Query:** `limit` (default 50, max 100), `offset` (default 0), `status` (opcional: `passed` ou `failed`).
+- **Resposta:** `200 OK`
+  ```json
+  {
+    "items": [
+      {
+        "id": 1,
+        "suite": "all",
+        "spec": null,
+        "status": "passed",
+        "duration_ms": 45000,
+        "total_tests": 18,
+        "passed": 18,
+        "failed": 0,
+        "source": "cypress",
+        "reported_at": "2025-03-08T12:00:00.000Z"
+      }
+    ],
+    "total": 1,
+    "limit": 50,
+    "offset": 0
+  }
+  ```
+
+### POST /api/test-runs
+
+Registra o resultado de uma execução de testes (Cypress, CI ou agente). Admin ou `X-Api-Key`.
+
+- **Auth:** `Authorization: Bearer <ADMIN_TOKEN>` ou header `X-Api-Key: <QA_LAB_API_KEY>` (se definido no backend).
+- **Body (JSON):**
+  | Campo        | Tipo   | Obrigatório | Descrição                          |
+  |-------------|--------|-------------|------------------------------------|
+  | `status`    | string | sim         | `"passed"` ou `"failed"`           |
+  | `suite`     | string | não         | Ex.: `"all"`, `"auth"`             |
+  | `spec`      | string | não         | Caminho do spec                    |
+  | `duration_ms` | number | não       | Duração em ms                      |
+  | `total_tests` | number | não       | Total de testes                    |
+  | `passed`    | number | não         | Quantidade passou                  |
+  | `failed`    | number | não         | Quantidade falhou                  |
+  | `source`    | string | não         | `"cypress"`, `"ci"`, `"agent"`, etc. (default `"manual"`) |
+  | `metadata`  | object | não         | JSON livre (ex.: `report_url`)      |
+- **Resposta:** `201 Created` com o objeto do run criado (incluindo `id` e `reported_at`).
 
 ---
 

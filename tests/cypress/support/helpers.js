@@ -44,6 +44,35 @@ function ensureAdminTestUsers() {
   });
 }
 
+/** Aguarda a tabela de usuários carregar no dashboard (evita clicar antes dos dados aparecerem). */
+function waitForDashboardUsers() {
+  cy.get('tbody tr', { timeout: 10000 }).should('have.length.at.least', 2);
+}
+
+/**
+ * Clica em Editar na linha da tabela por índice (0 = admin, 1 = 1º não-admin, 2 = 2º não-admin).
+ * Usa posição em vez de id fixo — evita quebra quando ids mudam.
+ */
+function clickEditOnRow(index) {
+  cy.get('tbody tr').eq(index).within(() => {
+    cy.get('[data-testid^="btn-edit-"]').click();
+  });
+}
+
+/**
+ * Retorna a linha da tabela por índice para asserts.
+ */
+function getUserRow(index) {
+  return cy.get('tbody tr').eq(index);
+}
+
+/**
+ * Escolhe um índice aleatório entre min e max (inclusive) para testes que podem usar qualquer usuário.
+ */
+function randomRowIndex(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 module.exports = {
   FRONTEND_URL,
   API_BASE,
@@ -54,4 +83,8 @@ module.exports = {
   randomEmail,
   randomName,
   ensureAdminTestUsers,
+  waitForDashboardUsers,
+  clickEditOnRow,
+  getUserRow,
+  randomRowIndex,
 };

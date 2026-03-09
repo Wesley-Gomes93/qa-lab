@@ -6,7 +6,8 @@
   "scripts": {
     "start:mcp": "node mcp-server/server.js",
     "agent": "node qa-agent.js",
-    "agent:run-tests": "node qa-agent.js run_tests"
+    "agent:run-tests": "node qa-agent.js run_tests",
+    "agent:analyze-failures": "node failure-analyzer-agent.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",

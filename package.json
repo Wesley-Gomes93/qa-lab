@@ -4,7 +4,18 @@
   "private": true,
   "description": "Playground full-stack para testes e automação (MCP + agente)",
   "scripts": {
+    "db:up": "cd database && docker-compose up -d",
+    "db:down": "cd database && docker-compose down",
+    "backend:install": "cd backend && npm install",
+    "backend:dev": "cd backend && npm run dev",
+    "frontend:install": "cd frontend && npm install",
+    "frontend:dev": "cd frontend && npm run dev",
+    "tests:install": "cd tests && npm install",
+    "tests:run": "cd tests && npm test",
+    "tests:report": "cd tests && npm run test:report",
+    "agents:install": "cd agents && npm install",
+    "agent": "cd agents && node qa-agent.js",
     "agent:run-tests": "cd agents && node qa-agent.js run_tests",
-    "agent": "cd agents && node qa-agent.js"
+    "agent:analyze-failures": "cd agents && node failure-analyzer-agent.js"
   }
 }

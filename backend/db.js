@@ -45,6 +45,22 @@ async function initDb() {
         if (e.code !== "42701") throw e;
       }
     }
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS test_runs (
+        id SERIAL PRIMARY KEY,
+        suite VARCHAR(100),
+        spec VARCHAR(512),
+        status VARCHAR(20) NOT NULL,
+        duration_ms INTEGER,
+        total_tests INTEGER,
+        passed INTEGER,
+        failed INTEGER,
+        source VARCHAR(50) DEFAULT 'manual',
+        metadata JSONB,
+        reported_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
   } finally {
     client.release();
   }

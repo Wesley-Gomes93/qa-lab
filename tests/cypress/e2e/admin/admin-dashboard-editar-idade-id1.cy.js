@@ -1,8 +1,9 @@
 /**
- * E2E: Edição de idade do usuário id 1 (valor entre 18 e 80).
+ * E2E: Edição de idade do admin (1ª linha da tabela).
+ * Usa posição (índice 0) em vez de id fixo.
  */
 const Playground = require('../../pages/PlaygroundPage');
-const { ensureAdminTestUsers, ADMIN_EMAIL, ADMIN_PASSWORD, getEditIdade } = require('../../support/helpers');
+const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, getUserRow, ADMIN_EMAIL, ADMIN_PASSWORD, getEditIdade } = require('../../support/helpers');
 
 describe('Admin Dashboard - Editar idade usuário id 1', () => {
   before(() => {
@@ -16,14 +17,15 @@ describe('Admin Dashboard - Editar idade usuário id 1', () => {
     Playground.clickLogin();
     cy.url().should('include', '/dashboard');
     cy.get('[data-testid="filter-users"]').should('be.visible');
+    waitForDashboardUsers();
   });
 
-  it('edita idade do usuário id 1 para valor entre 18 e 80', () => {
+  it('edita idade do usuário id 1 (admin) para valor entre 18 e 80', () => {
     const novaIdade = getEditIdade();
-    cy.get('[data-testid="btn-edit-1"]').click();
-    cy.get('[data-testid="modal-edit-idade"]').clear().type(String(novaIdade));
+    clickEditOnRow(0);
+    cy.get('[data-testid="modal-edit-idade"]').clear({ force: true }).type(String(novaIdade), { force: true });
     cy.get('[data-testid="modal-edit-save"]').click();
     cy.get('[data-testid="modal-edit-idade"]').should('not.exist');
-    cy.get('[data-testid="row-user-1"]').contains(String(novaIdade));
+    getUserRow(0).contains(String(novaIdade));
   });
 });

@@ -4,8 +4,24 @@ Esta pasta contém o **servidor MCP** (Model Context Protocol) e o **agente de Q
 
 ## Estrutura
 
-- **`mcp-server/`** – Servidor MCP que expõe ferramentas (tools). Hoje: `run_tests` (executa `npm test` na pasta `tests/` do projeto).
-- **`qa-agent.js`** – Cliente/agente que conecta ao servidor via stdio, lista as ferramentas e pode invocar uma (ex.: `run_tests`).
+- **`mcp-server/`** – Servidor MCP que expõe ferramentas (tools).
+- **`qa-agent.js`** – Cliente/agente com menu interativo para rodar testes (run_tests).
+- **`failure-analyzer-agent.js`** – **AI QA Engineer**: roda testes, identifica falhas e sugere correções (run_tests → analyze_failures → suggest_fix).
+- **`test-writer-agent/`** – (Evolução) Agente que usa `read_pr` + `generate_tests` para sugerir/gerar specs a partir de PR ou código.
+
+### Ferramentas MCP disponíveis
+
+| Tool | Descrição |
+|------|-----------|
+| `run_tests` | Executa Cypress; retorna status, exit code e **runOutput** quando falha (para analyze_failures). |
+| `get_users_summary` | Resumo dos usuários no banco (GET /users). |
+| `read_pr` | Lê diff ou URL de PR; retorna resumo/arquivos alterados. |
+| `generate_tests` | Recebe contexto e retorna sugestão de specs (stub para LLM). |
+| `analyze_failures` | Recebe output do Cypress e extrai falhas estruturadas (spec, seletor, causa). |
+| **`suggest_fix`** | **Nova**: recebe análise de falhas e retorna sugestões de correção (heurísticas para btn-edit-X, btn-delete-X, etc.). |
+| `create_bug_report` | Gera relatório de bug a partir da análise. |
+
+Fluxo **AI QA Engineer**: run_tests → (se falhou) analyze_failures → suggest_fix → saída com análise + correções sugeridas.
 
 ## Pré-requisitos
 
@@ -64,7 +80,20 @@ No menu você pode:
 
 O exit code do processo reflete o resultado dos testes (0 = sucesso, 1 = falha).
 
-### 3. Apenas o servidor MCP (uso por outro cliente)
+### 3. AI QA Engineer – Identificar falhas e sugerir correções
+
+O **Failure Analyzer Agent** roda os testes e, se falharem, analisa o output e sugere correções:
+
+```bash
+cd agents
+npm run agent:analyze-failures           # roda todos os testes
+npm run agent:analyze-failures admin    # roda só a suíte admin
+node failure-analyzer-agent.js cypress/e2e/admin/admin-dashboard-editar-idade-id2.cy.js  # spec específico
+```
+
+Saída: análise estruturada (spec, mensagem, causa) + sugestões de patch (ex.: trocar `btn-edit-2` por seleção por posição).
+
+### 4. Apenas o servidor MCP (uso por outro cliente)
 
 Se quiser apenas subir o servidor (por exemplo, para usar com o Cursor ou outro cliente MCP):
 

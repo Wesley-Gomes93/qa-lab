@@ -132,16 +132,18 @@ function getFormLogin() {
  * Preenche o formulário de registro (campos opcionais).
  * @param {Object} data - { name?, email?, password? }
  */
+const TYPE_OPTS = { force: true };
+
 function fillRegisterForm(data = {}) {
   getFormRegister().should('be.visible');
   if (data.name != null) {
-    cy.get(selectors.inputName).clear().type(String(data.name));
+    cy.get(selectors.inputName).clear(TYPE_OPTS).type(String(data.name), TYPE_OPTS);
   }
   if (data.email != null) {
-    cy.get(selectors.inputRegisterEmail).clear().type(String(data.email));
+    cy.get(selectors.inputRegisterEmail).clear(TYPE_OPTS).type(String(data.email), TYPE_OPTS);
   }
   if (data.password != null) {
-    cy.get(selectors.inputRegisterPassword).clear().type(String(data.password));
+    cy.get(selectors.inputRegisterPassword).clear(TYPE_OPTS).type(String(data.password), TYPE_OPTS);
   }
 }
 
@@ -159,10 +161,10 @@ function clickRegister() {
 function fillLoginForm(data = {}) {
   getFormLogin().should('be.visible');
   if (data.email != null) {
-    cy.get(selectors.inputLoginEmail).clear().type(String(data.email));
+    cy.get(selectors.inputLoginEmail).clear(TYPE_OPTS).type(String(data.email), TYPE_OPTS);
   }
   if (data.password != null) {
-    cy.get(selectors.inputLoginPassword).clear().type(String(data.password));
+    cy.get(selectors.inputLoginPassword).clear(TYPE_OPTS).type(String(data.password), TYPE_OPTS);
   }
 }
 

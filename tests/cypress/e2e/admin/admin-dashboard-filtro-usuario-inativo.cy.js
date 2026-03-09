@@ -1,29 +1,13 @@
 /**
  * E2E: Pesquisa (filtro) por usuário inativo.
+ * Usa 1ª linha não-admin (índice 1) e captura o nome da célula para filtrar.
  */
 const Playground = require('../../pages/PlaygroundPage');
-const { ensureAdminTestUsers, ADMIN_EMAIL, ADMIN_PASSWORD, API_BASE } = require('../../support/helpers');
+const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, getUserRow, ADMIN_EMAIL, ADMIN_PASSWORD } = require('../../support/helpers');
 
 describe('Admin Dashboard - Filtro usuário inativo', () => {
-  let user2Name;
-
   before(() => {
     ensureAdminTestUsers();
-    cy.request({
-      method: 'POST',
-      url: `${API_BASE}/auth/login`,
-      body: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
-    }).then((loginRes) => {
-      const token = loginRes.body.token;
-      cy.request({
-        method: 'GET',
-        url: `${API_BASE}/users`,
-        headers: { Authorization: `Bearer ${token}` },
-      }).then((usersRes) => {
-        const user2 = usersRes.body.find((u) => u.id === 2);
-        if (user2) user2Name = user2.name;
-      });
-    });
   });
 
   beforeEach(() => {
@@ -33,19 +17,23 @@ describe('Admin Dashboard - Filtro usuário inativo', () => {
     Playground.clickLogin();
     cy.url().should('include', '/dashboard');
     cy.get('[data-testid="filter-users"]').should('be.visible');
+    waitForDashboardUsers();
   });
 
   it('pesquisa usuário inativo pelo filtro', () => {
-    cy.get('[data-testid="btn-edit-2"]').click();
-    cy.get('[data-testid="modal-edit-ativo"]').uncheck();
+    clickEditOnRow(1);
+    cy.get('[data-testid="modal-edit-ativo"]').uncheck({ force: true });
     cy.get('[data-testid="modal-edit-save"]').click();
     cy.get('[data-testid="modal-edit-idade"]').should('not.exist');
 
-    const termo = user2Name && user2Name.length > 0 ? user2Name : '2';
-    cy.get('[data-testid="filter-users"]').clear().type(termo);
-    cy.get('tbody tr').should('have.length.at.least', 1);
-    cy.get('[data-testid="row-user-2"]').within(() => {
-      cy.contains('Não');
+    getUserRow(1).then(($row) => {
+      const name = $row.find('td').eq(1).text().trim();
+      const termo = name || 'User';
+      cy.get('[data-testid="filter-users"]').clear({ force: true }).type(termo, { force: true });
+      cy.get('tbody tr').should('have.length.at.least', 1);
+      cy.get('tbody tr').first().within(() => {
+        cy.contains('Não');
+      });
     });
   });
 });

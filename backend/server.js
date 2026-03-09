@@ -3,6 +3,9 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const { pool, initDb, ADMIN_EMAIL } = require("./db");
+const logger = require("./logger");
+const metrics = require("./metrics");
+const testRunsRouter = require("./routes/test-runs");
 
 const app = express();
 
@@ -25,8 +28,62 @@ function isAdminAuth(req) {
 app.use(cors());
 app.use(express.json());
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+const requestId = () => Math.random().toString(36).slice(2, 10);
+app.use((req, res, next) => {
+  const start = Date.now();
+  req.requestId = requestId();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    metrics.recordResponseTime(duration);
+    logger.info("request", {
+      requestId: req.requestId,
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      durationMs: duration,
+    });
+  });
+  next();
+});
+
+app.get("/health", async (req, res) => {
+  let dbStatus = "unknown";
+  let testFailureRate = null;
+  try {
+    await pool.query("SELECT 1");
+    dbStatus = "ok";
+    const r = await pool.query(
+      "SELECT status FROM test_runs ORDER BY reported_at DESC LIMIT 100"
+    );
+    if (r.rows.length > 0) {
+      const failed = r.rows.filter((x) => x.status === "failed").length;
+      testFailureRate = {
+        rate: Math.round((failed / r.rows.length) * 100) / 100,
+        totalRuns: r.rows.length,
+        failed,
+      };
+    }
+  } catch (e) {
+    dbStatus = "error";
+    logger.warn("Health check DB failed", { error: e.message });
+  }
+
+  const apiStats = metrics.getApiResponseTimeStats();
+  const authRate = metrics.getAuthSuccessRate();
+
+  res.json({
+    status: "ok",
+    uptime: process.uptime(),
+    db: dbStatus,
+    metrics: {
+      apiResponseTimeMs: apiStats.avgMs,
+      apiLastRequestMs: apiStats.lastMs,
+      authSuccessRate: authRate ? authRate.rate : null,
+      authTotalAttempts: authRate ? authRate.total : 0,
+      testFailureRate: testFailureRate ? testFailureRate.rate : null,
+      testRunsSampled: testFailureRate ? testFailureRate.totalRuns : 0,
+    },
+  });
 });
 
 // Criar usuário (registro) — persiste no PostgreSQL
@@ -76,9 +133,11 @@ app.post("/auth/login", async (req, res) => {
   const user = result.rows[0];
 
   if (!user || user.password !== password) {
+    metrics.recordAuthFailure();
     return res.status(401).json({ error: "Credenciais inválidas" });
   }
 
+  metrics.recordAuthSuccess();
   const isAdmin = user.email === ADMIN_EMAIL;
 
   res.json({
@@ -195,15 +254,17 @@ app.delete("/users/:id", async (req, res) => {
   res.status(204).send();
 });
 
+app.use("/api", testRunsRouter);
+
 const PORT = process.env.PORT || 4000;
 
 initDb()
   .then(() => {
     app.listen(PORT, () => {
-      console.log("API rodando na porta", PORT);
+      logger.info("API rodando", { port: PORT });
     });
   })
   .catch((err) => {
-    console.error("Erro ao conectar no banco:", err.message);
+    logger.error("Erro ao conectar no banco", { error: err.message });
     process.exit(1);
   });
