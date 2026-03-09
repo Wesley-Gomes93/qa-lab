@@ -13,9 +13,12 @@
     "tests:install": "cd tests && npm install",
     "tests:run": "cd tests && npm test",
     "tests:report": "cd tests && npm run test:report",
+    "tests:clean-users": "node scripts/clean-test-users.js",
+    "tests:full": "npm run tests:clean-users && npm run tests:report",
     "agents:install": "cd agents && npm install",
     "agent": "cd agents && node qa-agent.js",
     "agent:run-tests": "cd agents && node qa-agent.js run_tests",
-    "agent:analyze-failures": "cd agents && node failure-analyzer-agent.js"
+    "agent:analyze-failures": "cd agents && node failure-analyzer-agent.js",
+    "agent:full": "npm run tests:clean-users && cd agents && node qa-agent.js run_tests"
   }
 }

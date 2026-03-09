@@ -229,6 +229,18 @@ Retorna métricas em memória (API response time, auth success rate). Apenas adm
   }
   ```
 
+### POST /api/clean-test-users
+
+Remove usuários com e-mail `@teste.com` (mantém o admin). Útil para limpar acúmulo de usuários de teste.
+
+- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Resposta:** `200 OK`
+  ```json
+  { "ok": true, "deleted": 42 }
+  ```
+
+---
+
 ### GET /api/test-runs
 
 Lista o histórico de execuções de testes (paginação). Apenas admin.

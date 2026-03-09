@@ -3,7 +3,7 @@
  * Usa 1ª linha não-admin (índice 1) e captura o nome da célula para filtrar.
  */
 const Playground = require('../../pages/PlaygroundPage');
-const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, getUserRow, ADMIN_EMAIL, ADMIN_PASSWORD } = require('../../support/helpers');
+const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, getUserRow, USERS_TABLE, ADMIN_EMAIL, ADMIN_PASSWORD } = require('../../support/helpers');
 
 describe('Admin Dashboard - Filtro usuário inativo', () => {
   before(() => {
@@ -30,8 +30,8 @@ describe('Admin Dashboard - Filtro usuário inativo', () => {
       const name = $row.find('td').eq(1).text().trim();
       const termo = name || 'User';
       cy.get('[data-testid="filter-users"]').clear({ force: true }).type(termo, { force: true });
-      cy.get('tbody tr').should('have.length.at.least', 1);
-      cy.get('tbody tr').first().within(() => {
+      cy.get(USERS_TABLE).should('have.length.at.least', 1);
+      cy.get(USERS_TABLE).first().within(() => {
         cy.contains('Não');
       });
     });

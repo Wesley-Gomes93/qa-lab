@@ -1,5 +1,5 @@
 const express = require("express");
-const { pool } = require("../db");
+const { pool, ADMIN_EMAIL } = require("../db");
 const logger = require("../logger");
 const metrics = require("../metrics");
 
@@ -121,6 +121,25 @@ router.get("/metrics", (req, res) => {
     return res.status(403).json({ error: "Acesso negado. Apenas admin." });
   }
   res.json(metrics.getMetrics());
+});
+
+// POST /api/clean-test-users — remove users with @teste.com email (keeps admin)
+router.post("/clean-test-users", async (req, res) => {
+  if (!isAdminAuth(req)) {
+    return res.status(403).json({ error: "Acesso negado. Apenas admin." });
+  }
+  try {
+    const r = await pool.query(
+      `DELETE FROM users WHERE email LIKE '%@teste.com' AND email != $1`,
+      [ADMIN_EMAIL]
+    );
+    const deleted = r.rowCount ?? 0;
+    logger.info("Clean test users", { deleted });
+    return res.json({ ok: true, deleted });
+  } catch (err) {
+    logger.error("Clean test users failed", { error: err.message });
+    throw err;
+  }
 });
 
 module.exports = router;

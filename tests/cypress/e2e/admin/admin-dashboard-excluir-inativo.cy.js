@@ -3,7 +3,7 @@
  * Cria um usuário próprio para exclusão e usa a última linha da tabela (evita quebrar outros specs).
  */
 const Playground = require('../../pages/PlaygroundPage');
-const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, ADMIN_EMAIL, ADMIN_PASSWORD, randomName, randomEmail, API_BASE } = require('../../support/helpers');
+const { ensureAdminTestUsers, waitForDashboardUsers, clickEditOnRow, USERS_TABLE, ADMIN_EMAIL, ADMIN_PASSWORD, randomName, randomEmail, API_BASE } = require('../../support/helpers');
 
 describe('Admin Dashboard - Excluir cadastro inativo', () => {
   before(() => {
@@ -28,18 +28,18 @@ describe('Admin Dashboard - Excluir cadastro inativo', () => {
 
   it('exclui um cadastro inativo', () => {
     cy.on('window:confirm', () => true);
-    cy.get('tbody tr').then(($rows) => {
+    cy.get(USERS_TABLE).then(($rows) => {
       const lastIndex = $rows.length - 1;
       clickEditOnRow(lastIndex);
       cy.get('[data-testid="modal-edit-ativo"]').uncheck({ force: true });
       cy.get('[data-testid="modal-edit-save"]').click();
       cy.get('[data-testid="modal-edit-idade"]').should('not.exist');
 
-      cy.get('tbody tr').eq(lastIndex).within(() => {
+      cy.get(USERS_TABLE).eq(lastIndex).within(() => {
         cy.contains('Não');
         cy.get('[data-testid^="btn-delete-"]').click();
       });
-      cy.get('tbody tr').should('have.length', lastIndex);
+      cy.get(USERS_TABLE).should('have.length', lastIndex);
     });
   });
 });

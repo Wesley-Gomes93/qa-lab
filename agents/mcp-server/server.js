@@ -177,6 +177,44 @@ server.registerTool(
   }
 );
 
+// ----- Limpeza de usuários de teste
+
+async function cleanTestUsers() {
+  const token = process.env.ADMIN_TOKEN || DEFAULT_ADMIN_TOKEN;
+  try {
+    const res = await fetch(`${API_BASE}/api/clean-test-users`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, deleted: 0, error: data.error || res.statusText };
+    return { ok: true, deleted: data.deleted ?? 0 };
+  } catch (err) {
+    return { ok: false, deleted: 0, error: err.message };
+  }
+}
+
+server.registerTool(
+  "clean_test_users",
+  {
+    title: "Limpar usuários de teste",
+    description: "Remove usuários com e-mail @teste.com do banco (mantém admin). Use antes de rodar testes.",
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      deleted: z.number(),
+      error: z.string().optional(),
+    }),
+  },
+  async () => {
+    const { ok, deleted, error } = await cleanTestUsers();
+    return {
+      content: [{ type: "text", text: ok ? `Usuários de teste removidos: ${deleted}` : `Erro: ${error}` }],
+      structuredContent: { ok, deleted: deleted ?? 0, error },
+    };
+  }
+);
+
 // ----- AI QA Engineer tools (read PR, generate tests, analyze failures, create bug report)
 
 server.registerTool(
@@ -403,6 +441,14 @@ clickEditOnRow(1);  // 1 = primeira linha não-admin, 0 = admin
           description: "Elemento btn-delete-X não encontrado.",
           patch: `// Use seleção por posição: cy.get('tbody tr').eq(index).within(() => cy.get('[data-testid^="btn-delete-"]').click())`,
           explanation: "Evite ids fixos em btn-delete. Prefira [data-testid^=\"btn-delete-\"] dentro da linha.",
+        });
+      } else if (/Too many elements found|Found '\d+', expected/.test(f.message || "")) {
+        suggestions.push({
+          spec,
+          description: "Too many elements found – seletor genérico ou tabela errada.",
+          patch: `// Escopo o seletor à tabela correta: use [data-testid="table-users"] tbody tr para a tabela de usuários.
+// Ou para contagem relativa: cy.get(SELECTOR).then($r => { const n = $r.length; ... .should('have.length', n - 1); })`,
+          explanation: "Seletor 'tbody tr' pode estar pegando várias tabelas ou a contagem fixa está errada (ex.: banco com muitos registros).",
         });
       } else if (selector) {
         suggestions.push({

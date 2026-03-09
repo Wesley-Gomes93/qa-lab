@@ -64,6 +64,8 @@ const SPEC_DESCRIPTIONS = {
   "admin/admin-dashboard-validacao-idade.cy.js": "Admin: mensagem quando idade fora do range 18–80",
   "api/api-health.cy.js": "API: healthcheck (status ok)",
   "api/api-users-creation.cy.js": "API: criar 2 usuários e verificar persistência",
+  "api/api-delete-user.cy.js": "API: excluir usuário via DELETE /users/:id",
+  "api/api-clean-test-users.cy.js": "API: limpar usuários de teste (POST /api/clean-test-users)",
   "auth/login-admin.cy.js": "Auth: login como admin e validar dashboard",
   "auth/logout.cy.js": "Auth: logout e voltar para a home",
   "auth/register-and-login.cy.js": "Auth: registrar usuário e fazer login",

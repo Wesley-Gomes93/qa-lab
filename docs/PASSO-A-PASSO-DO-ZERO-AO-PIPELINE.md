@@ -233,6 +233,18 @@ npm run agent:run-tests
 
 (O agente pode passar isso para a tool `run_tests`; os specs estão preparados para aceitar 201 ou 409 na reexecução.)
 
+### 3.5 Limpeza de usuários de teste (evitar acúmulo no banco)
+
+O banco acumula usuários com e-mail `@teste.com`. Para limpar antes dos testes:
+
+```bash
+npm run tests:clean-users      # limpa e exibe quantos foram removidos
+npm run tests:full             # limpa + roda todos os testes + envia relatório
+npm run agent:full             # limpa + menu interativo de testes
+```
+
+O **Failure Analyzer** (`npm run agent:analyze-failures`) já executa a limpeza automaticamente.
+
 ---
 
 ## Parte 4 – Dashboard (Usuários, Histórico, Métricas, Health)
@@ -351,9 +363,13 @@ npm run agent:run-tests
 | `npm run tests:install` | Instala deps dos testes |
 | `npm run tests:run` | Roda Cypress (sem enviar para API) |
 | `npm run tests:report` | Roda Cypress e envia resultado para o dashboard |
+| `npm run tests:clean-users` | Remove usuários @teste.com do banco (evita acúmulo) |
+| `npm run tests:full` | Limpa usuários + roda testes + envia relatório |
 | `npm run agents:install` | Instala deps dos agentes |
 | `npm run agent` | Lista tools do MCP |
 | `npm run agent:run-tests` | Menu interativo para rodar testes |
+| `npm run agent:full` | Limpa + menu interativo de testes |
+| `npm run agent:analyze-failures` | AI QA: roda testes, analisa falhas e sugere correções |
 
 ### Ordem do dia a dia
 

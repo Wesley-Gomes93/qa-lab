@@ -348,8 +348,8 @@
       </div>
       <div id="arch-detail-tests" class="arch-detail tests" aria-hidden="true">
         <h3>Cypress (E2E + API)</h3>
-        <p>Testes automatizados organizados em pastas: auth, api, admin, ui. Usam page objects e helpers compartilhados.</p>
-        <div class="responsabilidades"><strong>Responsável por:</strong> validar fluxos de registro, login, logout, healthcheck, criação de usuários via API, dashboard admin (editar idade, validação, inativo, filtro, exclusão) e elementos da UI; aceitar dados de imersão via variáveis de ambiente (CYPRESS_*).</div>
+        <p>Testes automatizados organizados em pastas: auth, api, admin, ui, performance. Usam page objects e helpers compartilhados.</p>
+        <div class="responsabilidades"><strong>Responsável por:</strong> validar fluxos de registro, login, logout, healthcheck, criação de usuários via API, dashboard admin (editar idade, validação, inativo, filtro, exclusão), elementos da UI e performance (TICTAC: load da página, health, form visível, dashboard após login); aceitar dados de imersão via variáveis de ambiente (CYPRESS_*).</div>
       </div>
       <div id="arch-detail-mcp" class="arch-detail mcp" aria-hidden="true">
         <h3>MCP Server (run_tests)</h3>
@@ -432,7 +432,7 @@
   ═══════════════════════════════════════════════════════════
 
   <span>1.</span> Todos os testes
-     → Roda a suíte completa: auth, api, admin e ui (pode demorar mais).
+     → Roda a suíte completa: auth, api, admin, ui e performance (pode demorar mais).
 
   <span>2.</span> Admin – painel do administrador
      → Testes do dashboard admin: editar idade, validação 18–80, inativo, filtro, exclusão.
@@ -442,7 +442,10 @@
 
   <span>4.</span> API – chamadas diretas ao backend
   <span>5.</span> UI – elementos da tela inicial
-  <span>6.</span> Rodar apenas um arquivo de teste
+  <span>6.</span> Performance – TICTAC (caminho crítico)
+     → Tempo de load, healthcheck, formulário visível, dashboard após login.
+
+  <span>7.</span> Rodar apenas um arquivo de teste
      → Lista cada arquivo .cy.js; você escolhe um e só esse é executado.
 
   <span>0.</span> Sair (não roda nenhum teste)
@@ -456,7 +459,7 @@
           <span class="num">3</span>
           <div class="body">
             <strong>Digite o número</strong>
-            Ex.: <code>2</code> = só testes Admin, <code>6</code> = depois escolhe um arquivo .cy.js. O agente chama o MCP, o MCP roda o Cypress e devolve o resultado.
+            Ex.: <code>2</code> = só testes Admin, <code>6</code> = Performance TICTAC, <code>7</code> = depois escolhe um arquivo .cy.js. O agente chama o MCP, o MCP roda o Cypress e devolve o resultado.
           </div>
         </div>
       </div>
@@ -485,12 +488,12 @@
 
     <div class="cta">
       <p>Projeto open-source: documentação e código no repositório.</p>
-      <a href="https://github.com/seu-usuario/qa-lab" id="repo-link" target="_blank" rel="noopener">Ver repositório →</a>
+      <a href="https://github.com/Wesley-Gomes93/qa-lab" id="repo-link" target="_blank" rel="noopener">Ver repositório GitHub →</a>
     </div>
   </div>
   <script>
     (function () {
-      const REPO_URL = 'https://github.com/seu-usuario/qa-lab';
+      const REPO_URL = 'https://github.com/Wesley-Gomes93/qa-lab';
       document.getElementById('repo-link').href = REPO_URL;
 
       const CLICKS_KEY = 'qa-lab-visual-clicks';

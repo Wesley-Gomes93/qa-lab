@@ -44,9 +44,11 @@ function ensureAdminTestUsers() {
   });
 }
 
+const USERS_TABLE = '[data-testid="table-users"] tbody tr';
+
 /** Aguarda a tabela de usuários carregar no dashboard (evita clicar antes dos dados aparecerem). */
 function waitForDashboardUsers() {
-  cy.get('tbody tr', { timeout: 10000 }).should('have.length.at.least', 2);
+  cy.get(USERS_TABLE, { timeout: 10000 }).should('have.length.at.least', 2);
 }
 
 /**
@@ -54,7 +56,7 @@ function waitForDashboardUsers() {
  * Usa posição em vez de id fixo — evita quebra quando ids mudam.
  */
 function clickEditOnRow(index) {
-  cy.get('tbody tr').eq(index).within(() => {
+  cy.get(USERS_TABLE).eq(index).within(() => {
     cy.get('[data-testid^="btn-edit-"]').click();
   });
 }
@@ -63,7 +65,7 @@ function clickEditOnRow(index) {
  * Retorna a linha da tabela por índice para asserts.
  */
 function getUserRow(index) {
-  return cy.get('tbody tr').eq(index);
+  return cy.get(USERS_TABLE).eq(index);
 }
 
 /**
@@ -78,6 +80,7 @@ module.exports = {
   API_BASE,
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
+  USERS_TABLE,
   randomAgeBetween18And80,
   getEditIdade,
   randomEmail,

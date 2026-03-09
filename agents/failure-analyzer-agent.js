@@ -1,7 +1,7 @@
 /**
  * AI QA Engineer – Failure Analyzer Agent
  *
- * Fluxo: run_tests → (se falhou) analyze_failures → suggest_fix
+ * Fluxo: roda Cypress diretamente (evita timeout MCP) → (se falhou) analyze_failures → suggest_fix
  * Identifica falhas e sugere correções automaticamente.
  *
  * Uso:
@@ -14,6 +14,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
+import { spawn } from "node:child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +22,42 @@ const __dirname = path.dirname(__filename);
 const MCP_SERVER_PATH = path.join(__dirname, "mcp-server", "server.js");
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const SPEC_BASE = path.join(PROJECT_ROOT, "tests", "cypress", "e2e");
+const TESTS_DIR = path.join(PROJECT_ROOT, "tests");
+
+const SPEC_BY_SUITE = {
+  admin: "cypress/e2e/admin/**/*.cy.js",
+  auth: "cypress/e2e/auth/**/*.cy.js",
+  api: "cypress/e2e/api/**/*.cy.js",
+  ui: "cypress/e2e/ui/**/*.cy.js",
+  performance: "cypress/e2e/performance/**/*.cy.js",
+};
+
+/** Roda Cypress diretamente (evita timeout MCP de 60s). */
+function runCypressDirectly(suiteOrSpec) {
+  const isSpec = suiteOrSpec.endsWith(".cy.js") || suiteOrSpec.includes("/");
+  const spec = isSpec
+    ? (suiteOrSpec.startsWith("cypress/") ? suiteOrSpec : `cypress/e2e/${suiteOrSpec}`)
+    : (SPEC_BY_SUITE[suiteOrSpec] || null);
+  const args = spec ? ["cypress", "run", "--spec", spec] : ["test"];
+  const cmd = spec ? "npx" : "npm";
+
+  return new Promise((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd: TESTS_DIR,
+      stdio: ["inherit", "pipe", "pipe"],
+      shell: process.platform === "win32",
+      env: { ...process.env, TEST_SUITE: suiteOrSpec },
+    });
+    let stdout = "";
+    let stderr = "";
+    if (child.stdout) child.stdout.on("data", (d) => { stdout += d.toString(); process.stdout.write(d); });
+    if (child.stderr) child.stderr.on("data", (d) => { stderr += d.toString(); process.stderr.write(d); });
+    child.on("close", (code) => {
+      const runOutput = [stdout, stderr].filter(Boolean).join("\n").trim();
+      resolve({ code: code ?? 1, runOutput: runOutput || undefined });
+    });
+  });
+}
 
 function getStructured(result) {
   return result?.structuredContent ?? (result?.content?.[0]?.type === "text" ? {} : null);
@@ -28,50 +65,55 @@ function getStructured(result) {
 
 async function main() {
   const suiteOrSpec = process.argv[2] || "all";
-  const isSpec = suiteOrSpec.endsWith(".cy.js") || suiteOrSpec.includes("/");
+  let client;
 
-  const transport = new StdioClientTransport({
-    command: "node",
-    args: [MCP_SERVER_PATH],
-    cwd: PROJECT_ROOT,
-  });
-
-  const client = new Client(
-    { name: "qa-lab-failure-analyzer", version: "1.0.0" },
-    { capabilities: {} }
-  );
+  const API_BASE = process.env.QA_LAB_API_URL || "http://localhost:4000";
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "admin-qa-lab";
 
   try {
-    await client.connect(transport);
-    console.log("[AI QA Engineer] Conectado ao MCP. Rodando testes...\n");
+    console.log("[AI QA Engineer] Limpando usuários de teste...");
+    try {
+      const cleanRes = await fetch(`${API_BASE}/api/clean-test-users`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
+      });
+      const cleanData = await cleanRes.json().catch(() => ({}));
+      if (cleanRes.ok) {
+        console.log(`  → ${cleanData.deleted ?? 0} usuários removidos.\n`);
+      } else {
+        console.log("  → API inacessível ou não-autenticado. Prosseguindo sem limpeza.\n");
+      }
+    } catch {
+      console.log("  → Backend pode não estar rodando. Prosseguindo sem limpeza.\n");
+    }
 
-    const runArgs = isSpec
-      ? { spec: suiteOrSpec.startsWith("cypress/") ? suiteOrSpec : `cypress/e2e/${suiteOrSpec}` }
-      : { suite: suiteOrSpec };
+    console.log("[AI QA Engineer] Rodando testes (Cypress direto, sem timeout MCP)...\n");
 
-    const runResult = await client.callTool({
-      name: "run_tests",
-      arguments: runArgs,
+    const { code: exitCode, runOutput } = await runCypressDirectly(suiteOrSpec);
+
+    const transport = new StdioClientTransport({
+      command: "node",
+      args: [MCP_SERVER_PATH],
+      cwd: PROJECT_ROOT,
     });
-
-    const runData = getStructured(runResult);
-    const exitCode = runData?.exitCode ?? 1;
-    const runOutput = runData?.runOutput;
+    client = new Client(
+      { name: "qa-lab-failure-analyzer", version: "1.0.0" },
+      { capabilities: {} }
+    );
+    await client.connect(transport);
 
     if (exitCode === 0) {
       console.log("\n✓ Testes passaram. Nada a corrigir.");
       await client.close();
       process.exit(0);
-      return;
     }
 
     console.log("\n✗ Testes falharam. Analisando e sugerindo correções...\n");
 
     if (!runOutput) {
-      console.log("(Output do Cypress não capturado. Rode os testes pelo agent para análise completa.)\n");
+      console.log("(Output do Cypress não capturado.)\n");
       await client.close();
       process.exit(1);
-      return;
     }
 
     const analyzeResult = await client.callTool({
@@ -128,7 +170,7 @@ async function main() {
     process.exit(1);
   } catch (err) {
     console.error("[AI QA Engineer] Erro:", err.message);
-    await client.close().catch(() => {});
+    if (client) await client.close().catch(() => {});
     process.exit(1);
   }
 }

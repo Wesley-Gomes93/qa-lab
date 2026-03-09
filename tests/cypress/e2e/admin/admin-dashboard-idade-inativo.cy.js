@@ -9,6 +9,7 @@ const {
   waitForDashboardUsers,
   clickEditOnRow,
   getUserRow,
+  USERS_TABLE,
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
   getEditIdade,
@@ -84,8 +85,8 @@ describe('Admin Dashboard - Suite completa (idade, inativo, filtro, exclusão)',
         const name = $row.find('td').eq(1).text().trim();
         const termo = name || 'User';
         cy.get('[data-testid="filter-users"]').clear({ force: true }).type(termo, { force: true });
-        cy.get('tbody tr').should('have.length.at.least', 1);
-        cy.get('tbody tr').first().within(() => cy.contains('Não'));
+        cy.get(USERS_TABLE).should('have.length.at.least', 1);
+        cy.get(USERS_TABLE).first().within(() => cy.contains('Não'));
       });
     });
   });
@@ -93,11 +94,14 @@ describe('Admin Dashboard - Suite completa (idade, inativo, filtro, exclusão)',
   describe('Exclusão', () => {
     it('exclui o cadastro inativo (1º não-admin)', () => {
       cy.on('window:confirm', () => true);
-      getUserRow(1).within(() => {
-        cy.contains('Não');
-        cy.get('[data-testid^="btn-delete-"]').click();
+      cy.get(USERS_TABLE).then(($rows) => {
+        const countBefore = $rows.length;
+        getUserRow(1).within(() => {
+          cy.contains('Não');
+          cy.get('[data-testid^="btn-delete-"]').click();
+        });
+        cy.get(USERS_TABLE).should('have.length', countBefore - 1);
       });
-      cy.get('tbody tr').should('have.length', 2);
     });
   });
 });

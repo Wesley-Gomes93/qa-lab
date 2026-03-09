@@ -23,6 +23,17 @@ Esta pasta contém o **servidor MCP** (Model Context Protocol) e o **agente de Q
 
 Fluxo **AI QA Engineer**: run_tests → (se falhou) analyze_failures → suggest_fix → saída com análise + correções sugeridas.
 
+## Limpeza de usuários de teste
+
+O banco pode acumular usuários (@teste.com). Para limpar antes dos testes:
+
+```bash
+npm run tests:clean-users     # na raiz
+# ou via tool: node qa-agent.js clean_test_users
+```
+
+O **Failure Analyzer** (`agent:analyze-failures`) já executa a limpeza automaticamente antes de rodar os testes.
+
 ## Pré-requisitos
 
 - Node.js 18+
