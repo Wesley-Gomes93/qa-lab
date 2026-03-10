@@ -1,43 +1,31 @@
+/**
+ * Helpers específicos do Playwright.
+ * Usa shared/ para constants e factories.
+ * Contém apenas lógica que usa page ou request.
+ */
+
 const { expect } = require("@playwright/test");
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:4000";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admWesley@test.com.br";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "senha12356";
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "admin-qa-lab";
-const USERS_TABLE = '[data-testid="table-users"] tbody tr';
+const {
+  FRONTEND_URL,
+  API_BASE_URL,
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  ADMIN_TOKEN,
+  USERS_TABLE,
+} = require("../../shared/constants");
 
-function randomSuffix() {
-  return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
+const {
+  randomName,
+  randomEmail,
+  randomAgeBetween18And80,
+  randomRowIndex,
+  getEditIdade,
+  getThresholdMs,
+  buildRandomUser,
+} = require("../../shared/factories");
 
-function randomName() {
-  return `User_${randomSuffix()}`;
-}
-
-function randomEmail() {
-  return `user_${randomSuffix()}@teste.com`;
-}
-
-function randomAgeBetween18And80() {
-  return Math.floor(Math.random() * (80 - 18 + 1)) + 18;
-}
-
-function randomRowIndex(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function readIntegerEnv(names, fallback) {
-  const keys = Array.isArray(names) ? names : [names];
-  for (const key of keys) {
-    const raw = process.env[key];
-    if (raw == null || String(raw).trim() === "") continue;
-    const n = parseInt(raw, 10);
-    if (Number.isFinite(n)) return n;
-  }
-  return fallback;
-}
-
+// Helpers de registro/login (env override)
 function getRegisterName() {
   return process.env.PW_REGISTER_NAME || process.env.CYPRESS_REGISTER_NAME || randomName();
 }
@@ -50,25 +38,7 @@ function getRegisterPassword() {
   return process.env.PW_REGISTER_PASSWORD || process.env.CYPRESS_REGISTER_PASSWORD || "senha123";
 }
 
-function getEditIdade() {
-  const n = readIntegerEnv(["PW_EDIT_IDADE", "CYPRESS_EDIT_IDADE"], NaN);
-  if (Number.isFinite(n) && n >= 18 && n <= 80) return n;
-  return randomAgeBetween18And80();
-}
-
-function getThresholdMs(names, fallback) {
-  const n = readIntegerEnv(names, fallback);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
-}
-
-function buildRandomUser() {
-  return {
-    name: randomName(),
-    email: randomEmail(),
-    password: getRegisterPassword(),
-  };
-}
-
+// Page interactions
 async function visitPlayground(page) {
   await page.goto(FRONTEND_URL);
 }
