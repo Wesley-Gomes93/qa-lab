@@ -2,6 +2,8 @@
 
 API REST do QA Lab: registro, login, gestão de usuários (admin) e healthcheck. Backend em **Node.js + Express**, dados em **PostgreSQL**.
 
+**Contrato OpenAPI:** `docs/api-spec.yaml` – usado para contract testing. Ver `docs/CONTRACT-TESTING.md`.
+
 ---
 
 ## Base URL e ambiente

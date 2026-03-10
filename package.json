@@ -16,6 +16,7 @@
     "tests:pw:ui": "cd tests && npm run pw:ui",
     "tests:pw:report": "cd tests && npm run pw:report",
     "tests:report:unified": "cd tests && npm run report:unified",
+    "tests:contract": "node tests/contract/validate-against-spec.js",
     "tests:report": "cd tests && npm run test:report",
     "lint:check": "node scripts/lint-check.js",
     "tests:clean-users": "node scripts/clean-test-users.js",
