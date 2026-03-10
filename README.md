@@ -21,7 +21,6 @@ A full-stack testing lab where automation, AI agents, and CI/CD work together. E
 ## Documentation
 
 - **[Test Strategy](./docs/test-strategy.md)** – Pyramid, coverage, risks, and when to run what
-- **[SDET Guia Prático](./docs/SDET-GUIA-PRATICO.md)** – Contract testing, Page Objects, shared code, agent na pipeline, portfólio
 - **[API](./docs/API.md)** – Endpoints, authentication, request/response format
 - **[Pipeline & Maintenance](./docs/PIPELINE.md)** – How to maintain the CI/CD pipeline, debug errors, and fix them
 - **[Reports](./docs/RELATORIOS.md)** – Cypress, Playwright, and unified reports
