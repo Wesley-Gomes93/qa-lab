@@ -92,7 +92,21 @@ novo-job:
 
 ### Rodar a pipeline manualmente
 
-- **workflow_dispatch:** adicione `workflow_dispatch:` em `on:` para permitir execução manual pela interface do GitHub
+O workflow **Pipeline** tem `workflow_dispatch` habilitado. Para rodar manualmente:
+
+1. Vá em **Actions** → **Pipeline** (menu à esquerda)
+2. Clique em **Run workflow** → escolha a branch **main**
+3. Clique em **Run workflow** (botão verde)
+
+### Status checks para Branch Protection
+
+Existe um job **`ci`** que só roda quando lint, build, tests e e2e passam. Basta exigir **um** check:
+
+1. **Settings** → **Rules** → **Rulesets** → edite a regra da `main`
+2. Em **Require status checks to pass**, clique em **+ Add checks**
+3. Busque por **`ci`** ou **`Pipeline / ci`** e adicione
+
+O check só aparece depois que a pipeline rodar pelo menos uma vez (push, PR ou run manual).
 
 ### Debugar localmente
 
