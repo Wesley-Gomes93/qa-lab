@@ -90,6 +90,30 @@ const USER_SCHEMA = {
   },
 };
 
+const LOGIN_RESPONSE_SCHEMA = {
+  type: "object",
+  required: ["token", "user"],
+  properties: {
+    token: { type: "string" },
+    user: {
+      type: "object",
+      required: ["id", "name", "email"],
+      properties: {
+        id: { type: "integer" },
+        name: { type: "string" },
+        email: { type: "string" },
+      },
+    },
+    isAdmin: { type: "boolean" },
+  },
+};
+
+const ERROR_SCHEMA = {
+  type: "object",
+  required: ["error"],
+  properties: { error: { type: "string" } },
+};
+
 async function run() {
   const results = [];
   let failed = 0;
@@ -126,6 +150,70 @@ async function run() {
   } catch (e) {
     failed++;
     results.push({ endpoint: "POST /auth/register", ok: false, error: e.message });
+  }
+
+  // 3. POST /auth/login -> 200 + token, user
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admWesley@test.com.br";
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "senha12356";
+  try {
+    const { status, body } = await fetchJson(`${API_BASE}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+    });
+    const errs = validateObject(body, LOGIN_RESPONSE_SCHEMA);
+    if (status !== 200 || errs.length > 0) {
+      failed++;
+      results.push({ endpoint: "POST /auth/login", ok: false, status, errors: errs });
+    } else {
+      results.push({ endpoint: "POST /auth/login", ok: true, status });
+    }
+  } catch (e) {
+    failed++;
+    results.push({ endpoint: "POST /auth/login", ok: false, error: e.message });
+  }
+
+  // 4. GET /users/:id -> 200 + User (usa id do registro anterior)
+  try {
+    const email = `contract_get_${Date.now()}@teste.com`;
+    const reg = await fetchJson(`${API_BASE}/auth/register`, {
+      method: "POST",
+      body: JSON.stringify({ name: "GetTest", email, password: "senha123" }),
+    });
+    const userId = reg.status === 201 ? reg.body.id : null;
+    if (userId) {
+      const { status, body } = await fetchJson(`${API_BASE}/users/${userId}`);
+      const errs = validateObject(body, USER_SCHEMA);
+      if (status !== 200 || errs.length > 0) {
+        failed++;
+        results.push({ endpoint: "GET /users/:id", ok: false, status, errors: errs });
+      } else {
+        results.push({ endpoint: "GET /users/:id", ok: true, status });
+      }
+    } else {
+      results.push({ endpoint: "GET /users/:id", ok: false, error: "Register failed, skipping" });
+      failed++;
+    }
+  } catch (e) {
+    failed++;
+    results.push({ endpoint: "GET /users/:id", ok: false, error: e.message });
+  }
+
+  // 5. POST /auth/register sem email -> 400 + Error
+  try {
+    const { status, body } = await fetchJson(`${API_BASE}/auth/register`, {
+      method: "POST",
+      body: JSON.stringify({ password: "senha123" }),
+    });
+    const errs = validateObject(body, ERROR_SCHEMA);
+    if (status !== 400 || errs.length > 0) {
+      failed++;
+      results.push({ endpoint: "POST /auth/register (400)", ok: false, status, errors: errs });
+    } else {
+      results.push({ endpoint: "POST /auth/register (400)", ok: true, status });
+    }
+  } catch (e) {
+    failed++;
+    results.push({ endpoint: "POST /auth/register (400)", ok: false, error: e.message });
   }
 
   // Output
