@@ -5,6 +5,7 @@ A full-stack testing playground designed to experiment with automation, AI agent
 ## Documentation
 
 - **[API](./docs/API.md)** – Endpoints, authentication, request/response format, and basic behavior.
+- **[Contract Testing](./docs/CONTRACT-TESTING.md)** – OpenAPI spec and schema validation.
 - **[Pipeline & Maintenance](./docs/PIPELINE.md)** – How to maintain the CI/CD pipeline, understand errors, and fix them.
 - **[SDET & Evolution](./docs/SDET-EVOLUCAO.md)** – SDET mindset, measuring project evolution, and tips for posts.
 - **[Reports](./docs/RELATORIOS.md)** – Cypress, Playwright, and unified reports.
