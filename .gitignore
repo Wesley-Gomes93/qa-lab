@@ -10,3 +10,8 @@ tests/playwright-report
 tests/qa-lab-reports
 .DS_Store
 backend/registros.txt
+
+# Docs pessoais / rascunhos (não versionar)
+docs/feedback.txt
+docs/LINKEDIN-POST-*.md
+docs/linkedin-post*.txt
