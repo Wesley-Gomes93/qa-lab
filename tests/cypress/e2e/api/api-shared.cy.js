@@ -6,8 +6,8 @@
 const { API_BASE } = require("../../support/helpers");
 
 const specs = [
-  require("../../shared/specs/api/health.spec.js"),
-  require("../../shared/specs/api/clean-test-users.spec.js"),
+  require("../../../shared/specs/api/health.spec.js"),
+  require("../../../shared/specs/api/clean-test-users.spec.js"),
 ];
 
 function runCase(spec, testCase) {
