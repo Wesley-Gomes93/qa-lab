@@ -132,6 +132,7 @@ npm run agent:test-writer "login"
 ## Documentation
 
 - **[Test Strategy](./docs/test-strategy.md)** – Pyramid, coverage, risks, and when to run what
+- **[Cypress vs Playwright](./docs/TESTES-CYPRESS-VS-PLAYWRIGHT.md)** – Estratégia de manutenção, quando duplicar, quando consolidar
 - **[API](./docs/API.md)** – Endpoints, authentication, request/response format
 - **[Contract Testing](./docs/CONTRACT-TESTING.md)** – OpenAPI spec and schema validation
 - **[Pipeline & Maintenance](./docs/PIPELINE.md)** – How to maintain the CI/CD pipeline, debug errors, and fix them

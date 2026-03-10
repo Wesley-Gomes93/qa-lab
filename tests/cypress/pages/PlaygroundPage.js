@@ -335,6 +335,18 @@ function assertLoginSuccessVisible() {
 }
 
 /**
+ * Verifica se o login falhou (Status: 401, credenciais inválidas).
+ */
+function assertLoginFailVisible() {
+  cy.get(selectors.formLogin)
+    .parent()
+    .find('pre')
+    .should('be.visible')
+    .and('contain.text', 'Status: 401')
+    .and('contain.text', 'Credenciais inválidas');
+}
+
+/**
  * Verifica se os campos do formulário de registro existem e estão visíveis.
  */
 function assertRegisterFormFieldsVisible() {
@@ -371,5 +383,6 @@ module.exports = {
   assertRegisterSuccessVisible,
   assertRegisterSuccessOrAlreadyExists,
   assertLoginSuccessVisible,
+  assertLoginFailVisible,
   assertRegisterFormFieldsVisible,
 };

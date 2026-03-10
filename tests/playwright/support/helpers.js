@@ -85,6 +85,14 @@ async function assertDashboardVisible(page) {
   await expect(page.getByText("Sair")).toBeVisible();
 }
 
+async function assertLoginFailVisible(page) {
+  const response = loginResponseLocator(page);
+  await expect(response).toBeVisible();
+  const text = (await response.textContent()) || "";
+  expect(text).toContain("Status: 401");
+  expect(text).toMatch(/Credenciais inválidas|error/i);
+}
+
 async function loginAsAdmin(page) {
   await visitPlayground(page);
   await expect(page.getByTestId("form-login")).toBeVisible();
@@ -149,6 +157,7 @@ module.exports = {
   loginResponseLocator,
   assertRegisterSuccessOrAlreadyExists,
   assertDashboardVisible,
+  assertLoginFailVisible,
   loginAsAdmin,
   ensureAdminTestUsers,
   waitForDashboardUsers,
