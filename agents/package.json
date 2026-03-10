@@ -7,10 +7,12 @@
     "start:mcp": "node mcp-server/server.js",
     "agent": "node qa-agent.js",
     "agent:run-tests": "node qa-agent.js run_tests",
-    "agent:analyze-failures": "node failure-analyzer-agent.js"
+    "agent:analyze-failures": "node failure-analyzer-agent.js",
+    "agent:test-writer": "node test-writer-agent.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "dotenv": "^16.4.5",
     "zod": "^3.25.0"
   }
 }

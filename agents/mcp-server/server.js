@@ -1,12 +1,21 @@
+import { config } from "dotenv";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { spawn } from "node:child_process";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
+
+// Carrega .env da raiz (para OPENAI_API_KEY / QA_LAB_LLM_API_KEY)
+config({ path: path.join(PROJECT_ROOT, ".env") });
+const TESTS_DIR = path.join(PROJECT_ROOT, "tests");
+const SPEC_BASE = path.join(TESTS_DIR, "cypress", "e2e");
 
 const API_BASE = "http://localhost:4000";
 const DEFAULT_ADMIN_TOKEN = "admin-qa-lab";
@@ -215,6 +224,140 @@ server.registerTool(
   }
 );
 
+// ----- read_project: lê e entende a estrutura do projeto
+
+function readProjectStructure() {
+  const result = {
+    apiEndpoints: [],
+    existingSpecs: [],
+    helpers: "",
+    apiDocs: "",
+    backendRoutes: "",
+  };
+
+  // API docs
+  const apiMd = path.join(PROJECT_ROOT, "docs", "API.md");
+  if (fs.existsSync(apiMd)) {
+    result.apiDocs = fs.readFileSync(apiMd, "utf8");
+  }
+
+  // Backend routes (parse server.js)
+  const serverPath = path.join(PROJECT_ROOT, "backend", "server.js");
+  if (fs.existsSync(serverPath)) {
+    const serverCode = fs.readFileSync(serverPath, "utf8");
+    const routeMatches = serverCode.matchAll(/app\.(get|post|put|delete|patch)\s*\(\s*["']([^"']+)["']/g);
+    for (const m of routeMatches) {
+      result.apiEndpoints.push({ method: m[1].toUpperCase(), path: m[2] });
+    }
+    result.backendRoutes = serverCode.slice(0, 2500);
+  }
+
+  // Existing specs
+  const suites = ["api", "auth", "admin", "ui", "performance"];
+  for (const suite of suites) {
+    const dir = path.join(SPEC_BASE, suite);
+    if (fs.existsSync(dir)) {
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith(".cy.js"));
+      for (const f of files) {
+        result.existingSpecs.push(`${suite}/${f}`);
+      }
+    }
+  }
+
+  // Helpers e constants
+  const helpersPath = path.join(TESTS_DIR, "cypress", "support", "helpers.js");
+  if (fs.existsSync(helpersPath)) {
+    result.helpers = fs.readFileSync(helpersPath, "utf8");
+  }
+  const constantsPath = path.join(TESTS_DIR, "shared", "constants.js");
+  if (fs.existsSync(constantsPath)) {
+    result.constants = fs.readFileSync(constantsPath, "utf8");
+  }
+  return result;
+}
+
+server.registerTool(
+  "read_project",
+  {
+    title: "Ler e entender o projeto",
+    description: "Lê a estrutura do projeto: rotas da API, specs existentes, helpers e documentação. Retorna contexto para gerar testes.",
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      summary: z.string(),
+      apiEndpoints: z.array(z.object({ method: z.string(), path: z.string() })).optional(),
+      existingSpecs: z.array(z.string()).optional(),
+      error: z.string().optional(),
+    }),
+  },
+  async () => {
+    try {
+      const data = readProjectStructure();
+      const summary = [
+        `API Endpoints: ${data.apiEndpoints.map((e) => `${e.method} ${e.path}`).join(", ")}`,
+        `Specs existentes: ${(data.existingSpecs || []).join(", ")}`,
+        `Helpers e constants disponíveis no resultado.`,
+      ].join("\n");
+      return {
+        content: [{ type: "text", text: summary }],
+        structuredContent: {
+          ok: true,
+          summary,
+          apiEndpoints: data.apiEndpoints,
+          existingSpecs: data.existingSpecs,
+          apiDocs: data.apiDocs?.slice(0, 3000),
+          helpers: data.helpers?.slice(0, 1500),
+          constants: data.constants?.slice(0, 800),
+        },
+      };
+    } catch (err) {
+      return {
+        content: [{ type: "text", text: `Erro: ${err.message}` }],
+        structuredContent: { ok: false, summary: "", error: err.message },
+      };
+    }
+  }
+);
+
+// ----- write_test: escreve spec no disco
+
+server.registerTool(
+  "write_test",
+  {
+    title: "Escrever arquivo de teste",
+    description: "Grava o conteúdo de um spec Cypress em tests/cypress/e2e/{suite}/{nome}.cy.js",
+    inputSchema: z.object({
+      suite: z.enum(["api", "auth", "admin", "ui", "performance"]).describe("Pasta da suíte."),
+      name: z.string().describe("Nome do arquivo sem .cy.js (ex: api-health)."),
+      content: z.string().describe("Conteúdo completo do spec Cypress."),
+    }),
+    outputSchema: z.object({
+      ok: z.boolean(),
+      path: z.string().optional(),
+      error: z.string().optional(),
+    }),
+  },
+  async ({ suite, name, content }) => {
+    const safeName = name.replace(/[^a-z0-9-]/gi, "-").replace(/-+/g, "-");
+    const fileName = safeName.endsWith(".cy.js") ? safeName : `${safeName}.cy.js`;
+    const filePath = path.join(SPEC_BASE, suite, fileName);
+    try {
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(filePath, content, "utf8");
+      return {
+        content: [{ type: "text", text: `Arquivo gravado: ${filePath}` }],
+        structuredContent: { ok: true, path: filePath },
+      };
+    } catch (err) {
+      return {
+        content: [{ type: "text", text: `Erro ao gravar: ${err.message}` }],
+        structuredContent: { ok: false, error: err.message },
+      };
+    }
+  }
+);
+
 // ----- AI QA Engineer tools (read PR, generate tests, analyze failures, create bug report)
 
 server.registerTool(
@@ -256,25 +399,54 @@ server.registerTool(
 server.registerTool(
   "generate_tests",
   {
-    title: "Gerar testes (sugestão)",
-    description: "Recebe contexto (código ou resumo de PR) e retorna sugestão de specs Cypress. Integre com LLM para geração real.",
+    title: "Gerar testes com LLM",
+    description: "Usa LLM (OPENAI_API_KEY) para gerar spec Cypress a partir do contexto do projeto. Retorna código pronto para write_test.",
     inputSchema: z.object({
-      context: z.string().describe("Contexto: diff, arquivo de código ou descrição do fluxo a testar."),
+      context: z.string().describe("Contexto: resultado de read_project ou descrição do que testar."),
+      userRequest: z.string().optional().describe("O que o usuário quer testar (ex: 'healthcheck da API', 'registro de usuário')."),
       target: z.enum(["e2e", "api"]).optional().describe("Alvo: e2e (Cypress) ou api."),
+      suite: z.enum(["api", "auth", "admin", "ui", "performance"]).optional().describe("Suíte destino."),
     }),
     outputSchema: z.object({
       ok: z.boolean(),
-      suggestion: z.string(),
-      suggestedSpec: z.string().optional(),
+      specContent: z.string().optional(),
+      suggestedFileName: z.string().optional(),
       error: z.string().optional(),
     }),
   },
-  async ({ context, target = "e2e" }) => {
-    const suggestion = `Contexto recebido (${context.length} chars). Para gerar testes de verdade: envie 'context' para um LLM com prompt tipo "Gere um spec Cypress para: ..." e salve o resultado em tests/cypress/e2e/.\nTarget: ${target}.`;
-    return {
-      content: [{ type: "text", text: suggestion }],
-      structuredContent: { ok: true, suggestion, suggestedSpec: undefined },
-    };
+  async ({ context, userRequest = "", target = "api", suite = "api" }) => {
+    try {
+      const { callLLM } = await import("../llm.js");
+      const systemPrompt = `Você é um engenheiro de QA especializado em Cypress. Gere APENAS o código do spec, sem explicações antes ou depois.
+Regras:
+- Use require('../../support/helpers') para API_BASE, randomEmail, randomName quando fizer sentido.
+- API_BASE vem de helpers; base URL da API é http://localhost:4000.
+- Para testes de API: use cy.request() diretamente.
+- Mantenha padrão do projeto: describe + it, asserções com expect().
+- Não inclua comentários excessivos. Código limpo e funcional.
+- Retorne SOMENTE o código JavaScript, sem markdown, sem \`\`\`js.`;
+
+      const userPrompt = `Contexto do projeto QA Lab:
+${context.slice(0, 6000)}
+
+O usuário quer: ${userRequest || "gerar teste para o endpoint ou fluxo mais adequado ao contexto"}
+
+Gere um spec Cypress completo (describe + it). Target: ${target}. Suíte: ${suite}.`;
+
+      const specContent = await callLLM(systemPrompt, userPrompt);
+      // Remove markdown code block se o LLM incluir
+      const cleaned = specContent.replace(/^```(?:js|javascript)?\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+      const suggestedFileName = `${suite}-${(userRequest || "novo").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`.slice(0, 50);
+      return {
+        content: [{ type: "text", text: `Spec gerado (${cleaned.length} chars). Use write_test para gravar.` }],
+        structuredContent: { ok: true, specContent: cleaned, suggestedFileName },
+      };
+    } catch (err) {
+      return {
+        content: [{ type: "text", text: `Erro ao gerar: ${err.message}` }],
+        structuredContent: { ok: false, error: err.message },
+      };
+    }
   }
 );
 

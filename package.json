@@ -25,6 +25,8 @@
     "agent": "cd agents && node qa-agent.js",
     "agent:run-tests": "cd agents && node qa-agent.js run_tests",
     "agent:analyze-failures": "cd agents && node failure-analyzer-agent.js",
-    "agent:full": "npm run tests:clean-users && cd agents && node qa-agent.js run_tests"
+    "agent:full": "npm run tests:clean-users && cd agents && node qa-agent.js run_tests",
+    "agent:test-writer": "cd agents && node test-writer-agent.js",
+    "dev": "node scripts/start-dev.js"
   }
 }

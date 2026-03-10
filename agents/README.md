@@ -7,7 +7,7 @@ Esta pasta contém o **servidor MCP** (Model Context Protocol) e o **agente de Q
 - **`mcp-server/`** – Servidor MCP que expõe ferramentas (tools).
 - **`qa-agent.js`** – Cliente/agente com menu interativo para rodar testes (run_tests).
 - **`failure-analyzer-agent.js`** – **AI QA Engineer**: roda testes, identifica falhas e sugere correções (run_tests → analyze_failures → suggest_fix).
-- **`test-writer-agent/`** – (Evolução) Agente que usa `read_pr` + `generate_tests` para sugerir/gerar specs a partir de PR ou código.
+- **`test-writer-agent.js`** – Fluxo completo com LLM: ler projeto → sugerir teste → criar → rodar → verificar. Requer `OPENAI_API_KEY`.
 
 ### Ferramentas MCP disponíveis
 
@@ -15,8 +15,10 @@ Esta pasta contém o **servidor MCP** (Model Context Protocol) e o **agente de Q
 |------|-----------|
 | `run_tests` | Executa Cypress; retorna status, exit code e **runOutput** quando falha (para analyze_failures). |
 | `get_users_summary` | Resumo dos usuários no banco (GET /users). |
+| `read_project` | Lê estrutura do projeto (rotas API, specs existentes, helpers). |
+| `generate_tests` | **LLM**: gera spec Cypress a partir do contexto (requer OPENAI_API_KEY). |
+| `write_test` | Grava spec em tests/cypress/e2e/{suite}/{nome}.cy.js. |
 | `read_pr` | Lê diff ou URL de PR; retorna resumo/arquivos alterados. |
-| `generate_tests` | Recebe contexto e retorna sugestão de specs (stub para LLM). |
 | `analyze_failures` | Recebe output do Cypress e extrai falhas estruturadas (spec, seletor, causa). |
 | **`suggest_fix`** | **Nova**: recebe análise de falhas e retorna sugestões de correção (heurísticas para btn-edit-X, btn-delete-X, etc.). |
 | `create_bug_report` | Gera relatório de bug a partir da análise. |
@@ -91,7 +93,22 @@ No menu você pode:
 
 O exit code do processo reflete o resultado dos testes (0 = sucesso, 1 = falha).
 
-### 3. AI QA Engineer – Identificar falhas e sugerir correções
+### 3. Test Writer Agent – Ler, gerar, criar, rodar e verificar
+
+Fluxo completo com LLM: o agente lê o projeto, gera um teste via OpenAI, grava o arquivo, roda e verifica se passou.
+
+**Pré-requisito:** defina `OPENAI_API_KEY` ou `QA_LAB_LLM_API_KEY`.
+
+```bash
+# Suba backend e frontend antes (banco, API, app)
+npm run db:up && npm run backend:dev & npm run frontend:dev
+
+# Na raiz:
+npm run agent:test-writer "healthcheck da API"
+npm run agent:test-writer -- --suite auth --request "teste de login"
+```
+
+### 4. AI QA Engineer – Identificar falhas e sugerir correções
 
 O **Failure Analyzer Agent** roda os testes e, se falharem, analisa o output e sugere correções:
 
@@ -104,7 +121,7 @@ node failure-analyzer-agent.js cypress/e2e/admin/admin-dashboard-editar-idade-id
 
 Saída: análise estruturada (spec, mensagem, causa) + sugestões de patch (ex.: trocar `btn-edit-2` por seleção por posição).
 
-### 4. Apenas o servidor MCP (uso por outro cliente)
+### 5. Apenas o servidor MCP (uso por outro cliente)
 
 Se quiser apenas subir o servidor (por exemplo, para usar com o Cursor ou outro cliente MCP):
 
