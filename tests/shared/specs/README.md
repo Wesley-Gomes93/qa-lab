@@ -34,3 +34,5 @@ module.exports = {
 
 - `cypress/e2e/api/api-shared.cy.js` – executa todos os specs de `shared/specs/api/`
 - `playwright/e2e/api/api-shared.spec.js` – idem para Playwright
+
+**Novo spec:** ao criar `shared/specs/api/novo.spec.js`, adicione o require no array de `api-shared.cy.js` e `api-shared.spec.js` (fs/path não funcionam no browser).

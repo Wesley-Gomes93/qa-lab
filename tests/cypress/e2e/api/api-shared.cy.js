@@ -1,13 +1,14 @@
 /**
  * Executa specs centralizados de shared/specs/api/.
  * Única implementação Cypress – os casos vêm dos arquivos .spec.js.
+ * Nota: fs/path não estão disponíveis no browser; requires explícitos.
  */
 const { API_BASE } = require("../../support/helpers");
-const fs = require("fs");
-const path = require("path");
 
-const SPECS_DIR = path.join(__dirname, "../../../shared/specs/api");
-const specFiles = fs.existsSync(SPECS_DIR) ? fs.readdirSync(SPECS_DIR).filter((f) => f.endsWith(".spec.js")) : [];
+const specs = [
+  require("../../shared/specs/api/health.spec.js"),
+  require("../../shared/specs/api/clean-test-users.spec.js"),
+];
 
 function runCase(spec, testCase) {
   const url = `${API_BASE}${testCase.path}`;
@@ -41,9 +42,7 @@ function runCase(spec, testCase) {
   });
 }
 
-specFiles.forEach((file) => {
-  const specPath = path.join(SPECS_DIR, file);
-  const spec = require(specPath);
+specs.forEach((spec) => {
 
   describe(spec.title, () => {
     spec.cases.forEach((testCase) => {
