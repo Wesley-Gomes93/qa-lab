@@ -38,10 +38,11 @@ function validateObject(obj, schema, path = "") {
       const val = obj[key];
       const subPath = path ? `${path}.${key}` : key;
       if (val === undefined) continue;
+      if (val === null) continue; // null é aceito quando não há dados
       if (prop.type === "string" && typeof val !== "string") {
         errors.push(`${subPath} expected string, got ${typeof val}`);
       }
-      if (prop.type === "number" && typeof val !== "number") {
+      if (prop.type === "number" && (typeof val !== "number" || Number.isNaN(val))) {
         errors.push(`${subPath} expected number, got ${typeof val}`);
       }
       if (prop.type === "integer" && (typeof val !== "number" || !Number.isInteger(val))) {
