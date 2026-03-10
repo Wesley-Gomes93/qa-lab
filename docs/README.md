@@ -36,7 +36,8 @@
 | Documento | Conteúdo |
 |-----------|----------|
 | [SOBRE-O-PROJETO.md](./SOBRE-O-PROJETO.md) | Origem, estado atual e próximos passos |
-| [RESUMO-PROJETO-E-EVOLUCAO.md](./RESUMO-PROJETO-E-EVOLUCAO.md) | Resumo do que o projeto tem hoje |
+| [RESUMO-DO-PROJETO.md](./RESUMO-DO-PROJETO.md) | **Resumo completo** – arquitetura, API, testes, agentes, comandos |
+| [RESUMO-PROJETO-E-EVOLUCAO.md](./RESUMO-PROJETO-E-EVOLUCAO.md) | Resumo + capacidade de evolução |
 | [ROADMAP-QA-LAB-NIVEL-PORTFOLIO.md](./ROADMAP-QA-LAB-NIVEL-PORTFOLIO.md) | Roadmap para nível portfólio |
 | [SDET-EVOLUCAO.md](./SDET-EVOLUCAO.md) | Mentalidade SDET, métricas e evolução |
 | [ANALISE-DOCS.md](./ANALISE-DOCS.md) | Análise dos documentos existentes |

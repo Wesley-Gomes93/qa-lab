@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
  * QA Lab - Verificação de Lint com Resumo
- * Roda o ESLint no frontend e exibe contagem de erros e warnings.
- * Útil antes de fazer commit.
+ * Roda ESLint em todas as pastas (frontend, backend, tests, agents) e exibe resumo.
  *
  * Uso: node scripts/lint-check.js
  *      npm run lint:check (na raiz)
@@ -12,13 +11,11 @@ const { spawn } = require("child_process");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..");
-const FRONTEND = path.join(ROOT, "frontend");
 
-function runLint() {
-  console.log("\n🔍 Verificando lint no frontend...\n");
+function runLint(cwd, targets = ["."]) {
   return new Promise((resolve) => {
-    const result = spawn("npx", ["eslint", ".", "--format", "json"], {
-      cwd: FRONTEND,
+    const result = spawn("npx", ["eslint", "--format", "json", ...targets], {
+      cwd,
       stdio: ["inherit", "pipe", "pipe"],
       shell: true,
     });
@@ -48,25 +45,43 @@ function runLint() {
 }
 
 async function main() {
-  const { code, errors, warnings } = await runLint();
+  let totalErrors = 0;
+  let totalWarnings = 0;
+  const results = [];
+
+  // Frontend: usa config próprio (Next.js)
+  console.log("\n🔍 Lint frontend...\n");
+  const frontend = await runLint(path.join(ROOT, "frontend"), ["."]);
+  results.push({ name: "frontend", ...frontend });
+  totalErrors += frontend.errors;
+  totalWarnings += frontend.warnings;
+
+  // Backend, tests, agents, scripts: usa root eslint.config.js
+  console.log("\n🔍 Lint backend, tests, agents, scripts...\n");
+  const root = await runLint(ROOT, ["backend/", "tests/", "agents/", "scripts/"]);
+  results.push({ name: "backend+tests+agents", ...root });
+  totalErrors += root.errors;
+  totalWarnings += root.warnings;
 
   console.log("─".repeat(50));
   console.log("📊 RESUMO DO LINT");
   console.log("─".repeat(50));
-  console.log(`   Erros:   ${errors}`);
-  console.log(`   Warnings: ${warnings}`);
+  for (const r of results) {
+    console.log(`   ${r.name}: ${r.errors} erros, ${r.warnings} warnings`);
+  }
+  console.log("─".repeat(50));
+  console.log(`   Total:   ${totalErrors} erros, ${totalWarnings} warnings`);
   console.log("─".repeat(50));
 
-  if (errors > 0) {
+  if (totalErrors > 0) {
     console.log("\n❌ Corrija os erros antes de fazer commit.");
-    console.log("   Execute 'cd frontend && npm run lint' para ver os detalhes.\n");
+    console.log("   Execute 'npm run lint:all' para ver os detalhes.\n");
     process.exit(1);
   }
 
-  if (warnings > 0) {
-    console.log("\n⚠️  Há warnings. Considere corrigir antes de fazer commit.");
-    console.log("   Execute 'cd frontend && npm run lint' para ver os detalhes.\n");
-    process.exit(code === 0 ? 0 : 1);
+  if (totalWarnings > 0) {
+    console.log("\n⚠️  Há warnings. Considere corrigir antes de fazer commit.\n");
+    process.exit(0);
   }
 
   console.log("\n✅ Lint OK! Pode fazer commit.\n");

@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Playground full-stack para testes e automação (MCP + agente)",
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "eslint": "^9",
+    "eslint-plugin-mocha": "^10",
+    "globals": "^15"
+  },
   "scripts": {
     "db:up": "cd database && docker-compose up -d",
     "db:down": "cd database && docker-compose down",
@@ -18,7 +24,13 @@
     "tests:report:unified": "cd tests && npm run report:unified",
     "tests:contract": "node tests/contract/validate-against-spec.js",
     "tests:report": "cd tests && npm run test:report",
+    "lint": "eslint backend/ tests/ agents/ scripts/",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "eslint backend/",
+    "lint:tests": "eslint tests/",
+    "lint:agents": "eslint agents/",
     "lint:check": "node scripts/lint-check.js",
+    "lint:all": "npm run lint:frontend && npm run lint",
     "tests:clean-users": "node scripts/clean-test-users.js",
     "tests:full": "npm run tests:clean-users && npm run tests:report",
     "agents:install": "cd agents && npm install",

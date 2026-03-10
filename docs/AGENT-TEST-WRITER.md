@@ -49,14 +49,28 @@ npm run agent:test-writer "healthcheck"
 npm run agent:test-writer "healthcheck da API"
 npm run agent:test-writer "teste para POST /auth/register"
 npm run agent:test-writer -- --suite api --request "GET /users retorna 403 sem token"
+
+# Gerar Cypress e Playwright ao mesmo tempo
+npm run agent:test-writer -- --framework both "healthcheck da API"
+
+# Gerar só Playwright
+npm run agent:test-writer -- --framework playwright "healthcheck da API"
 ```
+
+### Opção `--framework`
+
+| Valor      | Comportamento                                  |
+|------------|-----------------------------------------------|
+| `cypress`  | (padrão) Gera e grava só Cypress              |
+| `playwright` | Gera e grava só Playwright                  |
+| `both`     | Gera **Cypress e Playwright** em paralelo e roda os dois |
 
 ## Fluxo
 
 1. **Ler projeto** – `read_project` lê rotas da API, specs existentes, helpers
-2. **Gerar** – LLM recebe contexto e pedido do usuário; retorna código Cypress
-3. **Criar** – `write_test` grava o spec em `tests/cypress/e2e/{suite}/`
-4. **Rodar** – `run_tests` executa o spec criado
+2. **Gerar** – LLM recebe contexto e pedido; retorna código Cypress e/ou Playwright
+3. **Criar** – `write_test` grava em `tests/cypress/e2e/` ou `tests/playwright/e2e/`
+4. **Rodar** – `run_tests` executa cada spec criado
 5. **Verificar** – exit code 0 = passou, 1 = falhou
 
 Se falhar, use `npm run agent:analyze-failures` para sugestões de correção.

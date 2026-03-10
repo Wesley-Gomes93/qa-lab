@@ -1,164 +1,210 @@
 # QA Lab 🧪
 
-## Problem
+[![Pipeline](https://img.shields.io/github/actions/workflow/status/Wesley-Gomes93/qa-lab/pipeline.yml?branch=main&label=build)](https://github.com/Wesley-Gomes93/qa-lab/actions)
+[![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-QA automation is hard to scale: manual tests, scattered tools, and no clear pipeline to catch bugs before merge.
+**Full-stack QA lab with dual E2E (Cypress + Playwright), contract testing, performance suite, and LLM-powered test generation.**
 
-## Solution
+---
 
-A full-stack testing lab where automation, AI agents, and CI/CD work together. Every PR triggers a pipeline that runs lint, builds, tests (Cypress + Playwright), and generates reports. If anything fails, the merge is blocked.
+## Problem → Solution → Result
 
-## Result
+**Problem:** QA automation is hard to scale — manual tests, scattered tools, and no clear pipeline to catch bugs before merge.
 
-- **Automated pipeline:** Lint → Build → Tests → Report (GitHub Actions)
-- **Fast feedback:** Fail early on lint; parallel E2E runners (Cypress + Playwright)
-- **Reports:** Mochawesome, Playwright, and a unified HTML report
-- **Performance guardrails:** TICTAC tests for critical path latency (load, health, TTI, dashboard)
-- **AI-assisted QA:** Agents for failure analysis, test execution, and **LLM-powered test generation** (Groq, Gemini, OpenAI)
+**Solution:** A full-stack testing lab where automation, AI agents, and CI/CD work together. Every PR triggers a pipeline; every failure blocks the merge.
+
+**Result:** Automated quality gates, fast feedback (~5 min), unified reports, and AI-assisted test generation. The merge only goes through when everything passes.
+
+---
+
+## Links
+
+| Link | URL |
+|------|-----|
+| **Repository** | [github.com/Wesley-Gomes93/qa-lab](https://github.com/Wesley-Gomes93/qa-lab) |
+| **Pipeline** | [Actions → pipeline](https://github.com/Wesley-Gomes93/qa-lab/actions) |
+| **Demo** | _Add your Vercel/deploy URL when available_ |
+
+---
+
+## What I Learned
+
+- **Dual E2E stack** — Running Cypress and Playwright in parallel taught me to design tests that can run on both; centralized specs for API tests reduced duplication.
+- **Contract testing** — OpenAPI schema validation catches breaking changes before they reach E2E; a small investment with high ROI.
+- **MCP and agents** — Integrating LLM-powered test generation (Groq, Gemini, OpenAI) showed how AI can extend QA workflows without replacing critical thinking.
+- **Pipeline design** — Lint → Build → Tests (parallel) → Report creates fast feedback; blocking merge on failure enforces quality at the gate.
+- **Performance as a test** — TICTAC metrics (load, health, TTI) turned performance from "nice to have" into an assertable requirement.
+
+---
+
+## Tech Highlights
+
+| Area | What's in place |
+|------|-----------------|
+| **CI/CD Pipeline** | Lint → Build → Tests (Cypress \|\| Playwright) → Unified Report. Merge blocked if any step fails. |
+| **Dual E2E Stack** | Cypress + Playwright run in parallel. Centralized specs for API tests (one source, two runners). |
+| **Contract Testing** | OpenAPI 3.0 spec validation. Schema checks before deploy. |
+| **Performance Testing** | TICTAC suite: load, health, TTI, dashboard critical path latency. |
+| **AI Agents** | 3 agents: MCP menu (interactive test runs), Test Writer (LLM-powered — Groq, Gemini, OpenAI), Failure Analyzer (auto-diagnose and suggest fixes). |
+| **Reports** | Mochawesome (Cypress), Playwright HTML, unified QA Lab report. |
+
+---
+
+## Pipeline Flow
+
+```
+PR opened / push to main
+        ↓
+   Lint (ESLint)
+        ↓
+   Build (Next.js)
+        ↓
+   ┌────────────┬────────────┐
+   │  Cypress   │  Playwright │  ← run in parallel
+   │   E2E      │     E2E     │
+   └────────────┴────────────┘
+        ↓
+   Unified Report
+        ↓
+   ci ✅ (merge allowed)  or  ci ❌ (merge blocked)
+```
+
+---
+
+## Screenshots
+
+| Pipeline | Unified Report |
+|----------|----------------|
+| ![Pipeline](https://via.placeholder.com/400x200?text=Pipeline+%E2%9C%85) | ![Report](https://via.placeholder.com/400x200?text=Unified+Report) |
+
+_Replace with real captures: add `pipeline.png` and `report-unified.png` to `docs/screenshots/` and update the paths above._ → [Capture instructions](./docs/screenshots/README.md)
+
+---
+
+## Architecture
+
+| Layer | Tech | Description |
+|-------|------|-------------|
+| Frontend | Next.js | Playground (auth) + Admin dashboard (CRUD users) |
+| Backend | Node.js + Express | REST API: auth, users, healthcheck |
+| Database | PostgreSQL | Docker; seed with admin user |
+| Tests | Cypress + Playwright | E2E suites: api, auth, admin, ui, performance |
+| CI/CD | GitHub Actions | pipeline.yml, agent.yml |
+| Agents | MCP, Node.js | Menu, Test Writer (LLM), Failure Analyzer |
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Instalar dependências
+# 1. Install dependencies
 npm install
 cd frontend && npm install && cd ..
 cd backend && npm install && cd ..
 cd tests && npm install && cd ..
 
-# 2. Subir ambiente (banco, backend, frontend) – verifica o que já está rodando
+# 2. Start environment (DB, backend, frontend)
 npm run dev
 
-# 3. Rodar testes
+# 3. Run tests
 npm run tests:run
 ```
 
-## Comandos Principais
+---
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Sobe banco, backend e frontend (dinâmico: só o que não estiver rodando) |
+## Key Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start DB, backend, frontend (dynamic: only starts what's not running) |
 | `npm run tests:run` | Cypress E2E |
 | `npm run tests:pw` | Playwright E2E |
-| `npm run agent:run-tests` | Menu interativo para rodar testes via MCP |
-| `npm run agent:test-writer "descrição"` | **Gerar testes com LLM** |
-| `npm run agent:analyze-failures` | Analisa falhas e sugere correções |
-| `npm run lint:check` | Verifica erros de lint |
-
-## Todos os Comandos
-
-| Comando | Descrição |
-|---------|-----------|
-| `npm run db:up` | Sobe PostgreSQL (Docker) |
-| `npm run db:down` | Para o PostgreSQL |
-| `npm run backend:install` | Instala deps do backend |
-| `npm run backend:dev` | Sobe o backend (porta 4000) |
-| `npm run frontend:install` | Instala deps do frontend |
-| `npm run frontend:dev` | Sobe o frontend (porta 3000) |
-| `npm run tests:install` | Instala deps dos testes |
-| `npm run tests:run` | Cypress (npm test) |
-| `npm run tests:pw` | Playwright E2E |
-| `npm run tests:pw:ui` | Playwright em modo UI |
-| `npm run tests:pw:report` | Playwright com relatório HTML |
-| `npm run tests:report:unified` | Relatório unificado Cypress + Playwright |
-| `npm run tests:contract` | Contract testing (OpenAPI spec) |
-| `npm run tests:report` | Cypress com relatório Mochawesome |
-| `npm run tests:clean-users` | Remove usuários @teste.com do banco |
-| `npm run tests:full` | Limpa usuários + roda testes com relatório |
-| `npm run agents:install` | Instala deps dos agents |
-| `npm run agent` | Conecta ao MCP (menu/lista tools) |
-| `npm run agent:run-tests` | Menu interativo para rodar Cypress |
-| `npm run agent:analyze-failures` | Roda testes e analisa falhas |
-| `npm run agent:analyze-failures admin` | Analisa falha só da suíte admin |
-| `npm run agent:full` | Limpa usuários + roda testes via agent |
-| `npm run agent:test-writer` | Ver combinações abaixo |
-| `npm run dev` | Sobe ambiente completo (banco + backend + frontend) |
-| `npm run lint:check` | Conta erros e warnings do ESLint |
+| `npm run tests:report:unified` | Unified HTML report (Cypress + Playwright) |
+| `npm run tests:contract` | Contract testing against OpenAPI spec |
+| `npm run agent:run-tests` | Interactive menu to run Cypress via MCP |
+| `npm run agent:test-writer "description"` | **Generate tests with LLM** (Groq, Gemini, OpenAI) |
+| `npm run agent:analyze-failures` | Run tests; on failure, analyze and suggest fixes |
 
 ---
 
-## Test Writer Agent – Todas as combinações
+## Test Writer Agent
 
-Gera testes Cypress com LLM (Groq, Gemini ou OpenAI). **API key obrigatória** no `.env`.
-
-**Suítes disponíveis:** `api` | `auth` | `admin` | `ui` | `performance`
-
-### Forma 1 – Descrição direta (entre aspas)
+Generate Cypress and/or Playwright tests from natural language. **API key required** in `.env` (Groq or Gemini are free).
 
 ```bash
 npm run agent:test-writer "healthcheck da API"
-npm run agent:test-writer "teste para POST /auth/register"
-npm run agent:test-writer "GET /users retorna 403 sem token"
-npm run agent:test-writer "teste de login com credenciais inválidas"
-npm run agent:test-writer "validação de idade 18-80 no dashboard admin"
+npm run agent:test-writer "POST /auth/register returns 201"
+npm run agent:test-writer -- --framework both "login flow"  # Cypress + Playwright
 ```
 
-### Forma 2 – Com `--suite` e `--request` (use `--` antes dos args)
-
-```bash
-npm run agent:test-writer -- --suite api --request "healthcheck"
-npm run agent:test-writer -- --suite api --request "POST /auth/register retorna 201"
-npm run agent:test-writer -- --suite auth --request "login admin e redireciona"
-npm run agent:test-writer -- --suite auth --request "logout limpa sessão"
-npm run agent:test-writer -- --suite admin --request "editar idade do usuário"
-npm run agent:test-writer -- --suite admin --request "filtro por usuário inativo"
-npm run agent:test-writer -- --suite ui --request "elementos da tela inicial"
-npm run agent:test-writer -- --suite performance --request "tempo de load da página"
-```
-
-### Forma 3 – Apenas descrição curta (suíte padrão: api)
-
-```bash
-npm run agent:test-writer "healthcheck"
-npm run agent:test-writer "registro"
-npm run agent:test-writer "login"
-```
-
-### Exemplos por suíte
-
-| Suíte | Exemplo de request |
-|-------|---------------------|
-| **api** | `"GET /health"`, `"POST /auth/register"`, `"GET /users com token"` |
-| **auth** | `"login admin"`, `"logout"`, `"registro completo"` |
-| **admin** | `"editar idade"`, `"filtro inativo"`, `"excluir usuário"` |
-| **ui** | `"formulário de registro visível"`, `"tabela de usuários"` |
-| **performance** | `"load da página"`, `"healthcheck em menos de 2s"` |
-
-→ **[Guia completo](./docs/AGENT-TEST-WRITER.md)**
+**Suites:** `api` | `auth` | `admin` | `ui` | `performance`  
+→ **[Full guide](./docs/AGENT-TEST-WRITER.md)** — all combinations, env vars, examples per suite.
 
 ---
 
 ## Documentation
 
-- **[Test Strategy](./docs/test-strategy.md)** – Pyramid, coverage, risks, and when to run what
-- **[Cypress vs Playwright](./docs/TESTES-CYPRESS-VS-PLAYWRIGHT.md)** – Estratégia de manutenção, quando duplicar, quando consolidar
-- **[API](./docs/API.md)** – Endpoints, authentication, request/response format
-- **[Contract Testing](./docs/CONTRACT-TESTING.md)** – OpenAPI spec and schema validation
-- **[Pipeline & Maintenance](./docs/PIPELINE.md)** – How to maintain the CI/CD pipeline, debug errors, and fix them
-- **[Reports](./docs/RELATORIOS.md)** – Cypress, Playwright, and unified reports
-- **[Test Writer Agent](./docs/AGENT-TEST-WRITER.md)** – LLM-based test generation (Groq, Gemini, OpenAI)
-- **[SDET & Evolution](./docs/SDET-EVOLUCAO.md)** – SDET mindset, metrics, and tips for posts
-- **[About the project](./docs/SOBRE-O-PROJETO.md)** – How the project started, current state, and next steps
+| Doc | Content |
+|-----|---------|
+| [Test Strategy](./docs/test-strategy.md) | Pyramid, coverage, risks, when to run what |
+| [Cypress vs Playwright](./docs/TESTES-CYPRESS-VS-PLAYWRIGHT.md) | Strategy, when to share specs vs duplicate |
+| [API](./docs/API.md) | Endpoints, auth, request/response format |
+| [Contract Testing](./docs/CONTRACT-TESTING.md) | OpenAPI spec and schema validation |
+| [Pipeline & Maintenance](./docs/PIPELINE.md) | CI/CD maintenance, debug, branch protection |
+| [Reports](./docs/RELATORIOS.md) | Cypress, Playwright, unified reports |
+| [Test Writer Agent](./docs/AGENT-TEST-WRITER.md) | LLM-based test generation (Groq, Gemini, OpenAI) |
+| [Project Summary](./docs/RESUMO-DO-PROJETO.md) | Full reference — architecture, API, suites, agents |
+| [About the project](./docs/SOBRE-O-PROJETO.md) | Origin, current state, roadmap |
 
-## Architecture
-
-- **Frontend:** Next.js
-- **Backend:** Node.js + Express
-- **Database:** PostgreSQL (Docker)
-- **Automation:** Cypress / Playwright
-- **AI Agents:** MCP + Test Writer (LLM), Failure Analyzer
-- **CI/CD:** GitHub Actions
+---
 
 ## Project Structure
 
 ```
 qa-lab/
-├── .github/         → CI/CD pipelines
-├── agents/          → AI agents (MCP, Test Writer, Failure Analyzer)
-├── backend/         → API services
-├── database/        → Docker database setup
-├── frontend/        → Next.js frontend
-├── tests/           → Cypress + Playwright
-└── docs/            → Documentation
+├── .github/workflows/   # pipeline.yml, agent.yml
+├── agents/              # MCP server, qa-agent, test-writer-agent, failure-analyzer
+├── backend/             # Express API
+├── database/            # Docker (PostgreSQL)
+├── frontend/            # Next.js
+├── tests/
+│   ├── shared/          # constants, factories, centralized specs/api
+│   ├── cypress/         # e2e, support
+│   ├── playwright/      # e2e, support
+│   └── contract/        # validate-against-spec
+├── docs/                # documentation
+└── scripts/             # start-dev, lint-check
 ```
+
+---
+
+## All Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run db:up` | Start PostgreSQL (Docker) |
+| `npm run db:down` | Stop PostgreSQL |
+| `npm run backend:install` | Install backend deps |
+| `npm run backend:dev` | Start backend (port 4000) |
+| `npm run frontend:install` | Install frontend deps |
+| `npm run frontend:dev` | Start frontend (port 3000) |
+| `npm run tests:install` | Install test deps |
+| `npm run tests:run` | Cypress E2E |
+| `npm run tests:pw` | Playwright E2E |
+| `npm run tests:pw:ui` | Playwright UI mode |
+| `npm run tests:pw:report` | Playwright HTML report |
+| `npm run tests:report:unified` | Unified Cypress + Playwright report |
+| `npm run tests:contract` | Contract testing (OpenAPI spec) |
+| `npm run tests:report` | Cypress with Mochawesome |
+| `npm run tests:clean-users` | Remove @teste.com users from DB |
+| `npm run tests:full` | Clean users + run tests with report |
+| `npm run agents:install` | Install agent deps |
+| `npm run agent` | Connect to MCP (list tools) |
+| `npm run agent:run-tests` | Interactive menu to run Cypress |
+| `npm run agent:analyze-failures` | Run tests and analyze failures |
+| `npm run agent:analyze-failures admin` | Analyze failures for admin suite only |
+| `npm run agent:full` | Clean users + run tests via agent |
+| `npm run agent:test-writer` | Test Writer (see guide above) |
+| `npm run dev` | Full environment (DB + backend + frontend) |
+| `npm run lint:check` | ESLint errors and warnings |
