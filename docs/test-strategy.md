@@ -27,6 +27,8 @@ This document describes the testing approach for the QA Lab: pyramid, coverage, 
 | **Performance** | TICTAC (Cypress/Playwright) | `tests/.../performance/tictac` | Time-based critical path (load, health, TTI, dashboard) |
 | **Integration** | E2E specs that hit API + UI | Admin flows, register-and-login | Validates frontend + backend together |
 
+**Shared code:** `tests/shared/` contains constants, factories, and selectors used by both Cypress and Playwright to avoid duplication.
+
 ---
 
 ## Current Coverage
