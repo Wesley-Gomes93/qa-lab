@@ -16,6 +16,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "../..");
 config({ path: path.join(PROJECT_ROOT, ".env") });
 const TESTS_DIR = path.join(PROJECT_ROOT, "tests");
 const SPEC_BASE = path.join(TESTS_DIR, "cypress", "e2e");
+const PW_SPEC_BASE = path.join(TESTS_DIR, "playwright", "e2e");
 
 const API_BASE = "http://localhost:4000";
 const DEFAULT_ADMIN_TOKEN = "admin-qa-lab";
@@ -104,12 +105,49 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
   });
 }
 
+function runPlaywrightTests({ spec: specPath } = {}) {
+  const testsDir = path.resolve(__dirname, "../../tests");
+  const args = specPath ? ["playwright", "test", specPath] : ["run", "pw:test"];
+  const cmd = specPath ? "npx" : "npm";
+
+  return new Promise((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd: testsDir,
+      stdio: ["inherit", "pipe", "pipe"],
+      shell: process.platform === "win32",
+      env: { ...process.env },
+    });
+
+    let stdout = "";
+    let stderr = "";
+    if (child.stdout) {
+      child.stdout.on("data", (d) => {
+        const s = d.toString();
+        stdout += s;
+        process.stdout.write(s);
+      });
+    }
+    if (child.stderr) {
+      child.stderr.on("data", (d) => {
+        const s = d.toString();
+        stderr += s;
+        process.stderr.write(s);
+      });
+    }
+
+    child.on("close", (code) => {
+      const runOutput = [stdout, stderr].filter(Boolean).join("\n").trim();
+      resolve({ code: code ?? 1, runOutput: runOutput || undefined });
+    });
+  });
+}
+
 server.registerTool(
   "run_tests",
   {
     title: "Executar testes automatizados",
     description:
-      "Executa a suíte de testes automatizados (Cypress) e retorna um resumo em texto e JSON.",
+      "Executa Cypress ou Playwright. Use framework: 'playwright' quando spec for .spec.js.",
     inputSchema: z.object({
       suite: z
         .string()
@@ -118,7 +156,11 @@ server.registerTool(
       spec: z
         .string()
         .optional()
-        .describe("Caminho do arquivo de spec (ex: cypress/e2e/admin/admin-dashboard-idade-inativo.cy.js)."),
+        .describe("Caminho do spec (ex: cypress/e2e/api/foo.cy.js ou playwright/e2e/api/foo.spec.js)."),
+      framework: z
+        .enum(["cypress", "playwright"])
+        .optional()
+        .describe("Qual framework rodar. Se spec terminar em .spec.js, usa Playwright automaticamente."),
       registerName: z.string().optional().describe("Nome para testes de registro (env CYPRESS_REGISTER_NAME)."),
       registerEmail: z.string().optional().describe("E-mail para registro/login (env CYPRESS_REGISTER_EMAIL)."),
       registerPassword: z.string().optional().describe("Senha para registro/login (env CYPRESS_REGISTER_PASSWORD)."),
@@ -128,37 +170,45 @@ server.registerTool(
       status: z.enum(["passed", "failed"]),
       message: z.string(),
       exitCode: z.number(),
-      runOutput: z.string().optional().describe("Output do Cypress quando falhou (para analyze_failures)."),
+      runOutput: z.string().optional().describe("Output quando falhou (para analyze_failures)."),
     }),
   },
-  async ({ suite, spec: specPath, registerName, registerEmail, registerPassword, editIdade }) => {
-    const suiteParam = specPath ? undefined : (suite || "all");
-    const { code, runOutput } = await runCypressTests({
-      suite: suiteParam,
-      spec: specPath,
-      registerName,
-      registerEmail,
-      registerPassword,
-      editIdade,
-    });
+  async ({ suite, spec: specPath, framework, registerName, registerEmail, registerPassword, editIdade }) => {
+    const usePlaywright = framework === "playwright" || (specPath && specPath.endsWith(".spec.js"));
+
+    let code, runOutput;
+    if (usePlaywright) {
+      const result = await runPlaywrightTests({ spec: specPath });
+      code = result.code;
+      runOutput = result.runOutput;
+    } else {
+      const suiteParam = specPath ? undefined : (suite || "all");
+      const result = await runCypressTests({
+        suite: suiteParam,
+        spec: specPath,
+        registerName,
+        registerEmail,
+        registerPassword,
+        editIdade,
+      });
+      code = result.code;
+      runOutput = result.runOutput;
+    }
+
     const passed = code === 0;
+    const fwName = usePlaywright ? "Playwright" : "Cypress";
 
     const structured = {
       status: passed ? "passed" : "failed",
       message: passed
-        ? "Testes Cypress executados com sucesso."
-        : "Falha na execução dos testes Cypress. Verifique os logs.",
+        ? `Testes ${fwName} executados com sucesso.`
+        : `Falha na execução dos testes ${fwName}. Verifique os logs.`,
       exitCode: code,
       ...(runOutput && !passed && { runOutput }),
     };
 
     return {
-      content: [
-        {
-          type: "text",
-          text: structured.message,
-        },
-      ],
+      content: [{ type: "text", text: structured.message }],
       structuredContent: structured,
     };
   }
@@ -325,11 +375,12 @@ server.registerTool(
   "write_test",
   {
     title: "Escrever arquivo de teste",
-    description: "Grava o conteúdo de um spec Cypress em tests/cypress/e2e/{suite}/{nome}.cy.js",
+    description: "Grava spec Cypress ou Playwright em tests/{cypress|playwright}/e2e/{suite}/.",
     inputSchema: z.object({
       suite: z.enum(["api", "auth", "admin", "ui", "performance"]).describe("Pasta da suíte."),
-      name: z.string().describe("Nome do arquivo sem .cy.js (ex: api-health)."),
-      content: z.string().describe("Conteúdo completo do spec Cypress."),
+      name: z.string().describe("Nome do arquivo (ex: api-health). Será .cy.js ou .spec.js conforme framework."),
+      content: z.string().describe("Conteúdo completo do spec."),
+      framework: z.enum(["cypress", "playwright"]).optional().describe("Framework destino. Default: cypress."),
     }),
     outputSchema: z.object({
       ok: z.boolean(),
@@ -337,10 +388,13 @@ server.registerTool(
       error: z.string().optional(),
     }),
   },
-  async ({ suite, name, content }) => {
-    const safeName = name.replace(/[^a-z0-9-]/gi, "-").replace(/-+/g, "-");
-    const fileName = safeName.endsWith(".cy.js") ? safeName : `${safeName}.cy.js`;
-    const filePath = path.join(SPEC_BASE, suite, fileName);
+  async ({ suite, name, content, framework = "cypress" }) => {
+    const safeName = name.replace(/[^a-z0-9-]/gi, "-").replace(/-+/g, "-").replace(/\.(cy|spec)\.js$/i, "");
+    const isPlaywright = framework === "playwright";
+    const baseDir = isPlaywright ? PW_SPEC_BASE : SPEC_BASE;
+    const ext = isPlaywright ? ".spec.js" : ".cy.js";
+    const fileName = `${safeName}${ext}`;
+    const filePath = path.join(baseDir, suite, fileName);
     try {
       const dir = path.dirname(filePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -400,24 +454,35 @@ server.registerTool(
   "generate_tests",
   {
     title: "Gerar testes com LLM",
-    description: "Usa LLM (OPENAI_API_KEY) para gerar spec Cypress a partir do contexto do projeto. Retorna código pronto para write_test.",
+    description: "Gera spec Cypress ou Playwright com LLM. Use framework: 'both' para gerar os dois (retorna cypressContent e playwrightContent).",
     inputSchema: z.object({
       context: z.string().describe("Contexto: resultado de read_project ou descrição do que testar."),
-      userRequest: z.string().optional().describe("O que o usuário quer testar (ex: 'healthcheck da API', 'registro de usuário')."),
-      target: z.enum(["e2e", "api"]).optional().describe("Alvo: e2e (Cypress) ou api."),
+      userRequest: z.string().optional().describe("O que o usuário quer testar (ex: 'healthcheck da API')."),
+      target: z.enum(["e2e", "api"]).optional().describe("Alvo: e2e ou api."),
       suite: z.enum(["api", "auth", "admin", "ui", "performance"]).optional().describe("Suíte destino."),
+      framework: z.enum(["cypress", "playwright", "both"]).optional().describe("Framework: cypress, playwright ou both. Default: cypress."),
     }),
     outputSchema: z.object({
       ok: z.boolean(),
       specContent: z.string().optional(),
+      playwrightContent: z.string().optional().describe("Quando framework=both, spec em Playwright."),
       suggestedFileName: z.string().optional(),
       error: z.string().optional(),
     }),
   },
-  async ({ context, userRequest = "", target = "api", suite = "api" }) => {
+  async ({ context, userRequest = "", target = "api", suite = "api", framework = "cypress" }) => {
     try {
       const { callLLM } = await import("../llm.js");
-      const systemPrompt = `Você é um engenheiro de QA especializado em Cypress. Gere APENAS o código do spec, sem explicações antes ou depois.
+      const baseFileName = `${suite}-${(userRequest || "novo").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`.slice(0, 50);
+
+      const genCypress = framework === "cypress" || framework === "both";
+      const genPlaywright = framework === "playwright" || framework === "both";
+
+      let specContent = "";
+      let playwrightContent = "";
+
+      if (genCypress) {
+        const cypressSystem = `Você é um engenheiro de QA especializado em Cypress. Gere APENAS o código do spec, sem explicações antes ou depois.
 Regras:
 - Use require('../../support/helpers') para API_BASE, randomEmail, randomName quando fizer sentido.
 - API_BASE vem de helpers; base URL da API é http://localhost:4000.
@@ -426,20 +491,61 @@ Regras:
 - Não inclua comentários excessivos. Código limpo e funcional.
 - Retorne SOMENTE o código JavaScript, sem markdown, sem \`\`\`js.`;
 
-      const userPrompt = `Contexto do projeto QA Lab:
+        const cypressUser = `Contexto do projeto QA Lab:
 ${context.slice(0, 6000)}
 
 O usuário quer: ${userRequest || "gerar teste para o endpoint ou fluxo mais adequado ao contexto"}
 
 Gere um spec Cypress completo (describe + it). Target: ${target}. Suíte: ${suite}.`;
 
-      const specContent = await callLLM(systemPrompt, userPrompt);
-      // Remove markdown code block se o LLM incluir
-      const cleaned = specContent.replace(/^```(?:js|javascript)?\n?/i, "").replace(/\n?```\s*$/i, "").trim();
-      const suggestedFileName = `${suite}-${(userRequest || "novo").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`.slice(0, 50);
+        const raw = await callLLM(cypressSystem, cypressUser);
+        specContent = raw.replace(/^```(?:js|javascript)?\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+      }
+
+      if (genPlaywright) {
+        const pwSystem = `Você é um engenheiro de QA especializado em Playwright. Gere APENAS o código do spec, sem explicações antes ou depois.
+Regras:
+- Use: const { test, expect } = require("@playwright/test");
+- Use require("../../support/helpers") para API_BASE_URL, randomEmail, randomName, ADMIN_TOKEN quando fizer sentido.
+- API_BASE_URL vem de helpers; base URL da API é http://localhost:4000.
+- Para testes de API: use request.get/post/put/delete (fixture { request }).
+- Sintaxe: test.describe("Título", () => { test("nome", async ({ request }) => { ... }); });
+- expect(res.status()).toBe(200) para status; await res.json() para body.
+- Retorne SOMENTE o código JavaScript, sem markdown, sem \`\`\`js.`;
+
+        const pwUser = `Contexto do projeto QA Lab:
+${context.slice(0, 6000)}
+
+O usuário quer: ${userRequest || "gerar teste para o endpoint ou fluxo mais adequado ao contexto"}
+
+Gere um spec Playwright completo (test.describe + test). Target: ${target}. Suíte: ${suite}.`;
+
+        const raw = await callLLM(pwSystem, pwUser);
+        playwrightContent = raw.replace(/^```(?:js|javascript)?\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+      }
+
+      const mainContent = specContent || playwrightContent;
+      if (!mainContent) {
+        return {
+          content: [{ type: "text", text: "Nenhum conteúdo gerado." }],
+          structuredContent: { ok: false, error: "LLM não retornou código" },
+        };
+      }
+
+      const result = {
+        ok: true,
+        suggestedFileName: baseFileName,
+        ...(specContent && { specContent }),
+        ...(playwrightContent && { playwrightContent }),
+      };
+
+      const msg = framework === "both"
+        ? `Specs gerados: Cypress (${specContent.length} chars), Playwright (${playwrightContent.length} chars).`
+        : `Spec gerado (${mainContent.length} chars). Use write_test para gravar.`;
+
       return {
-        content: [{ type: "text", text: `Spec gerado (${cleaned.length} chars). Use write_test para gravar.` }],
-        structuredContent: { ok: true, specContent: cleaned, suggestedFileName },
+        content: [{ type: "text", text: msg }],
+        structuredContent: result,
       };
     } catch (err) {
       return {

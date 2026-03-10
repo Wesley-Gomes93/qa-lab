@@ -3,16 +3,18 @@
  *
  * 1. Ler o projeto (read_project)
  * 2. Sugerir e criar teste (generate_tests + write_test)
- * 3. Rodar teste (run_tests)
+ * 3. Rodar teste(s) (run_tests)
  * 4. Verificar se passou
  * 5. Reportar resultado
  *
  * Uso:
- *   node test-writer-agent.js                         → fluxo interativo (pergunta o que testar)
- *   node test-writer-agent.js "healthcheck da API"    → gera e roda teste para o pedido
+ *   node test-writer-agent.js "healthcheck da API"
  *   node test-writer-agent.js --suite api --request "POST /auth/register"
+ *   node test-writer-agent.js --framework both "healthcheck da API"  → gera Cypress + Playwright
  *
- * Requer: OPENAI_API_KEY ou QA_LAB_LLM_API_KEY no .env (raiz do projeto)
+ * --framework cypress | playwright | both  (default: cypress)
+ *
+ * Requer: GROQ_API_KEY, GEMINI_API_KEY ou OPENAI_API_KEY no .env
  */
 import { config } from "dotenv";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -48,12 +50,26 @@ function getStructured(result) {
 }
 
 async function main() {
-  const userRequest = process.argv[2] || "";
   const args = process.argv.slice(2);
   const suiteIndex = args.indexOf("--suite");
   const requestIndex = args.indexOf("--request");
+  const frameworkIndex = args.indexOf("--framework");
   const suite = suiteIndex >= 0 ? args[suiteIndex + 1] || "api" : "api";
-  const request = requestIndex >= 0 ? args[requestIndex + 1] : userRequest;
+  const framework = frameworkIndex >= 0 ? args[frameworkIndex + 1] || "cypress" : "cypress";
+
+  // Request: --request value, ou primeiro arg posicional (não usado por flags)
+  const usedByFlags = new Set();
+  [suiteIndex, requestIndex, frameworkIndex].forEach((i) => {
+    if (i >= 0) {
+      usedByFlags.add(i);
+      usedByFlags.add(i + 1);
+    }
+  });
+  const positional = args.filter((_, i) => !usedByFlags.has(i));
+  const request = requestIndex >= 0 ? args[requestIndex + 1] : positional.join(" ").trim();
+
+  const validFrameworks = ["cypress", "playwright", "both"];
+  const fw = validFrameworks.includes(framework) ? framework : "cypress";
 
   let client;
 
@@ -70,7 +86,9 @@ async function main() {
     );
     await client.connect(transport);
 
-    console.log("\n[Test Writer Agent] Fluxo: ler projeto → sugerir teste → criar → rodar → verificar\n");
+    console.log("\n[Test Writer Agent] Fluxo: ler projeto → sugerir teste → criar → rodar → verificar");
+    if (fw === "both") console.log("   Framework: Cypress + Playwright (ambos)\n");
+    else console.log(`   Framework: ${fw}\n`);
 
     // 1. Ler projeto
     console.log("1. Lendo projeto...");
@@ -92,61 +110,89 @@ async function main() {
 
     console.log(`   → ${readData.apiEndpoints?.length || 0} endpoints, ${readData.existingSpecs?.length || 0} specs\n`);
 
-    // 2. Gerar teste (LLM)
+    // 2. Gerar teste(s) (LLM)
     const prompt = request || "gere um teste de API para GET /health (healthcheck)";
-    console.log("2. Gerando teste com LLM...");
+    console.log("2. Gerando teste(s) com LLM...");
     console.log(`   Pedido: ${prompt}\n`);
 
     const genResult = await client.callTool({
       name: "generate_tests",
-      arguments: { context, userRequest: prompt, target: "api", suite },
+      arguments: { context, userRequest: prompt, target: "api", suite, framework: fw },
     });
     const genData = getStructured(genResult);
-    if (!genData?.ok || !genData.specContent) {
+    const hasCypress = genData?.ok && genData.specContent;
+    const hasPlaywright = genData?.ok && genData.playwrightContent;
+    if (!genData?.ok || (!hasCypress && !hasPlaywright)) {
       console.error("Erro ao gerar teste:", genData?.error || "LLM não retornou código");
       await client.close();
       process.exit(1);
     }
 
     const fileName = genData.suggestedFileName || `api-${Date.now()}`;
-    console.log(`   → Spec gerado (${genData.specContent.length} chars)\n`);
+    if (hasCypress) console.log(`   → Cypress: ${genData.specContent.length} chars`);
+    if (hasPlaywright) console.log(`   → Playwright: ${genData.playwrightContent.length} chars`);
+    console.log("");
 
-    // 3. Escrever teste
-    console.log("3. Escrevendo arquivo...");
-    const writeResult = await client.callTool({
-      name: "write_test",
-      arguments: { suite, name: fileName, content: genData.specContent },
-    });
-    const writeData = getStructured(writeResult);
-    if (!writeData?.ok) {
-      console.error("Erro ao gravar:", writeData?.error);
-      await client.close();
-      process.exit(1);
+    // 3. Escrever arquivo(s)
+    const writtenPaths = [];
+    if (hasCypress) {
+      console.log("3a. Escrevendo spec Cypress...");
+      const writeResult = await client.callTool({
+        name: "write_test",
+        arguments: { suite, name: fileName, content: genData.specContent, framework: "cypress" },
+      });
+      const writeData = getStructured(writeResult);
+      if (!writeData?.ok) {
+        console.error("Erro ao gravar Cypress:", writeData?.error);
+        await client.close();
+        process.exit(1);
+      }
+      console.log(`    → ${writeData.path}`);
+      writtenPaths.push({ framework: "cypress", path: `cypress/e2e/${suite}/${fileName}.cy.js` });
     }
-    console.log(`   → ${writeData.path}\n`);
+    if (hasPlaywright) {
+      console.log("3b. Escrevendo spec Playwright...");
+      const writeResult = await client.callTool({
+        name: "write_test",
+        arguments: { suite, name: fileName, content: genData.playwrightContent, framework: "playwright" },
+      });
+      const writeResultData = getStructured(writeResult);
+      if (!writeResultData?.ok) {
+        console.error("Erro ao gravar Playwright:", writeResultData?.error);
+        await client.close();
+        process.exit(1);
+      }
+      console.log(`    → ${writeResultData.path}`);
+      writtenPaths.push({ framework: "playwright", path: `playwright/e2e/${suite}/${fileName}.spec.js` });
+    }
+    console.log("");
 
-    // 4. Rodar teste
-    const specPath = `cypress/e2e/${suite}/${fileName.replace(/\.cy\.js$/, "")}.cy.js`;
-    console.log("4. Rodando teste...");
-    const runResult = await client.callTool({
-      name: "run_tests",
-      arguments: { spec: specPath },
-    });
-    const runData = getStructured(runResult);
-    const passed = runData?.status === "passed" && runData?.exitCode === 0;
+    // 4. Rodar teste(s)
+    let allPassed = true;
+    for (const { framework: f, path: specPath } of writtenPaths) {
+      console.log(`4. Rodando ${f}...`);
+      const runResult = await client.callTool({
+        name: "run_tests",
+        arguments: { spec: specPath, framework: f },
+      });
+      const runData = getStructured(runResult);
+      const passed = runData?.status === "passed" && runData?.exitCode === 0;
+      if (!passed) allPassed = false;
+      console.log(`   ${passed ? "✓" : "✗"} ${f}: ${passed ? "passou" : "falhou"}\n`);
+    }
 
     // 5. Reportar
-    console.log("\n5. Resultado:");
-    if (passed) {
-      console.log("   ✓ Teste passou. Tudo certo.");
+    console.log("5. Resultado:");
+    if (allPassed) {
+      console.log("   ✓ Todos os testes passaram.");
     } else {
-      console.log("   ✗ Teste falhou. Verifique o output acima.");
+      console.log("   ✗ Algum teste falhou. Verifique o output acima.");
       console.log("   Use: npm run agent:analyze-failures para sugestões de correção.");
     }
 
     console.log("\n[Test Writer Agent] Fim.\n");
     await client.close();
-    process.exit(passed ? 0 : 1);
+    process.exit(allPassed ? 0 : 1);
   } catch (err) {
     console.error("[Test Writer Agent] Erro:", err.message);
     if (client) await client.close().catch(() => {});
