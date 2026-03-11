@@ -22,6 +22,8 @@
     "tests:pw:ui": "cd tests && npm run pw:ui",
     "tests:pw:report": "cd tests && npm run pw:report",
     "tests:report:unified": "cd tests && npm run report:unified",
+    "tests:report:execution": "cd tests && npm run report:execution",
+    "tests:execution": "cd tests && npm run test:execution",
     "tests:contract": "node tests/contract/validate-against-spec.js",
     "tests:report": "cd tests && npm run test:report",
     "lint": "eslint backend/ tests/ agents/ scripts/",

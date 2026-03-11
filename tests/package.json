@@ -9,8 +9,10 @@
     "pw:ui": "playwright test --ui",
     "pw:report": "playwright show-report",
     "report:unified": "node scripts/generate-qa-report.js",
+    "report:execution": "node scripts/execution-report.js",
     "test": "cypress run",
     "test:report": "cypress run && node scripts/report-to-api.js",
+    "test:execution": "cypress run && playwright test && node scripts/execution-report.js",
     "report-to-api": "node scripts/report-to-api.js"
   },
   "devDependencies": {

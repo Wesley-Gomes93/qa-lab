@@ -238,6 +238,10 @@ jobs:
       - name: Generate unified report
         run: cd tests && node scripts/generate-qa-report.js
 
+      - name: Generate execution report (comparison, suites, history)
+        run: cd tests && node scripts/execution-report.js --no-save
+        continue-on-error: true
+
       - name: Upload QA Lab report
         uses: actions/upload-artifact@v4
         with:
