@@ -9,10 +9,10 @@ const SESSION_KEY = "qa-lab-session";
 type Session = { token: string; user: { name: string }; isAdmin?: boolean };
 
 const nav = [
-  { href: "/dashboard", label: "Usuários" },
-  { href: "/dashboard/testes", label: "Histórico de testes" },
-  { href: "/dashboard/metricas", label: "Métricas" },
-  { href: "/dashboard/health", label: "Health" },
+  { href: "/dashboard", label: "Usuários", testId: "nav-usuarios" },
+  { href: "/dashboard/testes", label: "Histórico de testes", testId: "nav-testes" },
+  { href: "/dashboard/metricas", label: "Métricas", testId: "nav-metricas" },
+  { href: "/dashboard/health", label: "Health", testId: "nav-health" },
 ];
 
 export default function DashboardLayout({
@@ -79,10 +79,11 @@ export default function DashboardLayout({
         </div>
         {session.isAdmin && (
           <nav className="mx-auto flex max-w-6xl gap-1 px-4 pb-3">
-            {nav.map(({ href, label }) => (
+            {nav.map(({ href, label, testId }) => (
               <Link
                 key={href}
                 href={href}
+                data-testid={testId}
                 className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
                   pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
                     ? "bg-white/10 text-emerald-400"

@@ -48,20 +48,20 @@ export default function HealthPage() {
   }
 
   return (
-    <div>
+    <div data-testid="page-health">
       <h1 className="mb-2 text-2xl font-bold text-white">Health Check</h1>
       <p className="mb-6 text-zinc-400">
         Status da API, banco de dados e métricas agregadas (observabilidade).
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-6" data-testid="health-card-api">
           <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-zinc-500">API</h3>
           <p className="text-2xl font-bold text-emerald-400">{health.status}</p>
           {health.uptime != null && (
             <p className="mt-1 text-xs text-zinc-500">Uptime: {Math.floor(health.uptime)}s</p>
           )}
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-6" data-testid="health-card-db">
           <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-zinc-500">Database</h3>
           <p className={`text-2xl font-bold ${health.db === "ok" ? "text-emerald-400" : "text-red-400"}`}>
             {health.db}

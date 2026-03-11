@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "test:cy": "cypress run; node scripts/print-summary.js cypress",
+    "test:pw": "playwright test; node scripts/print-summary.js playwright",
+    "test:all": "cypress run; playwright test; node scripts/print-summary.js all",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "pw:test": "playwright test",

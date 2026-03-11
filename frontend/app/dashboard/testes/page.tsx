@@ -61,7 +61,7 @@ export default function TestesPage() {
   }, [token]);
 
   return (
-    <div>
+    <div data-testid="page-testes">
       <h1 className="mb-2 text-2xl font-bold text-white">Histórico de testes</h1>
       <p className="mb-6 text-zinc-400">
         Últimas execuções registradas (Cypress / CI / agente). Total: {total} runs.
@@ -71,11 +71,11 @@ export default function TestesPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
         </div>
       ) : runs.length === 0 ? (
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-8 text-center text-zinc-500">
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-8 text-center text-zinc-500" data-testid="test-runs-empty">
           Nenhum run de teste registrado ainda. Rode os testes com o reporter (npm run test:report) ou pelo agente e envie o resultado para a API.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]" data-testid="table-test-runs">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-white/10 text-zinc-500">

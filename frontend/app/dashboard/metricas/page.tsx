@@ -45,13 +45,13 @@ export default function MetricasPage() {
   }
 
   return (
-    <div>
+    <div data-testid="page-metricas">
       <h1 className="mb-2 text-2xl font-bold text-white">Métricas</h1>
       <p className="mb-6 text-zinc-400">
         API Response Time, Auth Success Rate e amostras em memória (últimas requisições).
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-6" data-testid="metricas-card-api">
           <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-zinc-500">
             API Response Time
           </h3>
