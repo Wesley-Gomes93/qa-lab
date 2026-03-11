@@ -1,47 +1,69 @@
-# QA Lab – Relatórios de Testes
+# QA Lab – Test Reports
 
-## Relatório unificado
+## Unified report
 
-O script `generate-qa-report.js` gera um relatório HTML que combina resultados do **Cypress** e **Playwright**.
+The `generate-qa-report.js` script generates an HTML report that combines **Cypress** and **Playwright** results.
 
-### Uso local
+### Local usage
 
 ```bash
-# 1. Rode os testes (ambos ou um deles)
+# 1. Run tests (both or one of them)
 npm run tests:run      # Cypress
 npm run tests:pw       # Playwright
 
-# 2. Gere o relatório unificado
+# 2. Generate the unified report
 npm run tests:report:unified
 ```
 
-O arquivo é salvo em `tests/qa-lab-reports/index.html`.
+The file is saved to `tests/qa-lab-reports/index.html`.
 
-### Opções
+### Options
 
 ```bash
-# Apenas Cypress
+# Cypress only
 cd tests && node scripts/generate-qa-report.js --cypress-only
 
-# Apenas Playwright
+# Playwright only
 cd tests && node scripts/generate-qa-report.js --playwright-only
 ```
 
-### Na pipeline
+### In the pipeline
 
-O job **report** gera automaticamente o relatório unificado após os testes. O artifact `qa-lab-report` pode ser baixado em cada run.
+The **report** job automatically generates the unified report after tests. The `qa-lab-report` artifact can be downloaded from each run.
 
-## Relatórios individuais
+## Execution report (comparison)
 
-| Ferramenta | Onde fica | Como abrir |
-|------------|-----------|------------|
-| **Cypress** | `tests/cypress/reports/html/` | Abrir `index.html` no navegador |
-| **Playwright** | `tests/playwright-report/` | `npm run tests:pw:report` ou abrir `index.html` |
+The `execution-report.js` script generates a full report with:
+
+- **Results** from Cypress and Playwright (passed, failed, skipped, duration)
+- **Performance comparison** (e.g. "Playwright executed 3.6x faster")
+- **Suites** executed (api, auth, admin, dashboard, ui, performance)
+- **Slowest file** per framework
+- **Layer** (API / UI)
+- **Environment** (CI Pipeline / Local)
+- **History** of the last 5 runs
+
+```bash
+# Run Cypress + Playwright and generate report
+npm run tests:execution
+
+# Generate report from existing reports
+npm run tests:report:execution
+```
+
+Output: console + `tests/qa-lab-reports/execution-report.txt`
+
+## Individual reports
+
+| Tool | Location | How to open |
+|------|----------|-------------|
+| **Cypress** | `tests/cypress/reports/html/` | Open `index.html` in browser |
+| **Playwright** | `tests/playwright-report/` | `npm run tests:pw:report` or open `index.html` |
 
 ## Pipeline – artifacts
 
-Cada run da pipeline gera artifacts:
+Each pipeline run generates artifacts:
 
-- **cypress-report** – relatório mochawesome do Cypress
-- **playwright-report** – relatório HTML do Playwright (+ results.json)
-- **qa-lab-report** – relatório unificado (resumo)
+- **cypress-report** – Cypress mochawesome report
+- **playwright-report** – Playwright HTML report (+ results.json)
+- **qa-lab-report** – unified report (summary) + execution-report.txt (comparison)

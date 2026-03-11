@@ -1,24 +1,24 @@
-# Como rodar os testes – Cypress e Playwright
+# How to run tests – Cypress and Playwright
 
-Os mesmos cenários estão implementados nos dois frameworks. Use os comandos abaixo.
-
----
-
-## Comandos principais
-
-| Comando | O que faz |
-|---------|-----------|
-| `npm run test:cy` | Roda Cypress + **resumo** ao final |
-| `npm run test:pw` | Roda Playwright + **resumo** ao final |
-| `npm run test:all` | Roda os dois + **resumo unificado** |
-
-Rode sempre da **raiz** do projeto ou de dentro de `tests/`. O resumo exibe: passou, falhou, skip, total e duração.
+The same scenarios are implemented in both frameworks. Use the commands below.
 
 ---
 
-## Suítes equivalentes
+## Main commands
 
-| Suíte | Cypress | Playwright |
+| Command | What it does |
+|---------|--------------|
+| `npm run test:cy` | Runs Cypress + **summary** at the end |
+| `npm run test:pw` | Runs Playwright + **summary** at the end |
+| `npm run test:all` | Runs both + **unified summary** |
+
+Always run from the **project root** or from inside `tests/`. The summary shows: passed, failed, skip, total, and duration.
+
+---
+
+## Equivalent suites
+
+| Suite | Cypress | Playwright |
 |-------|---------|------------|
 | admin | `cypress/e2e/admin/*.cy.js` | `playwright/e2e/admin/` |
 | api | `cypress/e2e/api/*.cy.js` | `playwright/e2e/api/` |
@@ -29,10 +29,10 @@ Rode sempre da **raiz** do projeto ou de dentro de `tests/`. O resumo exibe: pas
 
 ---
 
-## Rodar só uma suíte
+## Run a single suite
 
 ```bash
-# Dashboard (de dentro de tests/):
+# Dashboard (from inside tests/):
 npm run test:cy -- --spec "cypress/e2e/dashboard/*.cy.js"
 npm run test:pw -- dashboard/
 
@@ -47,9 +47,9 @@ npm run test:pw -- admin/
 
 ---
 
-## Pré-requisito
+## Prerequisite
 
-Backend, frontend e banco rodando:
+Backend, frontend, and database running:
 
 ```bash
 npm run dev

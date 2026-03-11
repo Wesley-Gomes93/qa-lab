@@ -1,35 +1,35 @@
-# QA Lab – Configuração de Lint
+# QA Lab – Lint configuration
 
-Configuração de ESLint replicada do padrão qa-mockserver-mcp, com **pastas diferentes e configs diferentes**.
-
----
-
-## Estrutura
-
-| Pasta        | Config                 | O que linta                          |
-|-------------|-------------------------|--------------------------------------|
-| **frontend**| `eslint-config-next`    | Next.js, React, TypeScript            |
-| **backend** | `eslint.config.mjs` (raiz) | API Express, Node.js               |
-| **tests**   | `eslint.config.mjs` (raiz) | Cypress, Playwright, Mocha          |
-| **agents**  | `eslint.config.mjs` (raiz) | Agentes MCP, scripts Node.js       |
-| **scripts** | `eslint.config.mjs` (raiz) | Utilitários na raiz                |
+ESLint configuration replicated from the qa-mockserver-mcp pattern, with **different folders and different configs**.
 
 ---
 
-## Regras base (backend, tests, agents, scripts)
+## Structure
 
-- **Variáveis:** `no-unused-vars`, `no-undef`, `no-duplicate-imports`, `no-var`
-- **Código limpo:** `no-debugger`, `no-alert`, `no-unreachable`, `no-empty` (com `allowEmptyCatch`)
-- **Segurança:** `no-eval`, `no-implied-eval`
-- **Testes (Mocha):** `mocha/no-exclusive-tests`, `mocha/no-identical-title`
-- **Formatação:** `max-len` (120 caracteres)
+| Folder | Config | What it lints |
+|--------|--------|---------------|
+| **frontend** | `eslint-config-next` | Next.js, React, TypeScript |
+| **backend** | `eslint.config.mjs` (root) | Express API, Node.js |
+| **tests** | `eslint.config.mjs` (root) | Cypress, Playwright, Mocha |
+| **agents** | `eslint.config.mjs` (root) | MCP agents, Node.js scripts |
+| **scripts** | `eslint.config.mjs` (root) | Root utilities |
 
 ---
 
-## Comandos
+## Base rules (backend, tests, agents, scripts)
+
+- **Variables:** `no-unused-vars`, `no-undef`, `no-duplicate-imports`, `no-var`
+- **Clean code:** `no-debugger`, `no-alert`, `no-unreachable`, `no-empty` (with `allowEmptyCatch`)
+- **Security:** `no-eval`, `no-implied-eval`
+- **Tests (Mocha):** `mocha/no-exclusive-tests`, `mocha/no-identical-title`
+- **Formatting:** `max-len` (120 characters)
+
+---
+
+## Commands
 
 ```bash
-# Lint só frontend (Next.js)
+# Lint frontend only (Next.js)
 npm run lint:frontend
 
 # Lint backend, tests, agents, scripts (flat config)
@@ -37,13 +37,13 @@ npm run lint:backend
 npm run lint:tests
 npm run lint:agents
 
-# Lint tudo (backend + tests + agents + scripts)
+# Lint all (backend + tests + agents + scripts)
 npm run lint
 
-# Lint completo (frontend + resto)
+# Full lint (frontend + rest)
 npm run lint:all
 
-# Resumo antes de commit
+# Summary before commit
 npm run lint:check
 ```
 
@@ -51,7 +51,7 @@ npm run lint:check
 
 ## Pipeline (GitHub Actions)
 
-Cada pasta tem seu próprio job de lint:
+Each folder has its own lint job:
 
 ```
 lint-frontend → lint-backend → lint-tests → lint-agents
@@ -59,4 +59,4 @@ lint-frontend → lint-backend → lint-tests → lint-agents
                     build → tests || e2e → report
 ```
 
-Os 4 jobs de lint rodam em paralelo; o build só inicia quando todos passam.
+The 4 lint jobs run in parallel; the build only starts when all pass.

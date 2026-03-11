@@ -1,11 +1,11 @@
-# Evolução do Projeto – Prints para Posts
+# Project Evolution – Screenshots for Posts
 
-Salve aqui screenshots da pipeline e dos relatórios para usar em posts (LinkedIn, portfolio).
+Save screenshots of the pipeline and reports here for posts (LinkedIn, portfolio).
 
-**Sugestão de nomes:**
-- `pipeline-falha-YYYY-MM.png` – quando algum job quebrou
-- `pipeline-sucesso-YYYY-MM.png` – quando todos passaram
-- `relatorio-cypress-YYYY-MM.png` – relatório do Cypress
-- `relatorio-playwright-YYYY-MM.png` – relatório do Playwright
+**Suggested filenames:**
+- `pipeline-failure-YYYY-MM.png` – when a job failed
+- `pipeline-success-YYYY-MM.png` – when all passed
+- `report-cypress-YYYY-MM.png` – Cypress report
+- `report-playwright-YYYY-MM.png` – Playwright report
 
-Isso ajuda a documentar a evolução e mostra o antes/depois nas suas postagens.
+This helps document evolution and shows before/after in your posts.

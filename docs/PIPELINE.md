@@ -1,155 +1,155 @@
-# QA Lab – Guia de Manutenção da Pipeline
+# QA Lab – Pipeline Maintenance Guide
 
-## Onde ver a pipeline
+## Where to see the pipeline
 
 - **GitHub Actions:** https://github.com/Wesley-Gomes93/qa-lab/actions
-- Cada push/PR na `main` dispara os workflows **CI** e **Pipeline**
+- Each push/PR to `main` triggers the **CI** and **Pipeline** workflows
 
-## Estrutura da Pipeline (fluxo SDET)
+## Pipeline structure (SDET flow)
 
 ```
 lint → build → [tests || e2e] → report
 ```
 
-- **lint** roda primeiro – se falhar, build e testes não executam
-- **build** depende de lint – valida compilação antes dos testes
-- **tests** (Cypress) e **e2e** (Playwright) rodam em paralelo após o build
-- **report** consolida os resultados
+- **lint** runs first – if it fails, build and tests do not run
+- **build** depends on lint – validates compilation before tests
+- **tests** (Cypress) and **e2e** (Playwright) run in parallel after build
+- **report** consolidates results
 
-| Job | O que faz | Se falhar |
-|-----|-----------|-----------|
-| **build** | Build do frontend (Next.js) | Verificar erros de compilação |
-| **lint** | ESLint no frontend | Corrigir erros/warnings no código |
-| **tests** | PostgreSQL + API + Frontend → **Cypress** | Ver logs do Cypress |
-| **e2e** | PostgreSQL + API + Frontend → **Playwright** | Ver logs do Playwright |
-| **report** | Gera relatório unificado (Cypress + Playwright) | Baixe o artifact `qa-lab-report` |
+| Job | What it does | If it fails |
+|-----|--------------|-------------|
+| **build** | Frontend build (Next.js) | Check compilation errors |
+| **lint** | ESLint on frontend | Fix errors/warnings in code |
+| **tests** | PostgreSQL + API + Frontend → **Cypress** | Check Cypress logs |
+| **e2e** | PostgreSQL + API + Frontend → **Playwright** | Check Playwright logs |
+| **report** | Generates unified report (Cypress + Playwright) | Download artifact `qa-lab-report` |
 
-### Agent Analysis (workflow separado)
+### Agent Analysis (separate workflow)
 
-O workflow **Agent Analysis** (`agent.yml`) roda o **Failure Analyzer Agent** e pode ser disparado manualmente:
+The **Agent Analysis** workflow (`agent.yml`) runs the **Failure Analyzer Agent** and can be triggered manually:
 
-1. Vá em **Actions** → **Agent Analysis**
-2. Clique em **Run workflow**
-3. Opcional: informe a suíte (`all`, `admin`, `auth`, `api`, `ui`, `performance`) ou path do spec
+1. Go to **Actions** → **Agent Analysis**
+2. Click **Run workflow**
+3. Optional: provide suite (`all`, `admin`, `auth`, `api`, `ui`, `performance`) or spec path
 
-O agente executa os testes Cypress e, em caso de falha, gera análise estruturada com sugestões de correção.
+The agent runs Cypress tests and, on failure, generates structured analysis with fix suggestions.
 
-## Como entender os erros
+## How to understand errors
 
-### 1. Acesse o run que falhou
+### 1. Open the failed run
 
-1. Abra [Actions](https://github.com/Wesley-Gomes93/qa-lab/actions)
-2. Clique no run com status **Failure** (vermelho)
-3. Clique no **job** que falhou (ex: `tests`, `e2e`, `lint`)
+1. Open [Actions](https://github.com/Wesley-Gomes93/qa-lab/actions)
+2. Click the run with **Failure** status (red)
+3. Click the **job** that failed (e.g. `tests`, `e2e`, `lint`)
 
-### 2. Leia o log
+### 2. Read the log
 
-- Role até o fim do log do step que falhou
-- Procure por:
-  - `Error:` – mensagem de erro
-  - `Process completed with exit code 1` – indica qual step quebrou
-  - Stack traces – mostram arquivo e linha
+- Scroll to the end of the failed step's log
+- Look for:
+  - `Error:` – error message
+  - `Process completed with exit code 1` – indicates which step broke
+  - Stack traces – show file and line
 
-### 3. Erros comuns e soluções
+### 3. Common errors and solutions
 
-| Erro | Causa provável | Solução |
-|------|----------------|---------|
-| `npm ci` / `package-lock not found` | Lock file ausente ou em outro path | Usar `npm install` ou ajustar cache/paths |
-| `Permission denied (publickey)` | Chave SSH não configurada | Usar HTTPS ou configurar SSH |
-| `getByText resolved to 2 elements` | Locator ambíguo no Playwright | Usar `getByRole`, `getByTestId` ou locator mais específico |
-| `ECONNREFUSED localhost:3000` | Frontend não subiu a tempo | Aumentar `sleep` antes dos testes |
-| `Repository not found` | Repo privado sem token | Configurar `GITHUB_TOKEN` ou PAT |
-| Lint errors | Variáveis não usadas, regras de React | Ajustar código ou regras no ESLint |
+| Error | Likely cause | Solution |
+|-------|--------------|----------|
+| `npm ci` / `package-lock not found` | Lock file missing or in different path | Use `npm install` or adjust cache/paths |
+| `Permission denied (publickey)` | SSH key not configured | Use HTTPS or configure SSH |
+| `getByText resolved to 2 elements` | Ambiguous locator in Playwright | Use `getByRole`, `getByTestId` or more specific locator |
+| `ECONNREFUSED localhost:3000` | Frontend did not start in time | Increase `sleep` before tests |
+| `Repository not found` | Private repo without token | Configure `GITHUB_TOKEN` or PAT |
+| Lint errors | Unused variables, React rules | Fix code or adjust ESLint rules |
 
-### 4. Baixar artifacts
+### 4. Download artifacts
 
-Quando um job falha, você pode baixar:
+When a job fails, you can download:
 
-- **cypress-report** – relatório HTML do Cypress (job `tests`)
-- **playwright-report** – relatório HTML do Playwright (job `e2e`)
+- **cypress-report** – Cypress HTML report (job `tests`)
+- **playwright-report** – Playwright HTML report (job `e2e`)
 
-No final do run, clique em **Artifacts** e baixe o ZIP.
+At the end of the run, click **Artifacts** and download the ZIP.
 
-## Como dar manutenção
+## How to maintain
 
-### Alterar a pipeline
+### Change the pipeline
 
-- Arquivos: `.github/workflows/ci.yml` e `.github/workflows/pipeline.yml`
-- Edite o YAML, faça commit e push
-- Novos runs serão executados automaticamente
+- Files: `.github/workflows/ci.yml` and `.github/workflows/pipeline.yml`
+- Edit the YAML, commit and push
+- New runs will execute automatically
 
-### Adicionar um novo job
+### Add a new job
 
 ```yaml
-novo-job:
-  name: novo-job
+new-job:
+  name: new-job
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v4
-    - name: Executar algo
+    - name: Run something
       run: echo "Hello"
 ```
 
-### Rodar a pipeline manualmente
+### Run the pipeline manually
 
-O workflow **Pipeline** tem `workflow_dispatch` habilitado. Para rodar manualmente:
+The **Pipeline** workflow has `workflow_dispatch` enabled. To run manually:
 
-1. Vá em **Actions** → **Pipeline** (menu à esquerda)
-2. Clique em **Run workflow** → escolha a branch **main**
-3. Clique em **Run workflow** (botão verde)
+1. Go to **Actions** → **Pipeline** (left menu)
+2. Click **Run workflow** → choose **main** branch
+3. Click **Run workflow** (green button)
 
-### Status checks para Branch Protection
+### Status checks for branch protection
 
-Existe um job **`ci`** que só roda quando lint, build, tests e e2e passam. Basta exigir **um** check:
+There is a **`ci`** job that only runs when lint, build, tests, and e2e pass. Require **one** check:
 
-1. **Settings** → **Rules** → **Rulesets** → edite a regra da `main`
-2. Em **Require status checks to pass**, clique em **+ Add checks**
-3. Busque por **`ci`** ou **`Pipeline / ci`** e adicione
+1. **Settings** → **Rules** → **Rulesets** → edit the `main` rule
+2. Under **Require status checks to pass**, click **+ Add checks**
+3. Search for **`ci`** or **`Pipeline / ci`** and add it
 
-O check só aparece depois que a pipeline rodar pelo menos uma vez (push, PR ou run manual).
+The check only appears after the pipeline has run at least once (push, PR, or manual run).
 
-### Debugar localmente
+### Debug locally
 
-Para simular o ambiente da pipeline:
+To simulate the pipeline environment:
 
 ```bash
-# Subir banco
+# Start database
 npm run db:up
 
-# Subir API (outro terminal)
+# Start API (other terminal)
 npm run backend:dev
 
-# Subir frontend (outro terminal)
+# Start frontend (other terminal)
 npm run frontend:dev
 
-# Rodar testes
+# Run tests
 npm run tests:run      # Cypress
 npm run tests:pw       # Playwright
 ```
 
-## Lint antes do commit
+## Lint before commit
 
-Para verificar erros e warnings antes de fazer commit:
+To check for errors and warnings before committing:
 
 ```bash
 npm run lint:check
 ```
 
-O script exibe a contagem de **erros** e **warnings** e falha se houver erros (bloqueando o commit).
+The script shows **error** and **warning** count and fails if there are errors (blocking the commit).
 
-## Relatórios personalizados
+## Custom reports
 
-Para gerar o relatório unificado (Cypress + Playwright) localmente:
+To generate the unified report (Cypress + Playwright) locally:
 
 ```bash
-# Após rodar os testes
-npm run tests:run      # ou tests:pw para Playwright
+# After running tests
+npm run tests:run      # or tests:pw for Playwright
 npm run tests:report:unified
 ```
 
-O relatório HTML é salvo em `tests/qa-lab-reports/index.html`.
+The HTML report is saved to `tests/qa-lab-reports/index.html`.
 
-## Links úteis
+## Useful links
 
 - [GitHub Actions Docs](https://docs.github.com/en/actions)
 - [Playwright CI](https://playwright.dev/docs/ci)

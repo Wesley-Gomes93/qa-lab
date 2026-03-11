@@ -1,20 +1,20 @@
-# Passo a passo: do zero ao pipeline
+# Step by step: from zero to pipeline
 
-Este guia leva você **do início ao fim**: ambiente, banco, API, frontend, cenários de teste, histórico no dashboard, agentes e pipeline CI.
+This guide takes you **from start to finish**: environment, database, API, frontend, test scenarios, dashboard history, agents, and CI pipeline.
 
 ---
 
-## Pré-requisitos
+## Prerequisites
 
-- **Node.js** 18+ (recomendado 20)
-- **npm** (vem com o Node)
-- **Docker** (para o PostgreSQL)
-- **Git** (para clonar e para o pipeline)
+- **Node.js** 18+ (recommended 20)
+- **npm** (comes with Node)
+- **Docker** (for PostgreSQL)
+- **Git** (to clone and for the pipeline)
 
-Verifique:
+Verify:
 
 ```bash
-node -v   # v18 ou v20
+node -v   # v18 or v20
 npm -v
 docker -v
 git -v
@@ -22,18 +22,18 @@ git -v
 
 ---
 
-## Parte 1 – Subir o ambiente (ordem obrigatória)
+## Part 1 – Start the environment (mandatory order)
 
-### 1.1 Clonar o projeto (se ainda não tiver)
+### 1.1 Clone the project (if you don't have it yet)
 
 ```bash
-git clone <url-do-repositorio> qa-lab
+git clone <repo-url> qa-lab
 cd qa-lab
 ```
 
-### 1.2 Banco de dados (PostgreSQL)
+### 1.2 Database (PostgreSQL)
 
-O projeto usa PostgreSQL via Docker.
+The project uses PostgreSQL via Docker.
 
 ```bash
 cd database
@@ -41,39 +41,39 @@ docker-compose up -d
 cd ..
 ```
 
-Verifique se o container está rodando:
+Verify the container is running:
 
 ```bash
 docker ps
-# Deve aparecer qa-lab-db na porta 5432
+# Should show qa-lab-db on port 5432
 ```
 
-Conexão padrão: `postgresql://qa:qa123@localhost:5432/qalab`.
+Default connection: `postgresql://qa:qa123@localhost:5432/qalab`.
 
-### 1.3 Backend (API Node)
+### 1.3 Backend (Node API)
 
 ```bash
 cd backend
 cp .env.example .env
-# Opcional: edite .env para mudar PORT ou DATABASE_URL
+# Optional: edit .env to change PORT or DATABASE_URL
 npm install
 npm run dev
 ```
 
-Deixe esse terminal aberto. A API deve subir na **porta 4000**. Teste:
+Leave this terminal open. The API should start on **port 4000**. Test:
 
 ```bash
 curl http://localhost:4000/health
-# Resposta: {"status":"ok","uptime":...,"db":"ok","metrics":{...}}
+# Response: {"status":"ok","uptime":...,"db":"ok","metrics":{...}}
 ```
 
-Credenciais do admin (para login no frontend e dashboard):  
-- E-mail: `admWesley@test.com.br`  
-- Senha: `senha12356`
+Admin credentials (for frontend and dashboard login):  
+- Email: `admWesley@test.com.br`  
+- Password: `senha12356`
 
 ### 1.4 Frontend (Next.js)
 
-Em **outro terminal**, na raiz do projeto:
+In **another terminal**, from the project root:
 
 ```bash
 cd frontend
@@ -81,75 +81,76 @@ npm install
 npm run dev
 ```
 
-O frontend sobe em **http://127.0.0.1:3000** (ou na porta que o Next mostrar).
+The frontend starts at **http://127.0.0.1:3000** (or the port Next.js shows).
 
-Se a API estiver em outro host/porta, crie `frontend/.env.local`:
+If the API is on another host/port, create `frontend/.env.local`:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-Acesse no navegador: **http://127.0.0.1:3000**.  
-Você deve ver a tela de registro/login (Playground). Faça login com o admin acima e entre no **Dashboard** (com abas: Usuários, Histórico de testes, Métricas, Health).
+Open in the browser: **http://127.0.0.1:3000**.  
+You should see the registration/login screen (Playground). Log in with the admin above and enter the **Dashboard** (with tabs: Users, Test history, Metrics, Health).
 
-### 1.5 Testes (Cypress)
+### 1.5 Tests (Cypress)
 
-Em **outro terminal**:
+In **another terminal**:
 
 ```bash
 cd tests
 npm install
 ```
 
-Para os testes passarem, a **API e o frontend precisam estar rodando** (e o banco no ar). O Cypress usa `baseUrl: http://localhost:4000` para API; os specs que abrem a interface (registro, login, dashboard) usam o frontend em **http://localhost:3000** (definido em `tests/cypress/support/helpers.js` como `FRONTEND_URL`). Se o frontend rodar em outra porta, altere esse valor no helper.
+For tests to pass, the **API and frontend must be running** (and the database up). Cypress uses `baseUrl: http://localhost:4000` for the API; specs that open the UI (registration, login, dashboard) use the frontend at **http://localhost:3000** (defined in `tests/shared/constants.js` as `FRONTEND_URL`). If the frontend runs on another port, change this in the constants.
 
 ---
 
-## Parte 2 – Cenários de teste e histórico
+## Part 2 – Test scenarios and history
 
-### 2.1 Ver cenários existentes
+### 2.1 View existing scenarios
 
-Os specs ficam em:
+Specs are in:
 
-- `tests/cypress/e2e/auth/` – registro, login, logout
-- `tests/cypress/e2e/api/` – health, criação de usuários
-- `tests/cypress/e2e/admin/` – dashboard (edição, filtro, exclusão, validação de idade)
-- `tests/cypress/e2e/ui/` – elementos da interface
-- `tests/cypress/e2e/performance/` – TICTAC (tempo de carregamento, health, formulário, dashboard)
+- `tests/cypress/e2e/auth/` – registration, login, logout
+- `tests/cypress/e2e/api/` – health, user creation
+- `tests/cypress/e2e/admin/` – dashboard (editing, filter, deletion, age validation)
+- `tests/cypress/e2e/dashboard/` – Health, Metrics, History, navigation
+- `tests/cypress/e2e/ui/` – UI elements
+- `tests/cypress/e2e/performance/` – TICTAC (load time, health, form, dashboard)
 
-### 2.2 Rodar todos os testes (só Cypress)
+### 2.2 Run all tests (Cypress only)
 
-Com **API e frontend rodando**:
+With **API and frontend running**:
 
 ```bash
 cd tests
 npm test
-# ou: npx cypress run
+# or: npx cypress run
 ```
 
-Isso executa o Cypress e gera relatório mochawesome em `tests/cypress/reports/` (HTML + JSON).
+This runs Cypress and generates a mochawesome report in `tests/cypress/reports/` (HTML + JSON).
 
-### 2.3 Rodar testes e enviar resultado para o dashboard (histórico)
+### 2.3 Run tests and send result to dashboard (history)
 
-Para o **histórico de testes** aparecer no dashboard, é preciso gravar o run na API:
+For **test history** to appear in the dashboard, the run must be recorded in the API:
 
 ```bash
 cd tests
 npm run test:report
 ```
 
-Esse comando:
+This command:
 
-1. Roda o Cypress (`cypress run`).
-2. Depois executa `node scripts/report-to-api.js`, que lê o JSON do mochawesome e envia um `POST` para `http://localhost:4000/api/test-runs`.
+1. Runs Cypress (`cypress run`).
+2. Then runs `node scripts/report-to-api.js`, which reads the mochawesome JSON and sends a `POST` to `http://localhost:4000/api/test-runs`.
 
-**Requisito:** a API deve estar no ar e aceitar o token (por padrão o script usa `ADMIN_TOKEN=admin-qa-lab`; você pode definir `ADMIN_TOKEN` ou `QA_LAB_API_KEY` no backend e, no script, via env `QA_LAB_API_URL` e `ADMIN_TOKEN` ou `QA_LAB_API_KEY`).
+**Requirement:** the API must be up and accept the token (by default the script uses `ADMIN_TOKEN=admin-qa-lab`; you can set `ADMIN_TOKEN` or `QA_LAB_API_KEY` in the backend and, in the script, via env `QA_LAB_API_URL` and `ADMIN_TOKEN` or `QA_LAB_API_KEY`).
 
-Depois de rodar `npm run test:report`, abra o frontend, faça login como admin, vá na aba **Histórico de testes** e confira o run registrado.
+After running `npm run test:report`, open the frontend, log in as admin, go to the **Test history** tab and check the registered run.
 
-### 2.4 Rodar uma suíte ou um spec específico
+### 2.4 Run a suite or specific spec
 
-Só Cypress (sem enviar para a API):
+Cypress only (without sending to the API):
 
 ```bash
 cd tests
@@ -157,176 +158,176 @@ npx cypress run --spec "cypress/e2e/auth/**/*.cy.js"
 npx cypress run --spec "cypress/e2e/admin/admin-dashboard-idade-inativo.cy.js"
 ```
 
-Para enviar esse run para a API, depois de rodar você pode chamar o script manualmente (ele usa o **último** JSON em `cypress/reports/`):
+To send this run to the API, after running you can call the script manually (it uses the **latest** JSON in `cypress/reports/`):
 
 ```bash
 node scripts/report-to-api.js
 ```
 
-### 2.5 Criar um novo cenário (spec)
+### 2.5 Create a new scenario (spec)
 
-1. Crie um arquivo em `tests/cypress/e2e/`, por exemplo em uma pasta por área (`auth`, `admin`, etc.):
-   - Exemplo: `tests/cypress/e2e/auth/meu-login-custom.cy.js`
-2. Escreva o spec em Cypress (describe/it, cy.visit, cy.get, etc.). Use os helpers e page objects em `tests/cypress/support/` e `tests/cypress/pages/` se existirem.
-3. Rode esse spec:
+1. Create a file in `tests/cypress/e2e/`, e.g. in a folder per area (`auth`, `admin`, etc.):
+   - Example: `tests/cypress/e2e/auth/my-custom-login.cy.js`
+2. Write the spec in Cypress (describe/it, cy.visit, cy.get, etc.). Use the helpers and page objects in `tests/cypress/support/` and `tests/cypress/pages/` if they exist.
+3. Run that spec:
    ```bash
    cd tests
-   npx cypress run --spec "cypress/e2e/auth/meu-login-custom.cy.js"
+   npx cypress run --spec "cypress/e2e/auth/my-custom-login.cy.js"
    ```
-4. Para aparecer no histórico: rode `npm run test:report` (todos) ou rode o spec e depois `node scripts/report-to-api.js`.
+4. To appear in history: run `npm run test:report` (all) or run the spec and then `node scripts/report-to-api.js`.
 
 ---
 
-## Parte 3 – Agentes (MCP + menu interativo)
+## Part 3 – Agents (MCP + interactive menu)
 
-Os agentes usam o MCP server para rodar testes (e outras ferramentas) sem decorar comandos.
+Agents use the MCP server to run tests (and other tools) without memorizing commands.
 
-### 3.1 Instalar dependências dos agentes
+### 3.1 Install agent dependencies
 
 ```bash
 cd agents
 npm install
 ```
 
-### 3.2 Listar ferramentas do MCP
+### 3.2 List MCP tools
 
 ```bash
 cd agents
 npm run agent
-# ou: node qa-agent.js
+# or: node qa-agent.js
 ```
 
-Saída esperada: conexão com o MCP e lista de tools (`run_tests`, `get_users_summary`, `read_pr`, `generate_tests`, `analyze_failures`, `create_bug_report`).
+Expected output: connection to MCP and list of tools (`run_tests`, `get_users_summary`, `read_pr`, `generate_tests`, `analyze_failures`, `create_bug_report`).
 
-### 3.3 Rodar testes pelo agente (menu)
+### 3.3 Run tests via agent (menu)
 
-Com a pasta `tests/` instalada e a API/frontend no ar:
+With the `tests/` folder installed and API/frontend up:
 
 ```bash
 cd agents
 npm run agent:run-tests
-# ou: node qa-agent.js run_tests
+# or: node qa-agent.js run_tests
 ```
 
-O agente abre um **menu**:
+The agent opens a **menu**:
 
-- 1 = todos os testes  
+- 1 = all tests  
 - 2 = Admin  
 - 3 = Auth  
 - 4 = API  
 - 5 = UI  
-- 6 = Performance (TICTAC) ou arquivo específico  
-- 0 = sair  
+- 6 = Performance (TICTAC) or specific file  
+- 0 = exit  
 
-Escolha uma opção; o Cypress roda e o agente devolve o resultado. O exit code reflete sucesso (0) ou falha (1).
+Choose an option; Cypress runs and the agent returns the result. The exit code reflects success (0) or failure (1).
 
-### 3.4 Dados de imersão (opcional)
+### 3.4 Immersion data (optional)
 
-Se quiser usar seus próprios dados (nome, e-mail, senha) em alguns testes de registro/login, defina antes de rodar o agente:
+If you want to use your own data (name, email, password) in some registration/login tests, set before running the agent:
 
 ```bash
-export CYPRESS_REGISTER_NAME="Seu Nome"
-export CYPRESS_REGISTER_EMAIL="seu@email.com"
-export CYPRESS_REGISTER_PASSWORD="suasenha"
+export CYPRESS_REGISTER_NAME="Your Name"
+export CYPRESS_REGISTER_EMAIL="your@email.com"
+export CYPRESS_REGISTER_PASSWORD="yourpassword"
 npm run agent:run-tests
 ```
 
-(O agente pode passar isso para a tool `run_tests`; os specs estão preparados para aceitar 201 ou 409 na reexecução.)
+(The agent may pass this to the `run_tests` tool; specs are prepared to accept 201 or 409 on re-run.)
 
-### 3.5 Limpeza de usuários de teste (evitar acúmulo no banco)
+### 3.5 Test user cleanup (avoid database accumulation)
 
-O banco acumula usuários com e-mail `@teste.com`. Para limpar antes dos testes:
+The database accumulates users with email `@teste.com`. To clean before tests:
 
 ```bash
-npm run tests:clean-users      # limpa e exibe quantos foram removidos
-npm run tests:full             # limpa + roda todos os testes + envia relatório
-npm run agent:full             # limpa + menu interativo de testes
+npm run tests:clean-users      # cleans and shows how many were removed
+npm run tests:full             # clean + run all tests + send report
+npm run agent:full             # clean + interactive test menu
 ```
 
-O **Failure Analyzer** (`npm run agent:analyze-failures`) já executa a limpeza automaticamente.
+The **Failure Analyzer** (`npm run agent:analyze-failures`) already runs the cleanup automatically.
 
 ---
 
-## Parte 4 – Dashboard (Usuários, Histórico, Métricas, Health)
+## Part 4 – Dashboard (Users, History, Metrics, Health)
 
-1. Abra o frontend: **http://127.0.0.1:3000**.
-2. Faça login com o admin: `admWesley@test.com.br` / `senha12356`.
-3. Você cai no **Dashboard** com abas (só para admin):
-   - **Usuários** – lista, edição, exclusão, filtro.
-   - **Histórico de testes** – runs registrados via `POST /api/test-runs` (ex.: após `npm run test:report` ou script manual).
-   - **Métricas** – API response time, auth success rate (dados em memória).
-   - **Health** – status da API, banco, métricas agregadas (dados de `GET /health`).
+1. Open the frontend: **http://127.0.0.1:3000**.
+2. Log in as admin: `admWesley@test.com.br` / `senha12356`.
+3. You land on the **Dashboard** with tabs (admin only):
+   - **Users** – list, edit, delete, filter.
+   - **Test history** – runs registered via `POST /api/test-runs` (e.g. after `npm run test:report` or manual script).
+   - **Metrics** – API response time, auth success rate (in-memory data).
+   - **Health** – API status, database, aggregated metrics (from `GET /health`).
 
-Para popular o histórico: rode `npm run test:report` na pasta `tests` com a API no ar, como na seção 2.3.
-
----
-
-## Parte 5 – Pipeline (CI no GitHub)
-
-O workflow **CI** está em `.github/workflows/ci.yml`.
-
-### 5.1 O que a pipeline faz
-
-- **Trigger:** push ou pull request nas branches `main` ou `master`.
-- **Passos:**
-  1. Checkout do repositório.
-  2. Node 20 e cache npm.
-  3. Instala dependências do backend e dos testes (`npm ci`).
-  4. Sobe PostgreSQL (Docker).
-  5. Sobe a API em background (com `DATABASE_URL` e `PORT`).
-  6. Roda o Cypress (`npx cypress run --browser chrome`).
-  7. Faz upload do relatório mochawesome como artefato (`cypress-mochawesome-report`).
-
-Não é necessário subir o frontend no CI para os testes atuais (o Cypress está configurado com `baseUrl` na API; specs que precisam de frontend assumem que ele está acessível ou são ajustados para o ambiente de CI).
-
-### 5.2 Como disparar a pipeline
-
-- **Push** na `main` ou `master`: a pipeline roda sozinha.
-- **Pull request** para `main` ou `master`: a pipeline roda no PR.
-
-No GitHub: **Actions** → workflow **CI** → ver o job **test** e o artefato **cypress-mochawesome-report** (baixar para ver o HTML do mochawesome).
-
-### 5.3 (Opcional) Enviar resultado do CI para a API
-
-Para que os runs do CI apareçam no **Histórico de testes** do dashboard, é preciso:
-
-1. Ter a API acessível a partir do GitHub (ex.: deploy em um servidor ou tunnel).
-2. Configurar secrets no repositório:
-   - `QA_LAB_API_URL` – URL base da API (ex.: `https://sua-api.exemplo.com`).
-   - `QA_LAB_API_KEY` – chave configurada no backend (`QA_LAB_API_KEY` no `.env`).
-3. No backend, definir no `.env`: `QA_LAB_API_KEY=sua-chave-secreta`.
-4. No workflow, descomentar o step **Report test run to API** e usar esses secrets no `env` do step.
-
-Enquanto isso estiver comentado, o CI só gera o relatório e o artefato; não envia nada para a API.
+To populate history: run `npm run test:report` in the `tests` folder with the API up, as in section 2.3.
 
 ---
 
-## Resumo rápido – `npm run` do início ao fim (a partir da raiz)
+## Part 5 – Pipeline (CI on GitHub)
 
-Todos os comandos abaixo são executados **na raiz do projeto** (`qa-lab/`).
+The **CI** workflow is in `.github/workflows/pipeline.yml`.
 
-### Primeira vez (setup)
+### 5.1 What the pipeline does
+
+- **Trigger:** push or pull request to `main` or `master` branches.
+- **Steps:**
+  1. Repository checkout.
+  2. Node 20 and npm cache.
+  3. Install backend and tests dependencies (`npm ci`).
+  4. Start PostgreSQL (Docker).
+  5. Start API in background (with `DATABASE_URL` and `PORT`).
+  6. Run Cypress and Playwright (parallel).
+  7. Generate unified report; upload as artifact (`qa-lab-report`).
+
+The frontend is built and started for the tests. Cypress specs that need the frontend use `FRONTEND_URL` (localhost:3000 in CI).
+
+### 5.2 How to trigger the pipeline
+
+- **Push** to `main` or `master`: the pipeline runs automatically.
+- **Pull request** to `main` or `master`: the pipeline runs on the PR.
+
+On GitHub: **Actions** → **Pipeline** workflow → view the jobs and the **qa-lab-report** artifact (download to see the HTML).
+
+### 5.3 (Optional) Send CI result to API
+
+For CI runs to appear in the dashboard **Test history**:
+
+1. Have the API accessible from GitHub (e.g. deploy on a server or tunnel).
+2. Configure repository secrets:
+   - `QA_LAB_API_URL` – API base URL (e.g. `https://your-api.example.com`).
+   - `QA_LAB_API_KEY` – key configured in the backend (`QA_LAB_API_KEY` in `.env`).
+3. In the backend, set in `.env`: `QA_LAB_API_KEY=your-secret-key`.
+4. In the workflow, uncomment the **Report test run to API** step and use these secrets in the step's `env`.
+
+While commented, the CI only generates the report and artifact; it does not send anything to the API.
+
+---
+
+## Quick summary – `npm run` from start to finish (from root)
+
+All commands below run from the **project root** (`qa-lab/`).
+
+### First time (setup)
 
 ```bash
-# 1. Subir o banco
+# 1. Start the database
 npm run db:up
 
-# 2. Instalar dependências do backend e configurar .env
+# 2. Install backend dependencies and configure .env
 cd backend && cp .env.example .env && npm install && cd ..
 
-# 3. Instalar dependências do frontend
+# 3. Install frontend dependencies
 npm run frontend:install
 
-# 4. Instalar dependências dos testes
+# 4. Install test dependencies
 npm run tests:install
 
-# 5. Instalar dependências dos agentes
+# 5. Install agent dependencies
 npm run agents:install
 ```
 
-### Dia a dia (rodar tudo)
+### Daily use (run everything)
 
-Abra **3 terminais** na raiz do projeto.
+Open **3 terminals** in the project root.
 
 **Terminal 1 – Backend:**
 
@@ -340,56 +341,54 @@ npm run backend:dev
 npm run frontend:dev
 ```
 
-**Terminal 3 – Testes e/ou agente:**
+**Terminal 3 – Tests and/or agent:**
 
 ```bash
-# Rodar testes e enviar resultado para o dashboard (histórico)
+# Run tests and send result to dashboard (history)
 npm run tests:report
 
-# Ou rodar testes pelo agente (menu interativo)
+# Or run tests via agent (interactive menu)
 npm run agent:run-tests
 ```
 
-### Lista completa de scripts (raiz)
+### Full script list (root)
 
-| Comando | O que faz |
-|---------|-----------|
-| `npm run db:up` | Sobe o PostgreSQL (Docker) |
-| `npm run db:down` | Para o PostgreSQL |
-| `npm run backend:install` | Instala deps do backend |
-| `npm run backend:dev` | Sobe a API (porta 4000) |
-| `npm run frontend:install` | Instala deps do frontend |
-| `npm run frontend:dev` | Sobe o frontend (porta 3000) |
-| `npm run tests:install` | Instala deps dos testes |
-| `npm run tests:run` | Roda Cypress (sem enviar para API) |
-| `npm run tests:report` | Roda Cypress e envia resultado para o dashboard |
-| `npm run tests:clean-users` | Remove usuários @teste.com do banco (evita acúmulo) |
-| `npm run tests:full` | Limpa usuários + roda testes + envia relatório |
-| `npm run agents:install` | Instala deps dos agentes |
-| `npm run agent` | Lista tools do MCP |
-| `npm run agent:run-tests` | Menu interativo para rodar testes |
-| `npm run agent:full` | Limpa + menu interativo de testes |
-| `npm run agent:analyze-failures` | AI QA: roda testes, analisa falhas e sugere correções |
+| Command | What it does |
+|---------|--------------|
+| `npm run db:up` | Starts PostgreSQL (Docker) |
+| `npm run db:down` | Stops PostgreSQL |
+| `npm run backend:install` | Installs backend deps |
+| `npm run backend:dev` | Starts API (port 4000) |
+| `npm run frontend:install` | Installs frontend deps |
+| `npm run frontend:dev` | Starts frontend (port 3000) |
+| `npm run tests:install` | Installs test deps |
+| `npm run tests:run` | Runs Cypress (without sending to API) |
+| `npm run tests:report` | Runs Cypress and sends result to dashboard |
+| `npm run tests:clean-users` | Removes @teste.com users from DB (avoids accumulation) |
+| `npm run tests:full` | Clean users + run tests + send report |
+| `npm run agents:install` | Installs agent deps |
+| `npm run agent` | Lists MCP tools |
+| `npm run agent:run-tests` | Interactive menu to run tests |
+| `npm run agent:full` | Clean + interactive test menu |
+| `npm run agent:analyze-failures` | AI QA: runs tests, analyzes failures and suggests fixes |
 
-### Ordem do dia a dia
+### Daily order
 
-| Ordem | Comando | Terminal |
+| Order | Command | Terminal |
 |-------|---------|----------|
-| 1 | `npm run db:up` | — (uma vez) |
-| 2 | `npm run backend:dev` | Terminal 1 (deixar rodando) |
-| 3 | `npm run frontend:dev` | Terminal 2 (deixar rodando) |
+| 1 | `npm run db:up` | — (once) |
+| 2 | `npm run backend:dev` | Terminal 1 (leave running) |
+| 3 | `npm run frontend:dev` | Terminal 2 (leave running) |
 | 4 | `npm run tests:report` | Terminal 3 |
-| 5 | Ver histórico no navegador | http://127.0.0.1:3000 → login admin → aba Histórico de testes |
-| 6 | `npm run agent:run-tests` | Terminal 3 (opcional) |
+| 5 | View history in browser | http://127.0.0.1:3000 → admin login → Test history tab |
+| 6 | `npm run agent:run-tests` | Terminal 3 (optional) |
 
 ---
 
-## Troubleshooting rápido
+## Quick troubleshooting
 
-- **API não conecta no banco:** confira se o container PostgreSQL está rodando (`docker ps`) e se `DATABASE_URL` no `backend/.env` está igual ao do `database/docker-compose.yml`.
-- **Cypress falha com “baseUrl”:** API no ar em `http://localhost:4000` e `tests/cypress.config.cjs` com `baseUrl: 'http://localhost:4000'`.
-- **Histórico de testes vazio:** rode `npm run test:report` em `tests/` com a API no ar; o script envia para `POST /api/test-runs`. Confira se o backend está em `localhost:4000` ou ajuste `QA_LAB_API_URL` ao rodar o script.
-- **Pipeline falha no “Install backend deps”:** o CI usa `npm ci`; é necessário ter `package-lock.json` no backend (rode `npm install` no backend e faça commit do lock file).
-- **Pipeline falha no Cypress:** em alguns runners o Chrome pode não estar instalado; o workflow tenta `--browser chrome` e faz fallback para `cypress run` sem browser (Electron).
-
-Se quiser, na próxima vez podemos detalhar só a parte de **criação de cenários** (estrutura de um spec, uso de page objects e onde colocar novos arquivos) ou só a **pipeline** (variáveis, secrets e deploy da API).
+- **API cannot connect to database:** check if the PostgreSQL container is running (`docker ps`) and if `DATABASE_URL` in `backend/.env` matches `database/docker-compose.yml`.
+- **Cypress fails with "baseUrl":** API running at `http://localhost:4000` and `tests/cypress.config.cjs` with `baseUrl` pointing to API (UI specs use FRONTEND_URL for localhost:3000).
+- **Empty test history:** run `npm run test:report` in `tests/` with the API up; the script sends to `POST /api/test-runs`. Check if the backend is at `localhost:4000` or adjust `QA_LAB_API_URL` when running the script.
+- **Pipeline fails on "Install backend deps":** CI uses `npm ci`; a `package-lock.json` in the backend is required (run `npm install` in the backend and commit the lock file).
+- **Pipeline fails on Cypress:** on some runners Chrome may not be installed; the workflow tries `--browser chrome` and falls back to `cypress run` without browser (Electron).

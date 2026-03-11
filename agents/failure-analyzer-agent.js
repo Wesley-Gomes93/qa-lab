@@ -28,6 +28,7 @@ const SPEC_BY_SUITE = {
   admin: "cypress/e2e/admin/**/*.cy.js",
   auth: "cypress/e2e/auth/**/*.cy.js",
   api: "cypress/e2e/api/**/*.cy.js",
+  dashboard: "cypress/e2e/dashboard/**/*.cy.js",
   ui: "cypress/e2e/ui/**/*.cy.js",
   performance: "cypress/e2e/performance/**/*.cy.js",
 };

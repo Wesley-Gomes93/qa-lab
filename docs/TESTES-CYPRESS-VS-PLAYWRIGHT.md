@@ -1,8 +1,8 @@
-# Cypress vs Playwright – Estratégia e manutenção
+# Cypress vs Playwright – Strategy and maintenance
 
-## Specs centralizados (sem duplicar)
+## Centralized specs (no duplication)
 
-Testes de **API com request único** ficam em **`tests/shared/specs/api/`** – uma definição, dois runners.
+**Single-request API tests** live in **`tests/shared/specs/api/`** – one definition, two runners.
 
 ```
 tests/shared/specs/api/
@@ -11,98 +11,99 @@ tests/shared/specs/api/
 └── README.md
 ```
 
-- **Cypress** executa via `api-shared.cy.js`
-- **Playwright** executa via `api-shared.spec.js`
+- **Cypress** runs via `api-shared.cy.js`
+- **Playwright** runs via `api-shared.spec.js`
 
-**Para adicionar um novo teste de API simples:** crie um arquivo em `shared/specs/api/` seguindo o formato do `README.md`. Os dois runners pegam automaticamente.
+**To add a new simple API test:** create a file in `shared/specs/api/` following the format in `README.md`. Both runners pick it up automatically.
 
-**Fluxos complexos** (múltiplos requests, dados dinâmicos) continuam em arquivos separados por framework.
+**Complex flows** (multiple requests, dynamic data) stay in separate files per framework.
 
 ---
 
-## Por que os dois?
+## Why both?
 
-O QA Lab mantém **Cypress** e **Playwright** em paralelo por:
+QA Lab keeps **Cypress** and **Playwright** in parallel for:
 
-1. **Aprendizado** – Comparar ferramentas, APIs e relatórios
-2. **Resiliência** – Duas implementações aumentam a confiança nos fluxos críticos
-3. **Portfólio** – Mostrar experiência em ambas as ferramentas
-4. **Pipeline** – Rodam em paralelo no CI (total ~4min)
+1. **Learning** – Compare tools, APIs, and reports
+2. **Resilience** – Two implementations increase confidence in critical flows
+3. **Portfolio** – Show experience with both tools
+4. **Pipeline** – They run in parallel in CI (total ~4min)
 
-## Estrutura atual
+## Current structure
 
-| Suíte       | Cypress | Playwright | Observação              |
-|-------------|---------|------------|-------------------------|
-| api         | ✓       | ✓          | Mesmos cenários         |
-| auth        | ✓       | ✓          | Mesmos cenários         |
-| admin       | ✓       | ✓          | Mesmos cenários         |
-| ui          | ✓       | ✓          | Mesmos cenários         |
-| performance | ✓       | ✓          | TICTAC em ambos         |
+| Suite | Cypress | Playwright | Note |
+|-------|---------|------------|------|
+| api | ✓ | ✓ | Same scenarios |
+| auth | ✓ | ✓ | Same scenarios |
+| admin | ✓ | ✓ | Same scenarios |
+| dashboard | ✓ | ✓ | Same scenarios |
+| ui | ✓ | ✓ | Same scenarios |
+| performance | ✓ | ✓ | TICTAC in both |
 
 **Cypress:** `tests/cypress/e2e/**/*.cy.js`  
 **Playwright:** `tests/playwright/e2e/**/*.spec.js`
 
-Ambos usam `tests/shared/` (constants, factories) e helpers específicos em `support/`.
+Both use `tests/shared/` (constants, factories) and framework-specific helpers in `support/`.
 
 ---
 
-## Estratégia de manutenção
+## Maintenance strategy
 
-### Regra 1: Cypress é a fonte primária
+### Rule 1: Cypress is the primary source
 
-- **Novos testes:** Crie primeiro no Cypress (`tests/cypress/e2e/`)
-- **Test Writer Agent:** Gera specs Cypress por padrão
-- **Failure Analyzer:** Analisa falhas do Cypress
+- **New tests:** Create first in Cypress (`tests/cypress/e2e/`)
+- **Test Writer Agent:** Generates Cypress specs by default
+- **Failure Analyzer:** Analyzes Cypress failures
 
-### Regra 2: Playwright espelha o crítico
+### Rule 2: Playwright mirrors the critical paths
 
-- **Não duplique tudo** – Priorize: api, auth, admin, performance (TICTAC)
-- Ao adicionar um novo cenário importante no Cypress, avalie se vale incluir no Playwright
-- Testes muito específicos (ex.: `admin-dashboard-editar-idade-id2`) podem ficar só no Cypress
+- **Don't duplicate everything** – Prioritize: api, auth, admin, performance (TICTAC)
+- When adding a new important scenario in Cypress, evaluate if it's worth adding to Playwright
+- Very specific tests (e.g. `admin-dashboard-editar-idade-id2`) can stay Cypress-only
 
-### Regra 3: Manter paridade nas suítes, não nos arquivos
+### Rule 3: Keep parity in suites, not in files
 
-Não é obrigatório ter o mesmo número de specs em ambos. O importante é:
+It's not required to have the same number of specs in both. What matters:
 
-- **api, auth, admin** – Cobertura equivalente nos fluxos principais
-- **ui, performance** – Manter TICTAC e elementos críticos em ambos
+- **api, auth, admin** – Equivalent coverage in main flows
+- **ui, performance** – Keep TICTAC and critical elements in both
 
-### Regra 4: Quando modificar um fluxo
+### Rule 4: When modifying a flow
 
-1. Altere no **Cypress** primeiro
-2. Se o Playwright tiver o mesmo teste, atualize também
-3. Rode `npm run tests:run` e `npm run tests:pw` antes do push
-
----
-
-## Quando consolidar para um só?
-
-Considere migrar para **apenas Playwright** se:
-
-- A manutenção dupla estiver custando tempo demais
-- O foco for velocidade no CI (Playwright tende a ser mais rápido)
-- Você quiser simplificar o onboarding de outros devs
-
-**Passos para consolidar:** Migrar specs restantes do Cypress → Playwright, remover Cypress da pipeline, documentar a decisão.
+1. Change in **Cypress** first
+2. If Playwright has the same test, update it too
+3. Run `npm run tests:run` and `npm run tests:pw` before pushing
 
 ---
 
-## Comandos
+## When to consolidate to one?
+
+Consider migrating to **Playwright only** if:
+
+- Dual maintenance takes too much time
+- Focus is CI speed (Playwright tends to be faster)
+- You want to simplify onboarding for other devs
+
+**Steps to consolidate:** Migrate remaining Cypress specs to Playwright, remove Cypress from pipeline, document the decision.
+
+---
+
+## Commands
 
 ```bash
 npm run tests:run          # Cypress
 npm run tests:pw           # Playwright
-npm run tests:report:unified  # Relatório unificado
+npm run tests:report:unified  # Unified report
 ```
 
 ---
 
-## Resumo
+## Summary
 
-| Ação              | Onde fazer primeiro | Replicar no outro?      |
-|-------------------|---------------------|-------------------------|
-| Novo teste de API | Cypress             | Sim, se fluxo principal |
-| Novo teste de auth| Cypress             | Sim                     |
-| Novo teste admin  | Cypress             | Avalie (crítico = sim)  |
-| Correção de bug   | Onde o teste existe | Se existir nos dois     |
-| Test Writer       | Gera Cypress        | Manual se necessário    |
+| Action | Where to do first | Replicate in other? |
+|--------|------------------|---------------------|
+| New API test | Cypress | Yes, if main flow |
+| New auth test | Cypress | Yes |
+| New admin test | Cypress | Evaluate (critical = yes) |
+| Bug fix | Where the test exists | If it exists in both |
+| Test Writer | Generates Cypress | Manual if needed |

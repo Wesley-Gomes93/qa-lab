@@ -1,48 +1,48 @@
-# Como escrever testes em Cypress e Playwright
+# How to write tests in Cypress and Playwright
 
-Guia prático para implementar o **mesmo cenário** nas duas ferramentas.
+Practical guide for implementing the **same scenario** in both tools.
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 tests/
-├── shared/           # constants, factories, specs (API simples)
+├── shared/           # constants, factories, specs (simple API)
 ├── cypress/
 │   ├── e2e/          # *.cy.js
 │   ├── pages/        # Page Objects (Cypress)
-│   └── support/     # helpers com cy.*
+│   └── support/      # helpers with cy.*
 └── playwright/
     ├── e2e/          # *.spec.js
-    └── support/      # helpers com page/request
+    └── support/      # helpers with page/request
 ```
 
-- **shared/** = código puro, sem `cy` nem `page`
-- **cypress/support** e **playwright/support** = helpers específicos de cada framework
-- Use os mesmos **data-testid** e **textos** para facilitar a equivalência
+- **shared/** = pure code, no `cy` or `page`
+- **cypress/support** and **playwright/support** = framework-specific helpers
+- Use the same **data-testid** and **text** for easier equivalence
 
 ---
 
-## Exemplo: Login com credenciais inválidas (login fail)
+## Example: Login with invalid credentials (login fail)
 
-### O que testar
+### What to test
 
-1. Abrir a página do Playground
-2. Preencher login com e-mail e senha inválidos
-3. Clicar em Login
-4. **Não** redirecionar para o dashboard
-5. Mostrar mensagem de erro (Status: 401, "Credenciais inválidas")
+1. Open the Playground page
+2. Fill login with invalid email and password
+3. Click Login
+4. **Do not** redirect to dashboard
+5. Show error message (Status: 401, "Invalid credentials")
 
-### Elementos usados (frontend)
+### Elements used (frontend)
 
-| Elemento      | data-testid        |
-|---------------|--------------------|
-| Formulário    | `form-login`       |
-| E-mail        | `login-email`      |
-| Senha         | `login-password`   |
-| Botão Login   | `btn-login`        |
-| Resposta API  | `pre` (irmão do form) |
+| Element | data-testid |
+|---------|-------------|
+| Form | `form-login` |
+| Email | `login-email` |
+| Password | `login-password` |
+| Login button | `btn-login` |
+| API response | `pre` (sibling of form) |
 
 ---
 
@@ -52,27 +52,27 @@ tests/
 // tests/cypress/e2e/auth/login-fail.cy.js
 const Playground = require('../../pages/PlaygroundPage');
 
-describe('Login com credenciais inválidas', () => {
-  it('exibe erro 401 e mantém na tela de login', () => {
+describe('Login with invalid credentials', () => {
+  it('displays 401 error and stays on login screen', () => {
     Playground.visit();
     Playground.getFormLogin().should('be.visible');
 
     Playground.fillLoginForm({
-      email: 'naoexiste@teste.com',
-      password: 'senhaerrada',
+      email: 'nonexistent@test.com',
+      password: 'wrongpassword',
     });
     Playground.clickLogin();
 
-    // Não redirecionou
+    // Did not redirect
     cy.url().should('not.include', '/dashboard');
 
-    // Mensagem de erro visível
+    // Error message visible
     Playground.assertLoginFailVisible();
   });
 });
 ```
 
-**Padrão Cypress:** `cy.*` encadeado, comandos assíncronos gerenciados pelo framework.
+**Cypress pattern:** chained `cy.*`, async commands managed by the framework.
 
 ---
 
@@ -87,55 +87,55 @@ const {
   clickLogin,
 } = require('../../support/helpers');
 
-test.describe('Login com credenciais inválidas', () => {
-  test('exibe erro 401 e mantém na tela de login', async ({ page }) => {
+test.describe('Login with invalid credentials', () => {
+  test('displays 401 error and stays on login screen', async ({ page }) => {
     await visitPlayground(page);
     await expect(page.getByTestId('form-login')).toBeVisible();
 
     await fillLoginForm(page, {
-      email: 'naoexiste@teste.com',
-      password: 'senhaerrada',
+      email: 'nonexistent@test.com',
+      password: 'wrongpassword',
     });
     await clickLogin(page);
 
-    // Não redirecionou
+    // Did not redirect
     await expect(page).not.toHaveURL(/\/dashboard/);
 
-    // Mensagem de erro visível
+    // Error message visible
     await assertLoginFailVisible(page);
   });
 });
 ```
 
-**Padrão Playwright:** `async/await`, `page.*` e `expect()`.
+**Playwright pattern:** `async/await`, `page.*` and `expect()`.
 
 ---
 
-## Tabela de equivalências
+## Equivalence table
 
-| Ação                    | Cypress                          | Playwright                          |
-|-------------------------|----------------------------------|-------------------------------------|
-| Visitar URL             | `cy.visit(url)`                  | `page.goto(url)`                    |
-| Elemento por testid     | `cy.get('[data-testid="x"]')`    | `page.getByTestId('x')`             |
-| Preencher input         | `cy.get(...).type(text)`         | `page.getByTestId('x').fill(text)`   |
-| Clicar                  | `cy.get(...).click()`            | `page.getByTestId('x').click()`     |
-| Verificar visível       | `.should('be.visible')`          | `expect(...).toBeVisible()`         |
-| Verificar URL           | `cy.url().should('include', x)`   | `expect(page).toHaveURL(/x/)`        |
-| Verificar texto         | `.should('contain.text', x)`     | `expect(await el.textContent()).toContain(x)` |
-| Request HTTP direto     | `cy.request(...)`                | `request.get/post(...)`             |
+| Action | Cypress | Playwright |
+|--------|---------|------------|
+| Visit URL | `cy.visit(url)` | `page.goto(url)` |
+| Element by testid | `cy.get('[data-testid="x"]')` | `page.getByTestId('x')` |
+| Fill input | `cy.get(...).type(text)` | `page.getByTestId('x').fill(text)` |
+| Click | `cy.get(...).click()` | `page.getByTestId('x').click()` |
+| Check visible | `.should('be.visible')` | `expect(...).toBeVisible()` |
+| Check URL | `cy.url().should('include', x)` | `expect(page).toHaveURL(/x/)` |
+| Check text | `.should('contain.text', x)` | `expect(await el.textContent()).toContain(x)` |
+| Direct HTTP request | `cy.request(...)` | `request.get/post(...)` |
 
 ---
 
-## Checklist ao adicionar teste em ambos
+## Checklist when adding a test in both
 
-1. **Page Object (Cypress)** – Se existir página, use o Page Object.
+1. **Page Object (Cypress)** – If the page exists, use the Page Object.
 2. **Helpers (Playwright)** – Reuse `visitPlayground`, `fillLoginForm`, etc.
-3. **Selectors** – Prefira `data-testid` em ambos.
-4. **Mesmo cenário** – Mesmos dados, mesmas asserções (texto da UI, Status da API).
-5. **Rodar os dois** – `npm run tests:run` e `npm run tests:pw`.
+3. **Selectors** – Prefer `data-testid` in both.
+4. **Same scenario** – Same data, same assertions (UI text, API status).
+5. **Run both** – `npm run tests:run` and `npm run tests:pw`.
 
 ---
 
-## Testes de API (request único)
+## API tests (single request)
 
-Use **specs centralizados** em `tests/shared/specs/api/` – uma definição, dois runners. Ver [TESTES-CYPRESS-VS-PLAYWRIGHT.md](./TESTES-CYPRESS-VS-PLAYWRIGHT.md).
+Use **centralized specs** in `tests/shared/specs/api/` – one definition, two runners. See [TESTES-CYPRESS-VS-PLAYWRIGHT.md](./TESTES-CYPRESS-VS-PLAYWRIGHT.md).

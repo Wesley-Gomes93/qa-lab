@@ -42,16 +42,16 @@ const CONFIG = {
 export async function callLLM(systemPrompt, userPrompt) {
   if (!PROVIDER) {
     throw new Error(
-      "Nenhuma API key configurada. Defina uma destas no .env:\n" +
-        "  GROQ_API_KEY=...        (gratuito: https://console.groq.com/keys)\n" +
-        "  GEMINI_API_KEY=...       (gratuito: https://aistudio.google.com/apikey)\n" +
-        "  OPENAI_API_KEY=...       (pago: https://platform.openai.com/api-keys)"
+      "No API key configured. Add one of these to .env:\n" +
+        "  GROQ_API_KEY=...        (free: https://console.groq.com/keys)\n" +
+        "  GEMINI_API_KEY=...      (free: https://aistudio.google.com/apikey)\n" +
+        "  OPENAI_API_KEY=...      (paid: https://platform.openai.com/api-keys)"
     );
   }
 
   const cfg = CONFIG[PROVIDER];
   if (!cfg?.key) {
-    throw new Error(`Provedor ${PROVIDER} selecionado mas API key não encontrada.`);
+    throw new Error(`Provider ${PROVIDER} selected but API key not found.`);
   }
 
   if (PROVIDER === "gemini") {

@@ -1,66 +1,66 @@
-# Teste de performance TICTAC
+# TICTAC performance test
 
-Este documento explica **o que é o TICTAC**, **por que ter um teste de performance como esse** e **quais benefícios** ele traz para o projeto.
-
----
-
-## O que é o TICTAC?
-
-**TICTAC** significa **T**ime-based **I**nteraction & **C**ritical path **T**esting for **A**pplication **C**ompliance.
-
-É um teste de performance focado no **caminho crítico** do usuário: em vez de medir apenas “a aplicação está no ar?”, ele mede **quanto tempo** leva para cada etapa importante até o usuário conseguir usar o sistema.
-
-No QA Lab, o TICTAC verifica:
-
-| Métrica | O que mede | Limite padrão |
-|--------|------------|----------------|
-| **Carregamento da página** | Tempo do fetch até o evento `load` (Playground) | 8 s |
-| **Healthcheck da API** | Tempo de resposta do `GET /health` | 2 s |
-| **Formulário visível** | Tempo até o formulário de login estar visível (Time to Interactive) | 5 s |
-| **Dashboard após login** | Tempo desde o clique em Login até “Bem-vindo de volta” no dashboard | 6 s |
-
-Os limites podem ser ajustados via variáveis de ambiente no Cypress (ex.: `CYPRESS_TICTAC_LOAD_MS`, `CYPRESS_TICTAC_HEALTH_MS`, etc.).
+This document explains **what TICTAC is**, **why have a performance test like this**, and **what benefits** it brings to the project.
 
 ---
 
-## Por que ter um teste de performance como esse?
+## What is TICTAC?
 
-### 1. **Funcionalidade não basta**
+**TICTAC** stands for **T**ime-based **I**nteraction & **C**ritical path **T**esting for **A**pplication **C**ompliance.
 
-Testes E2E e de API garantem que o fluxo *funciona*: registro, login, edição, etc. Eles não garantem que o fluxo seja **rápido**. Uma tela que demora 15 segundos para abrir pode passar em todos os testes funcionais e ainda assim ser inaceitável para o usuário.
+It is a performance test focused on the user's **critical path**: instead of just measuring "is the app up?", it measures **how long** each important step takes until the user can use the system.
 
-### 2. **Regressão de performance**
+In QA Lab, TICTAC checks:
 
-Qualquer mudança (novas dependências, mais dados na tela, refactors no front ou no backend) pode deixar a aplicação mais lenta. O TICTAC funciona como **guardrail**: se alguém subir um código que estoura um dos limites, o teste falha e o problema aparece antes de ir para produção.
+| Metric | What it measures | Default limit |
+|--------|------------------|---------------|
+| **Page load** | Time from fetch to `load` event (Playground) | 8 s |
+| **API healthcheck** | Response time of `GET /health` | 2 s |
+| **Form visible** | Time until login form is visible (Time to Interactive) | 5 s |
+| **Dashboard after login** | Time from Login click to "Welcome back" on dashboard | 6 s |
 
-### 3. **Caminho crítico explícito**
-
-O teste obriga o time a definir “o que é crítico” para o usuário (carregar a home, ver o formulário, entrar no dashboard). Isso vira referência para otimizações e para priorizar onde investir em performance.
-
-### 4. **Integração com o pipeline**
-
-O mesmo comando que roda os testes E2E pode rodar o TICTAC (`npm test` ou a suíte `performance` no agente). Assim, performance vira parte rotineira do QA, não algo “extra” que só alguém lembra de rodar de vez em quando.
-
----
-
-## Benefícios
-
-- **Detecção cedo:** degradação de tempo (load, API, interatividade) é detectada no CI ou na máquina do dev, não na reclamação do usuário.
-- **Métricas objetivas:** números em milissegundos, com limites configuráveis, em vez de “está lento” subjetivo.
-- **Foco no que importa:** apenas o caminho crítico (home → login → dashboard), sem dispersar em dezenas de métricas no primeiro momento.
-- **Documentação viva:** o próprio spec e este doc explicam o que é “bom” em termos de tempo para o QA Lab.
-- **Base para evolução:** depois podem ser adicionadas outras métricas (LCP, TTI via Lighthouse, etc.) mantendo o mesmo conceito TICTAC.
+Limits can be adjusted via environment variables in Cypress (e.g. `CYPRESS_TICTAC_LOAD_MS`, `CYPRESS_TICTAC_HEALTH_MS`, etc.).
 
 ---
 
-## Como rodar
+## Why have a performance test like this?
 
-- **Todos os testes (incluindo TICTAC):** na pasta `tests/`, `npm test`.
-- **Só TICTAC:**  
+### 1. **Functionality is not enough**
+
+E2E and API tests ensure the flow *works*: registration, login, editing, etc. They do not ensure the flow is **fast**. A screen that takes 15 seconds to load can pass all functional tests and still be unacceptable to the user.
+
+### 2. **Performance regression**
+
+Any change (new dependencies, more data on screen, frontend or backend refactors) can slow down the application. TICTAC acts as a **guardrail**: if someone ships code that exceeds one of the limits, the test fails and the problem surfaces before production.
+
+### 3. **Explicit critical path**
+
+The test forces the team to define "what is critical" for the user (load home, see form, enter dashboard). This becomes a reference for optimizations and for prioritizing where to invest in performance.
+
+### 4. **Pipeline integration**
+
+The same command that runs E2E tests can run TICTAC (`npm test` or the `performance` suite in the agent). Thus, performance becomes a routine part of QA, not something "extra" that someone remembers to run from time to time.
+
+---
+
+## Benefits
+
+- **Early detection:** time degradation (load, API, interactivity) is detected in CI or on the dev machine, not in user complaints.
+- **Objective metrics:** numbers in milliseconds, with configurable limits, instead of subjective "it's slow".
+- **Focus on what matters:** only the critical path (home → login → dashboard), without scattering across dozens of metrics at first.
+- **Living documentation:** the spec itself and this doc explain what is "good" in terms of time for QA Lab.
+- **Base for evolution:** more metrics can be added later (LCP, TTI via Lighthouse, etc.) keeping the same TICTAC concept.
+
+---
+
+## How to run
+
+- **All tests (including TICTAC):** in `tests/` folder, `npm test`.
+- **TICTAC only:**  
   `npx cypress run --spec "cypress/e2e/performance/tictac.cy.js"`
-- **Pelo agente:** `npm run agent:run-tests` → opção **Performance – TICTAC (caminho crítico)**.
+- **Via agent:** `npm run agent:run-tests` → **Performance – TICTAC (critical path)** option.
 
-Para relaxar ou enrijecer os limites (por exemplo, em CI mais lento):
+To relax or tighten limits (e.g. on slower CI):
 
 ```bash
 CYPRESS_TICTAC_LOAD_MS=12000 CYPRESS_TICTAC_DASHBOARD_MS=8000 npx cypress run --spec "cypress/e2e/performance/tictac.cy.js"
@@ -68,6 +68,6 @@ CYPRESS_TICTAC_LOAD_MS=12000 CYPRESS_TICTAC_DASHBOARD_MS=8000 npx cypress run --
 
 ---
 
-## Resumo
+## Summary
 
-O **TICTAC** é um teste de performance que mede o **tempo** das etapas críticas do QA Lab (load da página, health da API, formulário visível, dashboard após login). Ter um teste assim **evita regressões de performance** e mantém a aplicação dentro de limites aceitáveis, com **benefícios** de detecção cedo, métricas objetivas e integração ao fluxo normal de testes.
+**TICTAC** is a performance test that measures the **time** of the critical steps in QA Lab (page load, API health, form visible, dashboard after login). Having such a test **prevents performance regressions** and keeps the application within acceptable limits, with **benefits** of early detection, objective metrics, and integration into the normal test flow.

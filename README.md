@@ -38,6 +38,18 @@
 
 ---
 
+## Architecture decisions
+
+**Why Cypress + Playwright?** Both frameworks run the same scenarios. I kept both to compare APIs, reports, and maintenance overhead. Playwright tends to run ~3x faster in CI; Cypress has a larger ecosystem. The decision was data-driven, not tool-centric.
+
+**Why AI agents?** The Test Writer and Failure Analyzer extend QA without replacing critical thinking. They show how LLM integration fits into real workflows — generating specs from descriptions and suggesting fixes when tests fail.
+
+**Why contract testing?** OpenAPI validation catches breaking API changes before E2E. A small upfront investment (schema + validator script) prevents subtle bugs from reaching UI tests.
+
+**Trade-offs:** I chose not to add full AWS infra (ECS, ALB, CDN) — the ROI for a QA portfolio is low compared to polish and documentation. I also deferred Slack/Teams notifications and historical dashboards; they add value in production, less so for portfolio presentation.
+
+---
+
 ## Tech Highlights
 
 | Area | What's in place |
@@ -133,12 +145,12 @@ npm run tests:run
 Generate Cypress and/or Playwright tests from natural language. **API key required** in `.env` (Groq or Gemini are free).
 
 ```bash
-npm run agent:test-writer "healthcheck da API"
+npm run agent:test-writer "API healthcheck"
 npm run agent:test-writer "POST /auth/register returns 201"
 npm run agent:test-writer -- --framework both "login flow"  # Cypress + Playwright
 ```
 
-**Suites:** `api` | `auth` | `admin` | `ui` | `performance`  
+**Suites:** `api` | `auth` | `admin` | `dashboard` | `ui` | `performance`  
 → **[Full guide](./docs/AGENT-TEST-WRITER.md)** — all combinations, env vars, examples per suite.
 
 ---

@@ -1,76 +1,114 @@
-# Test Writer Agent – Gerar testes com LLM
+# Test Writer Agent – Generate tests with LLM
 
-Agente que executa o fluxo completo: **ler projeto → entender → sugerir teste → criar teste → rodar → verificar se passou**.
+Agent that runs the full flow: **read project → understand → suggest test → create test → run → verify if it passed**.
 
-## Pré-requisitos
+## Prerequisites
 
-1. **API Key do OpenAI** (ou compatível)
-   - Crie em https://platform.openai.com/api-keys
-   - Defina no ambiente: `OPENAI_API_KEY` ou `QA_LAB_LLM_API_KEY`
+1. **OpenAI API Key** (or compatible)
+   - Create at https://platform.openai.com/api-keys
+   - Set in environment: `OPENAI_API_KEY` or `QA_LAB_LLM_API_KEY`
 
-2. **Backend e frontend rodando** (para rodar os testes gerados)
+2. **Backend and frontend running** (to run the generated tests)
    ```bash
    npm run db:up
-   npm run backend:dev    # em um terminal
-   npm run frontend:dev   # em outro
+   npm run backend:dev    # in one terminal
+   npm run frontend:dev   # in another
    ```
 
-## Variáveis de ambiente
+## Environment variables
 
-| Variável | Descrição | Gratuito? |
-|----------|-----------|-----------|
-| `GROQ_API_KEY` | Groq (recomendado) | ✅ Sim |
-| `GEMINI_API_KEY` | Google Gemini | ✅ Sim |
-| `OPENAI_API_KEY` | OpenAI | ❌ Pago |
-| `QA_LAB_LLM_PROVIDER` | Forçar provedor: `groq`, `gemini`, `openai` | - |
-| `QA_LAB_LLM_MODEL` | Modelo (ex.: `llama-3.3-70b-versatile`, `gemini-1.5-flash`) | - |
+| Variable | Description | Free? |
+|----------|-------------|-------|
+| `GROQ_API_KEY` | Groq (recommended) | ✅ Yes |
+| `GEMINI_API_KEY` | Google Gemini | ✅ Yes |
+| `OPENAI_API_KEY` | OpenAI | ❌ Paid |
+| `QA_LAB_LLM_PROVIDER` | Force provider: `groq`, `gemini`, `openai` | - |
+| `QA_LAB_LLM_MODEL` | Model (e.g. `llama-3.3-70b-versatile`, `gemini-1.5-flash`) | - |
 
-**Prioridade:** Groq → Gemini → OpenAI. Configure uma chave no `.env`.
+**Priority:** Groq → Gemini → OpenAI. Configure one key in `.env`.
 
-Exemplo: crie um arquivo `.env` na raiz do projeto:
+Example: create a `.env` file in the project root:
 
 ```bash
 cp .env.example .env
-# Edite .env e adicione UMA destas chaves (Groq e Gemini são gratuitos):
+# Edit .env and add ONE of these keys (Groq and Gemini are free):
 # GROQ_API_KEY=gsk_...     → https://console.groq.com/keys
 # GEMINI_API_KEY=...       → https://aistudio.google.com/apikey
 ```
 
-Ou exporte no terminal antes de rodar:
+Or export in the terminal before running:
 ```bash
 export OPENAI_API_KEY="sk-..."
 npm run agent:test-writer "healthcheck"
 ```
 
-## Uso
+## Usage
 
 ```bash
-# Na raiz do projeto
-npm run agent:test-writer "healthcheck da API"
-npm run agent:test-writer "teste para POST /auth/register"
-npm run agent:test-writer -- --suite api --request "GET /users retorna 403 sem token"
+# From project root
+npm run agent:test-writer "API healthcheck"
+npm run agent:test-writer "test for POST /auth/register"
+npm run agent:test-writer -- --suite api --request "GET /users returns 403 without token"
 
-# Gerar Cypress e Playwright ao mesmo tempo
-npm run agent:test-writer -- --framework both "healthcheck da API"
+# Generate Cypress and Playwright at once
+npm run agent:test-writer -- --framework both "API healthcheck"
 
-# Gerar só Playwright
-npm run agent:test-writer -- --framework playwright "healthcheck da API"
+# Generate Playwright only
+npm run agent:test-writer -- --framework playwright "API healthcheck"
 ```
 
-### Opção `--framework`
+### `--framework` option
 
-| Valor      | Comportamento                                  |
-|------------|-----------------------------------------------|
-| `cypress`  | (padrão) Gera e grava só Cypress              |
-| `playwright` | Gera e grava só Playwright                  |
-| `both`     | Gera **Cypress e Playwright** em paralelo e roda os dois |
+| Value | Behavior |
+|-------|----------|
+| `cypress` | (default) Generates and saves only Cypress |
+| `playwright` | Generates and saves only Playwright |
+| `both` | Generates **Cypress and Playwright** in parallel and runs both |
 
-## Fluxo
+## Flow
 
-1. **Ler projeto** – `read_project` lê rotas da API, specs existentes, helpers
-2. **Gerar** – LLM recebe contexto e pedido; retorna código Cypress e/ou Playwright
-3. **Criar** – `write_test` grava em `tests/cypress/e2e/` ou `tests/playwright/e2e/`
-4. **Rodar** – `run_tests` executa cada spec criado
-5. **Verificar** – exit code 0 = passou, 1 = falhou
+1. **Read project** – `read_project` reads API routes, existing specs, helpers
+2. **Generate** – LLM receives context and request; returns Cypress and/or Playwright code
+3. **Create** – `write_test` saves to `tests/cypress/e2e/` or `tests/playwright/e2e/`
+4. **Run** – `run_tests` executes each created spec
+5. **Verify** – exit code 0 = passed, 1 = failed
 
-Se falhar, use `npm run agent:analyze-failures` para sugestões de correção.
+If it fails, use `npm run agent:analyze-failures` for fix suggestions.
+
+## Suites
+
+| Suite | Layer | Example |
+|-------|-------|---------|
+| `api` | API | Healthcheck, CRUD users |
+| `auth` | UI | Login, logout, register |
+| `admin` | UI | Admin dashboard CRUD |
+| `dashboard` | UI | Dashboard navigation, health/metrics/test pages |
+| `ui` | UI | Playground, forms |
+| `performance` | Performance | TICTAC metrics |
+
+Use `--suite <name>` to target a suite:
+
+```bash
+npm run agent:test-writer -- --suite dashboard "navigation to health page"
+```
+
+## Example (before → after)
+
+**Input:**
+```bash
+npm run agent:test-writer "API healthcheck returns 200"
+```
+
+**Output:** Creates `tests/cypress/e2e/api/api-healthcheck-returns-200.cy.js` with:
+
+```javascript
+describe("API", () => {
+  it("GET /health returns 200", () => {
+    cy.request({ method: "GET", url: "http://localhost:4000/health" })
+      .its("status")
+      .should("eq", 200);
+  });
+});
+```
+
+Then runs the test and reports pass/fail.

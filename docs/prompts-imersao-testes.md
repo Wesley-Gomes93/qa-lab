@@ -1,232 +1,232 @@
-# Prompts para imersão nos testes – conversando com a IA
+# Prompts for immersive test runs – talking to AI
 
-Use estes prompts quando estiver **conversando com uma IA** (Cursor, ChatGPT, Claude, etc.) para ter uma experiência imersiva: você escolhe se quer **digitar os dados** (nome, e-mail, senha, idade) ou **deixar a IA preencher** com valores aleatórios, e se a execução será **manual** (passo a passo no site) ou **automatizada** (Cypress aberto para ver o navegador rodando).
+Use these prompts when **talking to an AI** (Cursor, ChatGPT, Claude, etc.) for an immersive experience: you choose whether to **type the data** (name, email, password, age) or **let the AI fill** with random values, and whether execution is **manual** (step by step on the site) or **automated** (Cypress open to watch the browser run).
 
-**Os testes usam os dados que você informar.** Você pode passá-los conversando com a IA, pelo agente (`node qa-agent.js run_tests`) ou pelo terminal com variáveis de ambiente.
-
----
-
-## Melhor forma de executar o prompt
-
-| Situação | O que fazer |
-|----------|-------------|
-| **Você está no Cursor (ou outra IA) com o projeto QA Lab aberto** | Basta **pedir em uma frase**. Ex.: *"Vamos rodar o teste de registro no modo imersivo"* ou *"Execute o docs/prompts-imersao-testes.md"*. A IA segue o fluxo: pergunta manual/automatizado, dados (digitar/aleatório), e te guia ou te passa o comando do Cypress. **Não precisa colar nada.** |
-| **Chat novo ou IA que não conhece o QA Lab** | **1)** Cole o bloco da **Sessão 2** (prompt de contexto) no primeiro mensagem. **2)** Na próxima mensagem, diga qual teste quer: *"Quero rodar o de registro"*, *"Teste de edição de idade"*, etc. A IA assume o papel e pergunta manual/automatizado e dados. |
-
-**Resumo:** No Cursor com o repo aberto → só pedir. Em qualquer outro chat → colar a Sessão 2 e em seguida dizer o teste que quer rodar.
+**Tests use the data you provide.** You can pass it through the AI conversation, the agent (`node qa-agent.js run_tests`), or the terminal with environment variables.
 
 ---
 
-## Por que colar o prompt de contexto? E quando não precisa?
+## Best way to run the prompt
 
-O guia pede para **colar a Sessão 2** (prompt de contexto) no início da conversa porque ele foi feito para funcionar em **qualquer** chat com qualquer IA (Cursor, ChatGPT, Claude, etc.). Em uma conversa **nova** ou em uma IA que **não conhece** o QA Lab, essa IA não sabe que deve:
+| Situation | What to do |
+|------------|------------|
+| **You're in Cursor (or another AI) with the QA Lab project open** | Just **ask in one sentence**. E.g. *"Let's run the registration test in immersive mode"* or *"Execute docs/prompts-imersao-testes.md"*. The AI follows the flow: asks manual/automated, data (type/random), and guides you or gives you the Cypress command. **No need to paste anything.** |
+| **New chat or AI that doesn't know QA Lab** | **1)** Paste the **Session 2** block (context prompt) in the first message. **2)** In the next message, say which test you want: *"I want to run the registration one"*, *"Age editing test"*, etc. The AI takes the role and asks manual/automated and data. |
 
-- perguntar se você quer manual ou automatizado,
-- perguntar se os dados são digitados ou aleatórios,
-- dar passo a passo no site ou abrir o Cypress para você ver.
-
-Por isso o texto da Sessão 2 “configura” a IA: ao colar, você está dizendo o **papel** (assistente de QA do QA Lab) e as **regras** (reunir informações, manual = passo a passo, automatizado = Cypress aberto).
-
-**Quando você NÃO precisa colar:**  
-Se você já está numa conversa com uma IA que **já conhece** o projeto (por exemplo, no Cursor, com o repositório aberto e a documentação disponível), pode **só pedir** o modo imersivo. Por exemplo: *“Vamos rodar o teste de registro no modo imersivo”* ou *“Execute o docs/prompts-imersao-testes.md”*. A IA pode seguir as mesmas regras (perguntar manual/automatizado, dados digitados/aleatórios, etc.) sem você colar o bloco. O “cole” no guia existe para quando a IA ainda não tem esse contexto.
+**Summary:** In Cursor with the repo open → just ask. In any other chat → paste Session 2 and then say which test you want to run.
 
 ---
 
-## Índice
+## Why paste the context prompt? When don't you need to?
 
-| Sessão | Conteúdo |
-|--------|----------|
-| **1** | Visão geral: coleta de informações, como os dados entram nos testes, manual vs automatizado |
-| **2** | Prompt de contexto (cole no início da conversa) |
-| **3** | Prompts por cenário (registro, login, edição de idade, fluxo completo, qualquer teste) |
-| **4** | Exemplo de conversa |
-| **5** | Resumo rápido |
+The guide asks you to **paste Session 2** (context prompt) at the start because it was made to work in **any** chat with any AI (Cursor, ChatGPT, Claude, etc.). In a **new** conversation or with an AI that **doesn't know** QA Lab, that AI doesn't know it should:
 
----
+- ask if you want manual or automated,
+- ask if data is typed or random,
+- give step-by-step on the site or open Cypress for you to watch.
 
-# Sessão 1 – Visão geral
+So Session 2 text "configures" the AI: when you paste it, you're setting the **role** (QA assistant for QA Lab) and the **rules** (gather info, manual = step by step, automated = Cypress open).
 
-## 1.1 Coleta de informações (a IA deve seguir sempre)
-
-Antes de executar qualquer teste que use dados, a IA deve **reunir**:
-
-1. **Qual teste** (ex.: registro, registro+login, login admin, edição de idade, suite admin, etc.).
-2. **Modo de execução:**
-   - **Manual** – a IA mostra o teste **abrindo o site** e te guia passo a passo com os dados fornecidos (você abre http://localhost:3000 e segue as instruções).
-   - **Automatizado** – a IA roda o **Cypress em modo aberto** (`cypress open`) com o spec e as variáveis de ambiente, para você **ver o navegador** e o Cypress executando o teste na tela.
-3. **Dados:** conforme o teste: nome, e-mail, senha e/ou idade. A IA pergunta se você quer **digitar** ou usar **aleatório**; se digitar, pede campo a campo e confirma.
-
-Depois:
-- **Se manual:** a IA te passa um **passo a passo** para abrir o site e fazer o teste com exatamente esses dados (como se estivesse "mostrando" o teste na sua frente).
-- **Se automatizado:** a IA executa o Cypress em **modo aberto** (não headless), com o spec correto e as env vars, para você assistir à execução no navegador.
+**When you DON'T need to paste:**  
+If you're already in a conversation with an AI that **knows** the project (e.g. in Cursor with the repo open and docs available), you can **just ask** for immersive mode. E.g.: *"Let's run the registration test in immersive mode"* or *"Execute docs/prompts-imersao-testes.md"*. The AI can follow the same rules without you pasting. The "paste" in the guide exists for when the AI doesn't have that context yet.
 
 ---
 
-## 1.2 Como os dados entram nos testes
+## Index
 
-Os specs de **registro/login** usam `Playground.getRegisterName()`, `getRegisterEmail()` e `getRegisterPassword()`: se existir `CYPRESS_REGISTER_NAME` (e equivalentes), esse valor é usado; senão, é gerado aleatório. Os testes de **edição de idade** no admin usam `getEditIdade()`: se existir `CYPRESS_EDIT_IDADE` (entre 18 e 80), usam esse valor; senão, aleatório.
-
-- **Pelo agente:** ao rodar `cd agents && node qa-agent.js run_tests`, responda **s** na pergunta "Quer informar dados para imersão?" e preencha nome, e-mail, senha e/ou idade (Enter em qualquer campo = aleatório). O agente envia esses valores para o MCP, que repassa ao Cypress como variáveis de ambiente.
-- **Pelo terminal (sem agente):**  
-  `CYPRESS_REGISTER_NAME="Maria" CYPRESS_REGISTER_EMAIL="maria@teste.com" CYPRESS_REGISTER_PASSWORD="minhasenha" CYPRESS_EDIT_IDADE=25 npx cypress run --spec "cypress/e2e/auth/register-full-flow.cy.js"`  
-  (rode de dentro da pasta `tests`).
-- **Na conversa com a IA:** peça que ela rode o comando acima (ou o agente) com os valores que você escolheu; ela pode usar o agente com dados imersivos ou montar o comando com as env vars.
+| Session | Content |
+|---------|---------|
+| **1** | Overview: info gathering, how data gets into tests, manual vs automated |
+| **2** | Context prompt (paste at the start of the conversation) |
+| **3** | Prompts per scenario (registration, login, age editing, full flow, any test) |
+| **4** | Example conversation |
+| **5** | Quick summary |
 
 ---
 
-## 1.3 Manual vs automatizado – o que a IA deve fazer
+# Session 1 – Overview
 
-### Se a pessoa escolher MANUAL
-A IA deve reunir os dados (nome, e-mail, senha, idade conforme o teste) e depois **escrever um passo a passo** para a pessoa executar no navegador, como se estivesse mostrando o teste na frente dela: abrir http://localhost:3000, ir na seção correta (Registrar, Login ou Dashboard admin), preencher cada campo com os valores combinados, clicar nos botões e descrever o que deve aparecer para validar (ex.: Status 201, Bem-vindo de volta).
+## 1.1 Info gathering (AI should always follow)
 
-**Exemplo (registro):** "1) Abra http://localhost:3000. 2) Seção Registrar usuário: Nome = Carla Teste, E-mail = carla.teste@qa.com, Senha = senha456. 3) Clique em Registrar. 4) Deve aparecer Status 201 e resumo do usuário."
+Before running any test that uses data, the AI must **gather**:
 
-### Se a pessoa escolher AUTOMATIZADO
-A IA deve rodar o **Cypress em modo aberto** para a pessoa **ver o navegador** executando o teste. Comando (pasta `tests`):  
+1. **Which test** (e.g. registration, registration+login, admin login, age editing, admin suite, etc.).
+2. **Execution mode:**
+   - **Manual** – the AI shows the test **opening the site** and guides you step by step with the provided data (you open http://localhost:3000 and follow instructions).
+   - **Automated** – the AI runs **Cypress in open mode** (`cypress open`) with the spec and env vars, so you **watch the browser** and Cypress running the test on screen.
+3. **Data:** depending on the test: name, email, password and/or age. The AI asks if you want to **type** or use **random**; if typing, asks field by field and confirms.
+
+Then:
+- **If manual:** the AI gives you a **step-by-step** to open the site and run the test with exactly that data (as if "showing" the test in front of you).
+- **If automated:** the AI runs Cypress in **open mode** (not headless), with the correct spec and env vars, so you can watch execution in the browser.
+
+---
+
+## 1.2 How data gets into tests
+
+**Registration/login** specs use `Playground.getRegisterName()`, `getRegisterEmail()` and `getRegisterPassword()`: if `CYPRESS_REGISTER_NAME` (and equivalents) exists, that value is used; otherwise, random. **Age editing** tests in admin use `getEditIdade()`: if `CYPRESS_EDIT_IDADE` (between 18 and 80) exists, that's used; otherwise, random.
+
+- **Via agent:** when running `cd agents && node qa-agent.js run_tests`, answer **y** to "Do you want to provide immersion data?" and fill name, email, password and/or age (Enter on any field = random). The agent sends these values to MCP, which forwards them to Cypress as env vars.
+- **Via terminal (no agent):**  
+  `CYPRESS_REGISTER_NAME="Maria" CYPRESS_REGISTER_EMAIL="maria@test.com" CYPRESS_REGISTER_PASSWORD="mypassword" CYPRESS_EDIT_IDADE=25 npx cypress run --spec "cypress/e2e/auth/register-full-flow.cy.js"`  
+  (run from inside the `tests` folder).
+- **In conversation with AI:** ask it to run the command above (or the agent) with the values you chose; it can use the agent with immersion data or build the command with env vars.
+
+---
+
+## 1.3 Manual vs automated – what the AI should do
+
+### If the person chooses MANUAL
+The AI must gather the data (name, email, password, age as needed) and then **write a step-by-step** for the person to run in the browser, as if showing the test in front of them: open http://localhost:3000, go to the right section (Register, Login, or Admin dashboard), fill each field with the agreed values, click the buttons, and describe what should appear to validate (e.g. Status 201, Welcome back).
+
+**Example (registration):** "1) Open http://localhost:3000. 2) Register section: Name = Carla Test, Email = carla.test@qa.com, Password = pass456. 3) Click Register. 4) You should see Status 201 and user summary."
+
+### If the person chooses AUTOMATED
+The AI must run **Cypress in open mode** so the person **sees the browser** running the test. Command (from `tests` folder):  
 `CYPRESS_REGISTER_NAME="..." CYPRESS_REGISTER_EMAIL="..." CYPRESS_REGISTER_PASSWORD="..." npx cypress open --e2e`
   
-  Depois que o Cypress abrir, **selecione o spec** na lista (ex.: `auth/register-full-flow.cy.js`) e clique em Run.  
-(para idade: `CYPRESS_EDIT_IDADE=25` em specs de admin). Specs: registro = register-full-flow.cy.js; registro+login = register-and-login.cy.js; login = login-admin.cy.js; edição idade = admin-dashboard-editar-idade-id1.cy.js. Depois de abrir o Cypress, dizer: "Clique em Run para ver o teste rodando no navegador."
+  After Cypress opens, **select the spec** in the list (e.g. `auth/register-full-flow.cy.js`) and click Run.  
+(For age: `CYPRESS_EDIT_IDADE=25` in admin specs.) Specs: registration = register-full-flow.cy.js; registration+login = register-and-login.cy.js; login = login-admin.cy.js; age editing = admin-dashboard-editar-idade-id1.cy.js. After opening Cypress, say: "Click Run to see the test running in the browser."
 
 ---
 
-# Sessão 2 – Prompt de contexto (cole quando a IA ainda não conhece o fluxo)
+# Session 2 – Context prompt (paste when the AI doesn't know the flow yet)
 
-Use este bloco para a IA entender o cenário e o tom da conversa **em chats novos ou em IAs que ainda não sabem que devem perguntar manual/automatizado e dados**. Se você já está no Cursor (ou em outro ambiente onde a IA já conhece o projeto), pode apenas pedir o modo imersivo sem colar.
+Use this block so the AI understands the scenario and tone **in new chats or with AIs that don't yet know they should ask manual/automated and data**. If you're already in Cursor (or another environment where the AI knows the project), you can just ask for immersive mode without pasting.
 
 ```
-Você é meu assistente de QA no projeto QA Lab. O projeto tem:
-- Frontend (Next.js) com registro, login e dashboard admin
+You are my QA assistant for the QA Lab project. The project has:
+- Frontend (Next.js) with registration, login, and admin dashboard
 - Backend (Express + PostgreSQL)
-- Testes Cypress organizados em: auth (registro, login, logout), api (health, criação de usuários), admin (dashboard: editar idade, validação 18–80, inativo, filtro, exclusão), ui (elementos da tela)
-- Um agente (node qa-agent.js run_tests) que abre um menu para eu escolher qual teste rodar
+- Cypress tests organized in: auth (registration, login, logout), api (health, user creation), admin (dashboard: edit age, 18–80 validation, inactive, filter, delete), ui (screen elements)
+- An agent (node qa-agent.js run_tests) that opens a menu for me to choose which test to run
 
-Quero uma experiência imersiva: para cada teste que envolva dados (registro, login, edição de idade), você:
+I want an immersive experience: for each test that involves data (registration, login, age editing), you:
 
-1) **Reúne as informações:** qual teste vamos rodar; se a execução será **manual** (eu abro o site e você me guia passo a passo com os dados) ou **automatizada** (você abre o Cypress e eu vejo o navegador executando o teste); e os dados (nome, e-mail, senha, idade) – perguntando se eu digito ou se você usa aleatório (campo a campo se eu digitar).
+1) **Gather information:** which test we're running; whether execution will be **manual** (I open the site and you guide me step by step with the data) or **automated** (you open Cypress and I see the browser running the test); and the data (name, email, password, age) – asking if I type or you use random (field by field if I type).
 
-2) **Se eu escolher MANUAL:** me dê um passo a passo claro para abrir o site (http://localhost:3000), ir até o formulário certo e preencher com os dados que combinamos, como se você estivesse mostrando o teste na minha frente. Ex.: "Abra http://localhost:3000. Na seção 'Registrar usuário', preencha Nome com X, E-mail com Y, Senha com Z. Clique em Registrar. Você deve ver o resumo com Status 201..."
+2) **If I choose MANUAL:** give me a clear step-by-step to open the site (http://localhost:3000), go to the right form and fill with the data we agreed, as if you're showing me the test. E.g.: "Open http://localhost:3000. In the 'Register user' section, fill Name with X, Email with Y, Password with Z. Click Register. You should see the summary with Status 201..."
 
-3) **Se eu escolher AUTOMATIZADO:** rode o Cypress em **modo aberto** (não headless), para eu ver o navegador e o teste acontecendo. Use o comando que abre a interface do Cypress com o spec correto e as variáveis de ambiente, por exemplo (a partir da pasta `tests`):  
+3) **If I choose AUTOMATED:** run Cypress in **open mode** (not headless), so I can see the browser and test running. Use the command that opens the Cypress UI with the correct spec and env vars, e.g. (from the `tests` folder):  
 CYPRESS_REGISTER_NAME="..." CYPRESS_REGISTER_EMAIL="..." CYPRESS_REGISTER_PASSWORD="..." npx cypress open --e2e
   
-  Depois selecione o spec na lista (ex.: auth/register-full-flow.cy.js) e clique em Run.
+  Then select the spec in the list (e.g. auth/register-full-flow.cy.js) and click Run.
 
-Seja direto, amigável e um pouco teatral para a imersão ficar divertida.
+Be direct, friendly, and a bit theatrical so the immersion is fun.
 ```
 
 ---
 
-# Sessão 3 – Prompts por cenário
+# Session 3 – Prompts per scenario
 
-Use cada bloco abaixo quando for rodar aquele tipo de teste. Cole no chat junto com (ou depois de) o prompt de contexto.
-
----
-
-## 3.1 Registro de usuário (nome, e-mail, senha)
-
-Cole quando for rodar testes de **registro** (ex.: register-full-flow, register-and-login):
-
-```
-Vamos rodar o teste de REGISTRO de usuário. Preciso que você:
-
-1) Me pergunte se quero MANUAL (você me guia abrindo o site e preenchendo com os dados) ou AUTOMATIZADO (você abre o Cypress e eu vejo o navegador rodando o teste).
-2) Me pergunte se quero digitar nome, e-mail e senha ou se você usa dados aleatórios (se digitar, peça um por um e confirme).
-3) Se MANUAL: me passe um passo a passo para abrir http://localhost:3000, ir na seção "Registrar usuário", preencher Nome, E-mail e Senha com os valores combinados, clicar em Registrar e verificar o resumo (Status 201).
-4) Se AUTOMATIZADO: rode o Cypress em modo aberto com as variáveis para eu ver o teste na tela. Na pasta tests: `CYPRESS_REGISTER_NAME="..." CYPRESS_REGISTER_EMAIL="..." CYPRESS_REGISTER_PASSWORD="..." npx cypress open --e2e`. Depois selecione o spec (ex.: auth/register-full-flow.cy.js) na lista e clique em Run.
-```
+Use each block below when running that type of test. Paste in the chat along with (or after) the context prompt.
 
 ---
 
-## 3.2 Login (e-mail e senha)
+## 3.1 User registration (name, email, password)
 
-Cole quando for rodar testes de **login** (login-admin, register-and-login após registro):
+Paste when running **registration** tests (e.g. register-full-flow, register-and-login):
 
 ```
-Agora é o teste de LOGIN. Me pergunte:
+Let's run the user REGISTRATION test. I need you to:
 
-1) MANUAL ou AUTOMATIZADO?
-2) Os dados de login eu digito (e-mail e senha) ou você usa aleatório/do registro anterior? Se for do registro anterior, lembre os dados que usamos; se eu quiser digitar, peça e-mail e senha e confirme.
-3) Se MANUAL: passo a passo para abrir o site, ir na seção Login, preencher E-mail e Senha, clicar em Login e verificar /dashboard e "Bem-vindo de volta".
-4) Se AUTOMATIZADO: Cypress aberto com o spec de login e env vars para eu ver o navegador executando.
+1) Ask me if I want MANUAL (you guide me opening the site and filling with the data) or AUTOMATED (you open Cypress and I see the browser running the test).
+2) Ask me if I want to type name, email and password or if you use random data (if typing, ask one by one and confirm).
+3) If MANUAL: give me a step-by-step to open http://localhost:3000, go to the "Register user" section, fill Name, Email and Password with the agreed values, click Register and verify the summary (Status 201).
+4) If AUTOMATED: run Cypress in open mode with the vars so I see the test on screen. From the tests folder: `CYPRESS_REGISTER_NAME="..." CYPRESS_REGISTER_EMAIL="..." CYPRESS_REGISTER_PASSWORD="..." npx cypress open --e2e`. Then select the spec (e.g. auth/register-full-flow.cy.js) in the list and click Run.
 ```
 
 ---
 
-## 3.3 Edição de idade (admin, 18–80)
+## 3.2 Login (email and password)
 
-Cole quando for rodar testes de **edição de idade** (admin-dashboard-editar-idade-id1/2/3):
-
-```
-Vamos rodar o teste de EDIÇÃO DE IDADE no painel admin. Me pergunte:
-
-1) MANUAL ou AUTOMATIZADO?
-2) A idade (entre 18 e 80) eu digito ou você escolhe uma aleatória?
-3) Se MANUAL: passo a passo para abrir o site, fazer login como admin, ir ao dashboard, clicar em Editar no usuário id 1 (ou 2/3), preencher a idade no modal com o valor combinado, salvar e verificar na tabela.
-4) Se AUTOMATIZADO: Cypress aberto com o spec de edição de idade (ex.: admin-dashboard-editar-idade-id1.cy.js) e CYPRESS_EDIT_IDADE=... para eu ver o teste rodando no navegador.
-```
-
----
-
-## 3.4 Fluxo completo: registro + login + dashboard
-
-Cole quando quiser uma **imersão contínua** (registro → login → validar dashboard):
+Paste when running **login** tests (login-admin, register-and-login after registration):
 
 ```
-Quero rodar um fluxo completo: REGISTRO → LOGIN → validar dashboard. Você deve:
+Now it's the LOGIN test. Ask me:
 
-1) Perguntar MANUAL ou AUTOMATIZADO.
-2) Perguntar se digito nome, e-mail e senha ou se você usa aleatório; para o login, usar os mesmos dados do registro (ou perguntar se quero outros).
-3) Se MANUAL: passo a passo para abrir o site, registrar com os dados, depois fazer login com os mesmos dados e verificar que estou no dashboard (Bem-vindo de volta, Sair, etc.).
-4) Se AUTOMATIZADO: Cypress aberto com o spec register-and-login.cy.js e as env vars (CYPRESS_REGISTER_NAME, etc.), para eu ver todo o fluxo rodando no navegador.
+1) MANUAL or AUTOMATED?
+2) Do I type the login data (email and password) or do you use random/from the previous registration? If from previous registration, remind me of the data we used; if I want to type, ask for email and password and confirm.
+3) If MANUAL: step-by-step to open the site, go to the Login section, fill Email and Password, click Login and verify /dashboard and "Welcome back".
+4) If AUTOMATED: Cypress open with the login spec and env vars so I see the browser running.
 ```
 
 ---
 
-## 3.5 Escolher qualquer teste e decidir dados na hora
+## 3.3 Age editing (admin, 18–80)
 
-Cole quando quiser que a IA **sempre pergunte** antes de rodar qualquer teste:
+Paste when running **age editing** tests (admin-dashboard-editar-idade-id1/2/3):
 
 ```
-Sempre que for rodar um teste que use dados (registro, login, edição de idade):
+Let's run the AGE EDITING test in the admin panel. Ask me:
 
-1) Diga qual teste vamos rodar e o que ele faz.
-2) Pergunte: MANUAL (você me guia no site com os dados) ou AUTOMATIZADO (Cypress aberto para eu ver o navegador rodando)?
-3) Pergunte: "Você quer digitar os dados (nome/e-mail/senha/idade) ou prefere que eu use aleatório?"
-4) Se digitar, peça cada campo e repita em resumo antes de executar.
-5) Se MANUAL: passe um passo a passo claro para abrir http://localhost:3000 e fazer o teste com os dados fornecidos.
-6) Se AUTOMATIZADO: rode `npx cypress open --e2e` com as variáveis CYPRESS_* na pasta tests; depois selecione o spec na lista e clique em Run para assistir.
+1) MANUAL or AUTOMATED?
+2) Do I type the age (between 18 and 80) or do you pick a random one?
+3) If MANUAL: step-by-step to open the site, log in as admin, go to the dashboard, click Edit on user id 1 (or 2/3), fill the age in the modal with the agreed value, save and verify in the table.
+4) If AUTOMATED: Cypress open with the age editing spec (e.g. admin-dashboard-editar-idade-id1.cy.js) and CYPRESS_EDIT_IDADE=... so I see the test running in the browser.
 ```
 
 ---
 
-# Sessão 4 – Exemplo de conversa (imersão “surreal”)
+## 3.4 Full flow: registration + login + dashboard
 
-**Você:** [cola o Prompt de contexto da Sessão 2]
+Paste when you want a **continuous immersion** (registration → login → validate dashboard):
 
-**IA:** Entendido. Sou seu assistente de QA no QA Lab. Para cada teste com dados, vou perguntar: você quer **manual** (te guio abrindo o site e preenchendo com os dados) ou **automatizado** (abro o Cypress e você vê o navegador rodando)? E se os dados você digita ou eu uso aleatório. Qual teste quer rodar primeiro?
+```
+I want to run a full flow: REGISTRATION → LOGIN → validate dashboard. You should:
 
-**Você:** Quero rodar o de registro.
-
-**IA:** Beleza! No teste de registro a gente preenche nome, e-mail e senha. Primeiro: você quer **manual** (te passo um passo a passo para abrir o site e preencher) ou **automatizado** (abro o Cypress e você vê o teste rodando no navegador)? E os dados: você **digita** ou uso **aleatórios**?
-
-**Você:** Pode ser aleatório. E quero ver rodando – automatizado.
-
-**IA:** Então vou usar: **Nome:** Carla Teste, **E-mail:** carla.teste@qa.com, **Senha:** senha456. Para você **ver o Cypress executando**, rode na pasta `tests`:  
-`CYPRESS_REGISTER_NAME="Carla Teste" CYPRESS_REGISTER_EMAIL="carla.teste@qa.com" CYPRESS_REGISTER_PASSWORD="senha456" npx cypress open --e2e`  
-Quando o Cypress abrir, selecione o spec **auth/register-full-flow.cy.js** na lista e clique em **Run**. – aí você vê o navegador abrindo e o teste preenchendo o formulário com esses dados. Se preferir **manual**, te passo o passo a passo para abrir o site e preencher você mesmo.
-
-**Você:** Beleza. E se eu quisesse digitar a idade no teste de admin?
-
-**IA:** No teste de edição de idade do admin a gente só precisa de **uma idade entre 18 e 80**. Você quer **digitar** o número ou que eu **escolha uma aleatória**? Se digitar, me manda o número; se for aleatório, eu te falo tipo "Vou usar 33 anos" e você confirma.
+1) Ask MANUAL or AUTOMATED.
+2) Ask if I type name, email and password or you use random; for login, use the same data from registration (or ask if I want different ones).
+3) If MANUAL: step-by-step to open the site, register with the data, then log in with the same data and verify I'm on the dashboard (Welcome back, Logout, etc.).
+4) If AUTOMATED: Cypress open with the register-and-login.cy.js spec and env vars (CYPRESS_REGISTER_NAME, etc.), so I see the whole flow running in the browser.
+```
 
 ---
 
-# Sessão 5 – Resumo rápido (para colar no “Notas” ou no início do chat)
+## 3.5 Choose any test and decide data on the spot
 
-- **Registro:** Perguntar MANUAL ou AUTOMATIZADO; digitar dados ou aleatório. Manual = passo a passo no site. Automatizado = cypress open com CYPRESS_* na pasta tests; clicar em Run.
-- **Login:** Idem (manual = passo a passo no site; automatizado = Cypress aberto com spec de login).
-- **Idade (admin):** MANUAL ou AUTOMATIZADO; digitar idade ou aleatória; manual = passo a passo até o modal; automatizado = Cypress aberto com CYPRESS_EDIT_IDADE.
-- **Qualquer teste:** Reunir: qual teste, manual/automatizado, dados. Manual = passo a passo em localhost:3000. Automatizado = cypress open com spec e env vars; clicar em Run.
+Paste when you want the AI to **always ask** before running any test:
 
-Assim você consegue **conversar com a IA** e ter imersão surreal em cada teste: ou você digita os dados, ou a IA preenche; e você escolhe **manual** (passo a passo no site) ou **automatizado** (Cypress aberto para ver o navegador rodando). Ver a Sessão 1.3 para o que a IA deve fazer em cada caso.
+```
+Whenever you're about to run a test that uses data (registration, login, age editing):
+
+1) Say which test we're running and what it does.
+2) Ask: MANUAL (you guide me on the site with the data) or AUTOMATED (Cypress open so I see the browser running)?
+3) Ask: "Do you want to type the data (name/email/password/age) or do you prefer I use random?"
+4) If typing, ask each field and repeat in summary before executing.
+5) If MANUAL: give a clear step-by-step to open http://localhost:3000 and run the test with the provided data.
+6) If AUTOMATED: run `npx cypress open --e2e` with CYPRESS_* vars in the tests folder; then select the spec in the list and click Run to watch.
+```
+
+---
+
+# Session 4 – Example conversation (immersive flow)
+
+**You:** [paste the Context prompt from Session 2]
+
+**AI:** Understood. I'm your QA assistant for QA Lab. For each test with data, I'll ask: do you want **manual** (I guide you opening the site and filling with the data) or **automated** (I open Cypress and you see the browser running)? And whether you type the data or I use random. Which test do you want to run first?
+
+**You:** I want to run the registration one.
+
+**AI:** Got it! In the registration test we fill name, email and password. First: do you want **manual** (I give you a step-by-step to open the site and fill) or **automated** (I open Cypress and you see the test running in the browser)? And the data: do you **type** or do I use **random**?
+
+**You:** Random is fine. And I want to see it running – automated.
+
+**AI:** So I'll use: **Name:** Carla Test, **Email:** carla.test@qa.com, **Password:** pass456. To **see Cypress running**, run from the `tests` folder:  
+`CYPRESS_REGISTER_NAME="Carla Test" CYPRESS_REGISTER_EMAIL="carla.test@qa.com" CYPRESS_REGISTER_PASSWORD="pass456" npx cypress open --e2e`  
+When Cypress opens, select the spec **auth/register-full-flow.cy.js** in the list and click **Run** – then you'll see the browser open and the test filling the form with that data. If you prefer **manual**, I'll give you the step-by-step to open the site and fill it yourself.
+
+**You:** OK. And if I wanted to type the age in the admin test?
+
+**AI:** In the admin age editing test we only need **one age between 18 and 80**. Do you want to **type** the number or have me **pick a random one**? If typing, send me the number; if random, I'll say something like "I'll use 33 years" and you confirm.
+
+---
+
+# Session 5 – Quick summary (to paste in Notes or at the start of the chat)
+
+- **Registration:** Ask MANUAL or AUTOMATED; type data or random. Manual = step-by-step on the site. Automated = cypress open with CYPRESS_* in the tests folder; click Run.
+- **Login:** Same (manual = step-by-step on the site; automated = Cypress open with login spec).
+- **Age (admin):** MANUAL or AUTOMATED; type age or random; manual = step-by-step to the modal; automated = Cypress open with CYPRESS_EDIT_IDADE.
+- **Any test:** Gather: which test, manual/automated, data. Manual = step-by-step on localhost:3000. Automated = cypress open with spec and env vars; click Run.
+
+This way you can **talk to the AI** and have an immersive experience in each test: either you type the data or the AI fills it; and you choose **manual** (step-by-step on the site) or **automated** (Cypress open to see the browser running). See Session 1.3 for what the AI should do in each case.

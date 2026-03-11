@@ -52,6 +52,7 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
     admin: "cypress/e2e/admin/**/*.cy.js",
     auth: "cypress/e2e/auth/**/*.cy.js",
     api: "cypress/e2e/api/**/*.cy.js",
+    dashboard: "cypress/e2e/dashboard/**/*.cy.js",
     ui: "cypress/e2e/ui/**/*.cy.js",
     performance: "cypress/e2e/performance/**/*.cy.js",
   };
@@ -156,7 +157,7 @@ server.registerTool(
       suite: z
         .string()
         .optional()
-        .describe("Suíte: 'all', 'admin', 'auth', 'api', 'ui', 'performance'."),
+        .describe("Suite: 'all', 'admin', 'auth', 'api', 'dashboard', 'ui', 'performance'."),
       spec: z
         .string()
         .optional()
@@ -307,7 +308,7 @@ function readProjectStructure() {
   }
 
   // Existing specs
-  const suites = ["api", "auth", "admin", "ui", "performance"];
+  const suites = ["api", "auth", "admin", "dashboard", "ui", "performance"];
   for (const suite of suites) {
     const dir = path.join(SPEC_BASE, suite);
     if (fs.existsSync(dir)) {
@@ -381,7 +382,7 @@ server.registerTool(
     title: "Escrever arquivo de teste",
     description: "Grava spec Cypress ou Playwright em tests/{cypress|playwright}/e2e/{suite}/.",
     inputSchema: z.object({
-      suite: z.enum(["api", "auth", "admin", "ui", "performance"]).describe("Pasta da suíte."),
+      suite: z.enum(["api", "auth", "admin", "dashboard", "ui", "performance"]).describe("Suite folder."),
       name: z.string().describe("Nome do arquivo (ex: api-health). Será .cy.js ou .spec.js conforme framework."),
       content: z.string().describe("Conteúdo completo do spec."),
       framework: z.enum(["cypress", "playwright"]).optional().describe("Framework destino. Default: cypress."),
@@ -463,7 +464,7 @@ server.registerTool(
       context: z.string().describe("Contexto: resultado de read_project ou descrição do que testar."),
       userRequest: z.string().optional().describe("O que o usuário quer testar (ex: 'healthcheck da API')."),
       target: z.enum(["e2e", "api"]).optional().describe("Alvo: e2e ou api."),
-      suite: z.enum(["api", "auth", "admin", "ui", "performance"]).optional().describe("Suíte destino."),
+      suite: z.enum(["api", "auth", "admin", "dashboard", "ui", "performance"]).optional().describe("Target suite."),
       framework: z.enum(["cypress", "playwright", "both"]).optional().describe("Framework: cypress, playwright ou both. Default: cypress."),
     }),
     outputSchema: z.object({

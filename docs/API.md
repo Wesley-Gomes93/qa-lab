@@ -1,44 +1,44 @@
-# Documentação da API – QA Lab
+# API Documentation – QA Lab
 
-API REST do QA Lab: registro, login, gestão de usuários (admin) e healthcheck. Backend em **Node.js + Express**, dados em **PostgreSQL**.
+REST API for QA Lab: user registration, login, user management (admin), and healthcheck. Backend: **Node.js + Express**, data in **PostgreSQL**.
 
-**Contrato OpenAPI:** `docs/api-spec.yaml` – usado para contract testing. Ver `docs/CONTRACT-TESTING.md`.
-
----
-
-## Base URL e ambiente
-
-| Ambiente | URL |
-|----------|-----|
-| Local     | `http://localhost:4000` |
-| Produção  | Definir via `PORT` e host (ex.: `https://api.qalab.example.com`) |
-
-**Variáveis de ambiente:** o backend usa `dotenv` e lê um arquivo `.env` na pasta `backend/`. Esse arquivo **não vem versionado** (está no `.gitignore`). Para subir a API localmente, copie `backend/.env.example` para `backend/.env` e ajuste se precisar. O exemplo contém: `PORT`, `DATABASE_URL` e, opcionalmente, `ADMIN_TOKEN` (se não definido, o código usa `admin-qa-lab`).
+**OpenAPI contract:** `docs/api-spec.yaml` – used for contract testing. See `docs/CONTRACT-TESTING.md`.
 
 ---
 
-## Autenticação
+## Base URL and environment
 
-- **Rotas públicas:** não exigem token (`/health`, `POST /auth/register`, `POST /auth/login`).
-- **Rotas de admin:** exigem header:
+| Environment | URL |
+|-------------|-----|
+| Local | `http://localhost:4000` |
+| Production | Define via `PORT` and host (e.g. `https://api.qalab.example.com`) |
+
+**Environment variables:** the backend uses `dotenv` and reads a `.env` file in the `backend/` folder. This file is **not versioned** (in `.gitignore`). To run the API locally, copy `backend/.env.example` to `backend/.env` and adjust if needed. The example contains: `PORT`, `DATABASE_URL`, and optionally `ADMIN_TOKEN` (if not set, the code uses `admin-qa-lab`).
+
+---
+
+## Authentication
+
+- **Public routes:** no token required (`/health`, `POST /auth/register`, `POST /auth/login`).
+- **Admin routes:** require header:
   ```http
   Authorization: Bearer <ADMIN_TOKEN>
   ```
-  `ADMIN_TOKEN` vem de `process.env.ADMIN_TOKEN` ou padrão `admin-qa-lab`.  
-  O login do admin devolve esse mesmo token em `token`.
+  `ADMIN_TOKEN` comes from `process.env.ADMIN_TOKEN` or defaults to `admin-qa-lab`.  
+  Admin login returns this same token in `token`.
 
 ---
 
 ## Endpoints
 
-### 1. Healthcheck (detalhado)
+### 1. Healthcheck (detailed)
 
-Verifica se a API está no ar, o banco e métricas agregadas.
+Checks if the API is up, database status, and aggregated metrics.
 
 **`GET /health`**
 
-- **Auth:** não.
-- **Resposta:** `200 OK`
+- **Auth:** no.
+- **Response:** `200 OK`
   ```json
   {
     "status": "ok",
@@ -54,54 +54,54 @@ Verifica se a API está no ar, o banco e métricas agregadas.
     }
   }
   ```
-  `db` pode ser `"ok"` ou `"error"`. Métricas vêm de logs em memória (API, auth) e da tabela `test_runs` (últimos 100 runs para testFailureRate).
+  `db` can be `"ok"` or `"error"`. Metrics come from in-memory logs (API, auth) and the `test_runs` table (last 100 runs for testFailureRate).
 
 ---
 
-### 2. Registro de usuário
+### 2. User registration
 
-Cria um novo usuário no banco.
+Creates a new user in the database.
 
 **`POST /auth/register`**
 
-- **Auth:** não.
+- **Auth:** no.
 - **Body (JSON):**
-  | Campo    | Tipo   | Obrigatório | Descrição        |
-  |----------|--------|-------------|------------------|
-  | `name`   | string | não         | Nome (default "") |
-  | `email`  | string | sim         | E-mail único     |
-  | `password` | string | sim       | Senha (texto)    |
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `name` | string | no | Name (default "") |
+  | `email` | string | yes | Unique email |
+  | `password` | string | yes | Password (plain text) |
 
-- **Respostas:**
-  - `201 Created` – usuário criado. Corpo contém: `id`, `name`, `email`, `idade`, `ativo`, `created_at`, `updated_at`.
-  - `400 Bad Request` – `email` ou `password` ausentes. Ex.: `{ "error": "email e password são obrigatórios" }`.
-  - `409 Conflict` – e-mail já existe. Ex.: `{ "error": "Usuário já existe" }`.
+- **Responses:**
+  - `201 Created` – user created. Body contains: `id`, `name`, `email`, `idade`, `ativo`, `created_at`, `updated_at`.
+  - `400 Bad Request` – `email` or `password` missing. E.g. `{ "error": "email and password are required" }`.
+  - `409 Conflict` – email already exists. E.g. `{ "error": "User already exists" }`.
 
-**Exemplo:**
+**Example:**
 
 ```bash
 curl -X POST http://localhost:4000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"Maria","email":"maria@teste.com","password":"senha123"}'
+  -d '{"name":"Maria","email":"maria@test.com","password":"senha123"}'
 ```
 
 ---
 
 ### 3. Login
 
-Autentica por e-mail e senha e devolve token e dados do usuário.
+Authenticates by email and password; returns token and user data.
 
 **`POST /auth/login`**
 
-- **Auth:** não.
+- **Auth:** no.
 - **Body (JSON):**
-  | Campo      | Tipo   | Obrigatório | Descrição |
-  |------------|--------|-------------|-----------|
-  | `email`    | string | sim         | E-mail    |
-  | `password` | string | sim         | Senha     |
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `email` | string | yes | Email |
+  | `password` | string | yes | Password |
 
-- **Respostas:**
-  - `200 OK` – login ok:
+- **Responses:**
+  - `200 OK` – login successful:
     ```json
     {
       "token": "admin-qa-lab",
@@ -109,29 +109,29 @@ Autentica por e-mail e senha e devolve token e dados do usuário.
       "isAdmin": true
     }
     ```
-    Para admin, `token` é o `ADMIN_TOKEN`; para outros, `"fake-token"`. O frontend usa esse token no header para chamadas de admin.
-  - `400 Bad Request` – campo obrigatório faltando. Ex.: `{ "error": "email e password são obrigatórios" }`.
-  - `401 Unauthorized` – credenciais inválidas. Ex.: `{ "error": "Credenciais inválidas" }`.
+    For admin, `token` is the `ADMIN_TOKEN`; for others, `"fake-token"`. The frontend uses this token in the header for admin calls.
+  - `400 Bad Request` – required field missing. E.g. `{ "error": "email and password are required" }`.
+  - `401 Unauthorized` – invalid credentials. E.g. `{ "error": "Invalid credentials" }`.
 
-**Exemplo:**
+**Example:**
 
 ```bash
 curl -X POST http://localhost:4000/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"maria@teste.com","password":"senha123"}'
+  -d '{"email":"maria@test.com","password":"senha123"}'
 ```
 
 ---
 
-### 4. Listar todos os usuários (admin)
+### 4. List all users (admin)
 
-Lista usuários cadastrados. Apenas admin.
+Lists registered users. Admin only.
 
 **`GET /users`**
 
-- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
-- **Resposta:**
-  - `200 OK` – array de usuários (sem senha):
+- **Auth:** yes. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Response:**
+  - `200 OK` – array of users (without password):
     ```json
     [
       {
@@ -145,51 +145,51 @@ Lista usuários cadastrados. Apenas admin.
       }
     ]
     ```
-  - `403 Forbidden` – token ausente ou inválido. Ex.: `{ "error": "Acesso negado. Apenas admin." }`.
+  - `403 Forbidden` – token missing or invalid. E.g. `{ "error": "Access denied. Admin only." }`.
 
 ---
 
-### 5. Buscar usuário por ID
+### 5. Get user by ID
 
-Retorna um usuário pelo `id`. Rota pública (sem auth); em produção pode ser restrita.
+Returns a user by `id`. Public route (no auth); in production it may be restricted.
 
 **`GET /users/:id`**
 
-- **Auth:** não (na implementação atual).
-- **Parâmetros:** `id` – número (ID do usuário).
-- **Respostas:**
-  - `200 OK` – objeto do usuário (sem senha): `id`, `name`, `email`, `idade`, `ativo`, `created_at`, `updated_at`.
-  - `400 Bad Request` – ID inválido. Ex.: `{ "error": "ID inválido" }`.
-  - `404 Not Found` – usuário não encontrado. Ex.: `{ "error": "Usuário não encontrado" }`.
+- **Auth:** no (in current implementation).
+- **Params:** `id` – number (user ID).
+- **Responses:**
+  - `200 OK` – user object (without password): `id`, `name`, `email`, `idade`, `ativo`, `created_at`, `updated_at`.
+  - `400 Bad Request` – invalid ID. E.g. `{ "error": "Invalid ID" }`.
+  - `404 Not Found` – user not found. E.g. `{ "error": "User not found" }`.
 
 ---
 
-### 6. Atualizar usuário (admin)
+### 6. Update user (admin)
 
-Atualiza nome, e-mail, idade e status ativo. Apenas admin.
+Updates name, email, age, and active status. Admin only.
 
 **`PUT /users/:id`**
 
-- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
-- **Parâmetros:** `id` – número (ID do usuário).
-- **Body (JSON):** todos opcionais; só os enviados são alterados.
-  | Campo   | Tipo    | Descrição                          |
-  |---------|---------|------------------------------------|
-  | `name`  | string  | Nome                               |
-  | `email` | string  | E-mail (único)                     |
-  | `idade` | number  | Idade; **deve ser entre 18 e 80**  |
-  | `ativo` | boolean | Usuário ativo ou inativo           |
+- **Auth:** yes. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Params:** `id` – number (user ID).
+- **Body (JSON):** all optional; only sent fields are updated.
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `name` | string | Name |
+  | `email` | string | Email (unique) |
+  | `idade` | number | Age; **must be between 18 and 80** |
+  | `ativo` | boolean | User active or inactive |
 
-- **Validação:** se `idade` for informada e estiver fora do intervalo 18–80, a API responde `400` com: `{ "error": "Idade deve ser entre 18 e 80" }`.
+- **Validation:** if `idade` is provided and outside 18–80, the API responds with `400`: `{ "error": "Age must be between 18 and 80" }`.
 
-- **Respostas:**
-  - `200 OK` – usuário atualizado (objeto completo sem senha).
-  - `400 Bad Request` – ID inválido ou idade fora de 18–80.
-  - `403 Forbidden` – não admin.
-  - `404 Not Found` – usuário não encontrado.
-  - `409 Conflict` – e-mail já em uso. Ex.: `{ "error": "E-mail já em uso" }`.
+- **Responses:**
+  - `200 OK` – user updated (full object without password).
+  - `400 Bad Request` – invalid ID or age outside 18–80.
+  - `403 Forbidden` – not admin.
+  - `404 Not Found` – user not found.
+  - `409 Conflict` – email already in use. E.g. `{ "error": "Email already in use" }`.
 
-**Exemplo:**
+**Example:**
 
 ```bash
 curl -X PUT http://localhost:4000/users/2 \
@@ -200,30 +200,30 @@ curl -X PUT http://localhost:4000/users/2 \
 
 ---
 
-### 7. Excluir usuário (admin)
+### 7. Delete user (admin)
 
-Remove um usuário. Apenas admin. **O usuário admin (e-mail fixo do seed) não pode ser excluído.**
+Removes a user. Admin only. **The admin user (fixed seed email) cannot be deleted.**
 
 **`DELETE /users/:id`**
 
-- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
-- **Parâmetros:** `id` – número (ID do usuário).
-- **Respostas:**
-  - `204 No Content` – usuário excluído (corpo vazio).
-  - `400 Bad Request` – ID inválido.
-  - `403 Forbidden` – não admin ou tentativa de excluir o admin. Ex.: `{ "error": "Admin não pode ser excluído" }`.
-  - `404 Not Found` – usuário não encontrado.
+- **Auth:** yes. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Params:** `id` – number (user ID).
+- **Responses:**
+  - `204 No Content` – user deleted (empty body).
+  - `400 Bad Request` – invalid ID.
+  - `403 Forbidden` – not admin or attempt to delete admin. E.g. `{ "error": "Admin cannot be deleted" }`.
+  - `404 Not Found` – user not found.
 
 ---
 
-## API de observabilidade e histórico de testes
+## Observability and test history API
 
 ### GET /api/metrics
 
-Retorna métricas em memória (API response time, auth success rate). Apenas admin.
+Returns in-memory metrics (API response time, auth success rate). Admin only.
 
-- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
-- **Resposta:** `200 OK`
+- **Auth:** yes. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Response:** `200 OK`
   ```json
   {
     "api": { "avgMs": 15, "lastMs": 12, "sampleCount": 50 },
@@ -233,10 +233,10 @@ Retorna métricas em memória (API response time, auth success rate). Apenas adm
 
 ### POST /api/clean-test-users
 
-Remove usuários com e-mail `@teste.com` (mantém o admin). Útil para limpar acúmulo de usuários de teste.
+Removes users with email `@teste.com` (keeps admin). Useful to clean up test user accumulation.
 
-- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
-- **Resposta:** `200 OK`
+- **Auth:** yes. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Response:** `200 OK`
   ```json
   { "ok": true, "deleted": 42 }
   ```
@@ -245,11 +245,11 @@ Remove usuários com e-mail `@teste.com` (mantém o admin). Útil para limpar ac
 
 ### GET /api/test-runs
 
-Lista o histórico de execuções de testes (paginação). Apenas admin.
+Lists test run history (paginated). Admin only.
 
-- **Auth:** sim. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
-- **Query:** `limit` (default 50, max 100), `offset` (default 0), `status` (opcional: `passed` ou `failed`).
-- **Resposta:** `200 OK`
+- **Auth:** yes. Header: `Authorization: Bearer <ADMIN_TOKEN>`.
+- **Query:** `limit` (default 50, max 100), `offset` (default 0), `status` (optional: `passed` or `failed`).
+- **Response:** `200 OK`
   ```json
   {
     "items": [
@@ -274,60 +274,60 @@ Lista o histórico de execuções de testes (paginação). Apenas admin.
 
 ### POST /api/test-runs
 
-Registra o resultado de uma execução de testes (Cypress, CI ou agente). Admin ou `X-Api-Key`.
+Registers the result of a test run (Cypress, CI, or agent). Admin or `X-Api-Key`.
 
-- **Auth:** `Authorization: Bearer <ADMIN_TOKEN>` ou header `X-Api-Key: <QA_LAB_API_KEY>` (se definido no backend).
+- **Auth:** `Authorization: Bearer <ADMIN_TOKEN>` or header `X-Api-Key: <QA_LAB_API_KEY>` (if defined in backend).
 - **Body (JSON):**
-  | Campo        | Tipo   | Obrigatório | Descrição                          |
-  |-------------|--------|-------------|------------------------------------|
-  | `status`    | string | sim         | `"passed"` ou `"failed"`           |
-  | `suite`     | string | não         | Ex.: `"all"`, `"auth"`             |
-  | `spec`      | string | não         | Caminho do spec                    |
-  | `duration_ms` | number | não       | Duração em ms                      |
-  | `total_tests` | number | não       | Total de testes                    |
-  | `passed`    | number | não         | Quantidade passou                  |
-  | `failed`    | number | não         | Quantidade falhou                  |
-  | `source`    | string | não         | `"cypress"`, `"ci"`, `"agent"`, etc. (default `"manual"`) |
-  | `metadata`  | object | não         | JSON livre (ex.: `report_url`)      |
-- **Resposta:** `201 Created` com o objeto do run criado (incluindo `id` e `reported_at`).
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `status` | string | yes | `"passed"` or `"failed"` |
+  | `suite` | string | no | E.g. `"all"`, `"auth"` |
+  | `spec` | string | no | Spec path |
+  | `duration_ms` | number | no | Duration in ms |
+  | `total_tests` | number | no | Total tests |
+  | `passed` | number | no | Passed count |
+  | `failed` | number | no | Failed count |
+  | `source` | string | no | `"cypress"`, `"ci"`, `"agent"`, etc. (default `"manual"`) |
+  | `metadata` | object | no | Free JSON (e.g. `report_url`) |
+- **Response:** `201 Created` with the created run object (including `id` and `reported_at`).
 
 ---
 
-## Modelo de dados (usuário)
+## Data model (user)
 
-| Campo       | Tipo     | Descrição                          |
-|------------|----------|------------------------------------|
-| `id`       | number   | ID único (serial)                  |
-| `name`     | string   | Nome                               |
-| `email`    | string   | E-mail único                       |
-| `password` | string   | Senha (nunca retornada nas respostas) |
-| `idade`    | number \| null | Idade (18–80 na edição)     |
-| `ativo`    | boolean  | Usuário ativo/inativo              |
-| `created_at` | string | Data/hora de criação (ISO)        |
-| `updated_at` | string | Data/hora da última atualização   |
-
----
-
-## Códigos de status usados
-
-| Código | Significado     |
-|--------|-----------------|
-| 200    | OK              |
-| 201    | Created         |
-| 204    | No Content      |
-| 400    | Bad Request     |
-| 401    | Unauthorized    |
-| 403    | Forbidden       |
-| 404    | Not Found       |
-| 409    | Conflict        |
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Unique ID (serial) |
+| `name` | string | Name |
+| `email` | string | Unique email |
+| `password` | string | Password (never returned in responses) |
+| `idade` | number \| null | Age (18–80 on edit) |
+| `ativo` | boolean | User active/inactive |
+| `created_at` | string | Creation datetime (ISO) |
+| `updated_at` | string | Last update datetime |
 
 ---
 
-## Funcionamento básico
+## Status codes used
 
-1. **Inicialização:** o backend sobe a tabela `users` (se não existir), cria/atualiza o usuário admin (seed) e sobe o servidor na porta `PORT` (ex.: 4000).
-2. **Registro/Login:** o frontend (ou qualquer cliente) usa `POST /auth/register` e `POST /auth/login`; o login devolve `token` e `isAdmin` para controle de acesso.
-3. **Admin:** o frontend envia `Authorization: Bearer <token>` nas chamadas a `GET /users`, `PUT /users/:id` e `DELETE /users/:id`. O backend compara o token com `ADMIN_TOKEN` para autorizar.
-4. **Persistência:** todos os usuários (incluindo admin) ficam no PostgreSQL; registros de registro são ainda gravados em `registros.txt` no servidor (uso interno).
+| Code | Meaning |
+|------|---------|
+| 200 | OK |
+| 201 | Created |
+| 204 | No Content |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
 
-Para subir a API localmente: PostgreSQL rodando (ex.: `docker-compose up -d` em `database/`), copiar `backend/.env.example` para `backend/.env`, depois `cd backend && npm install && npm run dev`.
+---
+
+## How it works
+
+1. **Initialization:** the backend creates the `users` table (if missing), creates/updates the admin user (seed), and starts the server on `PORT` (e.g. 4000).
+2. **Register/Login:** the frontend (or any client) uses `POST /auth/register` and `POST /auth/login`; login returns `token` and `isAdmin` for access control.
+3. **Admin:** the frontend sends `Authorization: Bearer <token>` on calls to `GET /users`, `PUT /users/:id`, and `DELETE /users/:id`. The backend compares the token with `ADMIN_TOKEN` to authorize.
+4. **Persistence:** all users (including admin) are stored in PostgreSQL.
+
+To run the API locally: PostgreSQL running (e.g. `docker-compose up -d` in `database/`), copy `backend/.env.example` to `backend/.env`, then `cd backend && npm install && npm run dev`.

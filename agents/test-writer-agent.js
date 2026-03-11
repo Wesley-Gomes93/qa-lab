@@ -37,8 +37,8 @@ const HAS_LLM_KEY =
   process.env.GROQ_API_KEY ||
   process.env.GEMINI_API_KEY;
 if (!HAS_LLM_KEY && process.argv[2]) {
-  console.error("\n[Test Writer Agent] Nenhuma API key configurada.");
-  console.error("  Adicione no .env uma destas (todas têm plano gratuito):");
+  console.error("\n[Test Writer Agent] No API key configured.");
+  console.error("  Add one of these to .env (Groq and Gemini have free tiers):");
   console.error("    GROQ_API_KEY=...   → https://console.groq.com/keys");
   console.error("    GEMINI_API_KEY=... → https://aistudio.google.com/apikey");
   console.error("    OPENAI_API_KEY=... → https://platform.openai.com/api-keys\n");
@@ -86,16 +86,16 @@ async function main() {
     );
     await client.connect(transport);
 
-    console.log("\n[Test Writer Agent] Fluxo: ler projeto → sugerir teste → criar → rodar → verificar");
-    if (fw === "both") console.log("   Framework: Cypress + Playwright (ambos)\n");
+    console.log("\n[Test Writer Agent] Flow: read project → suggest test → create → run → verify");
+    if (fw === "both") console.log("   Framework: Cypress + Playwright (both)\n");
     else console.log(`   Framework: ${fw}\n`);
 
     // 1. Ler projeto
-    console.log("1. Lendo projeto...");
+    console.log("1. Reading project...");
     const readResult = await client.callTool({ name: "read_project", arguments: {} });
     const readData = getStructured(readResult);
     if (!readData?.ok) {
-      console.error("Erro ao ler projeto:", readData?.error || "desconhecido");
+      console.error("Error reading project:", readData?.error || "unknown");
       await client.close();
       process.exit(1);
     }
@@ -112,8 +112,8 @@ async function main() {
 
     // 2. Gerar teste(s) (LLM)
     const prompt = request || "gere um teste de API para GET /health (healthcheck)";
-    console.log("2. Gerando teste(s) com LLM...");
-    console.log(`   Pedido: ${prompt}\n`);
+    console.log("2. Generating test(s) with LLM...");
+    console.log(`   Request: ${prompt}\n`);
 
     const genResult = await client.callTool({
       name: "generate_tests",
@@ -123,7 +123,7 @@ async function main() {
     const hasCypress = genData?.ok && genData.specContent;
     const hasPlaywright = genData?.ok && genData.playwrightContent;
     if (!genData?.ok || (!hasCypress && !hasPlaywright)) {
-      console.error("Erro ao gerar teste:", genData?.error || "LLM não retornou código");
+      console.error("Error generating test:", genData?.error || "LLM did not return valid code");
       await client.close();
       process.exit(1);
     }
@@ -133,17 +133,17 @@ async function main() {
     if (hasPlaywright) console.log(`   → Playwright: ${genData.playwrightContent.length} chars`);
     console.log("");
 
-    // 3. Escrever arquivo(s)
+    // 3. Write file(s)
     const writtenPaths = [];
     if (hasCypress) {
-      console.log("3a. Escrevendo spec Cypress...");
+      console.log("3a. Writing Cypress spec...");
       const writeResult = await client.callTool({
         name: "write_test",
         arguments: { suite, name: fileName, content: genData.specContent, framework: "cypress" },
       });
       const writeData = getStructured(writeResult);
       if (!writeData?.ok) {
-        console.error("Erro ao gravar Cypress:", writeData?.error);
+        console.error("Error writing Cypress spec:", writeData?.error);
         await client.close();
         process.exit(1);
       }
@@ -151,14 +151,14 @@ async function main() {
       writtenPaths.push({ framework: "cypress", path: `cypress/e2e/${suite}/${fileName}.cy.js` });
     }
     if (hasPlaywright) {
-      console.log("3b. Escrevendo spec Playwright...");
+      console.log("3b. Writing Playwright spec...");
       const writeResult = await client.callTool({
         name: "write_test",
         arguments: { suite, name: fileName, content: genData.playwrightContent, framework: "playwright" },
       });
       const writeResultData = getStructured(writeResult);
       if (!writeResultData?.ok) {
-        console.error("Erro ao gravar Playwright:", writeResultData?.error);
+        console.error("Error writing Playwright spec:", writeResultData?.error);
         await client.close();
         process.exit(1);
       }
@@ -167,10 +167,10 @@ async function main() {
     }
     console.log("");
 
-    // 4. Rodar teste(s)
+    // 4. Run test(s)
     let allPassed = true;
     for (const { framework: f, path: specPath } of writtenPaths) {
-      console.log(`4. Rodando ${f}...`);
+      console.log(`4. Running ${f}...`);
       const runResult = await client.callTool({
         name: "run_tests",
         arguments: { spec: specPath, framework: f },
@@ -178,23 +178,23 @@ async function main() {
       const runData = getStructured(runResult);
       const passed = runData?.status === "passed" && runData?.exitCode === 0;
       if (!passed) allPassed = false;
-      console.log(`   ${passed ? "✓" : "✗"} ${f}: ${passed ? "passou" : "falhou"}\n`);
+      console.log(`   ${passed ? "✓" : "✗"} ${f}: ${passed ? "passed" : "failed"}\n`);
     }
 
-    // 5. Reportar
-    console.log("5. Resultado:");
+    // 5. Report
+    console.log("5. Result:");
     if (allPassed) {
-      console.log("   ✓ Todos os testes passaram.");
+      console.log("   ✓ All tests passed.");
     } else {
-      console.log("   ✗ Algum teste falhou. Verifique o output acima.");
-      console.log("   Use: npm run agent:analyze-failures para sugestões de correção.");
+      console.log("   ✗ Some test(s) failed. Check the output above.");
+      console.log("   Use: npm run agent:analyze-failures for fix suggestions.");
     }
 
-    console.log("\n[Test Writer Agent] Fim.\n");
+    console.log("\n[Test Writer Agent] Done.\n");
     await client.close();
     process.exit(allPassed ? 0 : 1);
   } catch (err) {
-    console.error("[Test Writer Agent] Erro:", err.message);
+    console.error("[Test Writer Agent] Error:", err.message);
     if (client) await client.close().catch(() => {});
     process.exit(1);
   }

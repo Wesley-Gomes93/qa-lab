@@ -1,82 +1,82 @@
 # Contract Testing – QA Lab
 
-Valida que as respostas da API respeitam o contrato definido em `api-spec.yaml`.
+Validates that API responses comply with the contract defined in `api-spec.yaml`.
 
-## Conceito
+## Concept
 
-- **Contrato:** formato esperado da requisição e resposta (campos, tipos).
-- **Contract testing:** garantir que a API não quebre o contrato que o consumidor (frontend) espera.
+- **Contract:** expected format of request and response (fields, types).
+- **Contract testing:** ensure the API does not break the contract the consumer (frontend) expects.
 
-## Arquivos
+## Files
 
-| Arquivo | Descrição |
-|---------|-----------|
-| `docs/api-spec.yaml` | Especificação OpenAPI 3.0 da API |
-| `docs/CONTRACT-TESTING.md` | Este documento |
-| `tests/contract/validate-against-spec.js` | Script que valida respostas contra o schema |
+| File | Description |
+|------|-------------|
+| `docs/api-spec.yaml` | OpenAPI 3.0 specification of the API |
+| `docs/CONTRACT-TESTING.md` | This document |
+| `tests/contract/validate-against-spec.js` | Script that validates responses against the schema |
 
-## Como rodar
+## How to run
 
-1. **Suba a API:**
+1. **Start the API:**
    ```bash
    npm run db:up
    npm run backend:dev
    ```
 
-2. **Execute o validador:**
+2. **Run the validator:**
    ```bash
    node tests/contract/validate-against-spec.js
    ```
 
-   Ou, com URL customizada:
+   Or, with custom URL:
    ```bash
    API_BASE_URL=http://localhost:4000 node tests/contract/validate-against-spec.js
    ```
 
-## Endpoints validados
+## Validated endpoints
 
 - `GET /health` – status, db, uptime, metrics
-- `POST /auth/register` – 201 com objeto User
-- `POST /auth/login` – 200 com token, user, isAdmin
-- `GET /users/:id` – 200 com objeto User
-- `POST /auth/register` (sem email) – 400 com objeto Error
+- `POST /auth/register` – 201 with User object
+- `POST /auth/login` – 200 with token, user, isAdmin
+- `GET /users/:id` – 200 with User object
+- `POST /auth/register` (without email) – 400 with Error object
 
-## Saída
+## Output
 
-- ✓ = resposta conforme o contrato
-- ✗ = resposta inválida (campo ausente, tipo errado)
+- ✓ = response conforms to contract
+- ✗ = invalid response (missing field, wrong type)
 
-Exit code 1 se alguma validação falhar (útil para CI).
+Exit code 1 if any validation fails (useful for CI).
 
-## Como adicionar mais contratos
+## How to add more contracts
 
-1. **Defina o schema** no início do `validate-against-spec.js`:
+1. **Define the schema** at the top of `validate-against-spec.js`:
 
 ```javascript
-const MEU_SCHEMA = {
+const MY_SCHEMA = {
   type: "object",
-  required: ["campo1", "campo2"],
+  required: ["field1", "field2"],
   properties: {
-    campo1: { type: "string" },
-    campo2: { type: "integer" },
+    field1: { type: "string" },
+    field2: { type: "integer" },
   },
 };
 ```
 
-2. **Chame a API e valide** dentro do `run()`:
+2. **Call the API and validate** inside `run()`:
 
 ```javascript
-const { status, body } = await fetchJson(`${API_BASE}/sua-rota`, {
+const { status, body } = await fetchJson(`${API_BASE}/your-route`, {
   method: "POST",
   body: JSON.stringify({ ... }),
 });
-const errs = validateObject(body, MEU_SCHEMA);
+const errs = validateObject(body, MY_SCHEMA);
 if (status !== 200 || errs.length > 0) {
   failed++;
-  results.push({ endpoint: "POST /sua-rota", ok: false, status, errors: errs });
+  results.push({ endpoint: "POST /your-route", ok: false, status, errors: errs });
 } else {
-  results.push({ endpoint: "POST /sua-rota", ok: true, status });
+  results.push({ endpoint: "POST /your-route", ok: true, status });
 }
 ```
 
-3. **Atualize** `docs/api-spec.yaml` com o novo endpoint (opcional, mas recomendado).
+3. **Update** `docs/api-spec.yaml` with the new endpoint (optional, but recommended).

@@ -1,26 +1,26 @@
-# Cenários – Dashboard (Health, Métricas, Histórico, Navegação)
+# Scenarios – Dashboard (Health, Metrics, History, Navigation)
 
-Bateria de testes E2E para as páginas do dashboard admin. Implementados em Cypress e Playwright.
-
----
-
-## Matriz de cenários
-
-| Spec | Cenário | Cypress | Playwright |
-|------|---------|---------|------------|
-| **dashboard-health** | Exibe título e página de health | ✓ | ✓ |
-| **dashboard-health** | Exibe cards API e Database com status | ✓ | ✓ |
-| **dashboard-health** | Exibe seção JSON bruto | ✓ | ✓ |
-| **dashboard-metricas** | Exibe título e página de métricas | ✓ | ✓ |
-| **dashboard-metricas** | Exibe card API Response Time | ✓ | ✓ |
-| **dashboard-metricas** | Exibe cards Auth Rate e Test Failure Rate | ✓ | ✓ |
-| **dashboard-testes** | Exibe título e página de histórico | ✓ | ✓ |
-| **dashboard-testes** | Exibe tabela ou mensagem vazia | ✓ | ✓ |
-| **dashboard-navigation** | Navega Health → Métricas → Testes → Usuários | ✓ | ✓ |
+E2E test suite for the admin dashboard pages. Implemented in Cypress and Playwright.
 
 ---
 
-## Arquivos
+## Scenario matrix
+
+| Spec | Scenario | Cypress | Playwright |
+|------|----------|---------|------------|
+| **dashboard-health** | Displays health title and page | ✓ | ✓ |
+| **dashboard-health** | Displays API and Database cards with status | ✓ | ✓ |
+| **dashboard-health** | Displays raw JSON section | ✓ | ✓ |
+| **dashboard-metricas** | Displays metrics title and page | ✓ | ✓ |
+| **dashboard-metricas** | Displays API Response Time card | ✓ | ✓ |
+| **dashboard-metricas** | Displays Auth Rate and Test Failure Rate cards | ✓ | ✓ |
+| **dashboard-testes** | Displays history title and page | ✓ | ✓ |
+| **dashboard-testes** | Displays table or empty message | ✓ | ✓ |
+| **dashboard-navigation** | Navigates Health → Metrics → Tests → Users | ✓ | ✓ |
+
+---
+
+## Files
 
 ```
 tests/
@@ -38,34 +38,34 @@ tests/
 
 ---
 
-## data-testid adicionados
+## data-testid added
 
-| Elemento | data-testid |
-|----------|-------------|
-| Página Health | `page-health` |
-| Card API (Health) | `health-card-api` |
-| Card DB (Health) | `health-card-db` |
-| Página Métricas | `page-metricas` |
-| Card API (Métricas) | `metricas-card-api` |
-| Página Testes | `page-testes` |
-| Tabela test runs | `table-test-runs` |
-| Lista vazia | `test-runs-empty` |
-| Link Usuários | `nav-usuarios` |
-| Link Testes | `nav-testes` |
-| Link Métricas | `nav-metricas` |
-| Link Health | `nav-health` |
+| Element | data-testid |
+|---------|-------------|
+| Health page | `page-health` |
+| API card (Health) | `health-card-api` |
+| DB card (Health) | `health-card-db` |
+| Metrics page | `page-metricas` |
+| API card (Metrics) | `metricas-card-api` |
+| Tests page | `page-testes` |
+| Test runs table | `table-test-runs` |
+| Empty list | `test-runs-empty` |
+| Users link | `nav-usuarios` |
+| Tests link | `nav-testes` |
+| Metrics link | `nav-metricas` |
+| Health link | `nav-health` |
 
 ---
 
-## Como rodar
+## How to run
 
 ```bash
-# Todos os testes (mesmos cenários nos dois frameworks):
+# All tests (same scenarios in both frameworks):
 npm run test:cy          # Cypress (~24 specs)
-npm run test:pw         # Playwright (~26 testes)
-npm run test:all        # Os dois em sequência
+npm run test:pw         # Playwright (~26 tests)
+npm run test:all        # Both in sequence
 
-# Só dashboard:
+# Dashboard only:
 npm run test:pw -- dashboard/
-npm run test:cy -- --spec "cypress/e2e/dashboard/*.cy.js"   # de dentro de tests/
+npm run test:cy -- --spec "cypress/e2e/dashboard/*.cy.js"   # from inside tests/
 ```
