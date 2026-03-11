@@ -36,7 +36,7 @@ function runLint(cwd, targets = ["."]) {
             else if (msg.severity === 1) warnings++;
           }
         }
-      } catch (_e) {
+      } catch {
         if (code !== 0) errors = 1;
       }
       resolve({ code: code ?? 1, errors, warnings });
@@ -56,7 +56,7 @@ async function main() {
   totalErrors += frontend.errors;
   totalWarnings += frontend.warnings;
 
-  // Backend, tests, agents, scripts: usa root eslint.config.js
+  // Backend, tests, agents, scripts: usa root eslint.config.mjs
   console.log("\n🔍 Lint backend, tests, agents, scripts...\n");
   const root = await runLint(ROOT, ["backend/", "tests/", "agents/", "scripts/"]);
   results.push({ name: "backend+tests+agents", ...root });

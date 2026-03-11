@@ -303,7 +303,7 @@ async function main() {
             console.log(summaryResult.content[0].text);
             console.log("  ─────────────────────────────────────────────\n");
           }
-        } catch (_) {}
+        } catch { /* ignore */ }
       }
 
       await client.close();
