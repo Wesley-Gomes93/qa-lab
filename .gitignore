@@ -2,13 +2,23 @@ node_modules
 .env
 .next
 dist
+out
 coverage
-cypress/videos
-cypress/screenshots
-cypress/reports
-tests/playwright-report
-tests/qa-lab-reports
 .DS_Store
+*.log
+
+# Cypress (saída de testes)
+tests/cypress/videos
+tests/cypress/screenshots
+tests/cypress/reports
+
+# Playwright (saída de testes)
+tests/playwright-report
+tests/test-results
+tests/playwright/.cache
+tests/qa-lab-reports
+
+# Backend (logs temporários)
 backend/registros.txt
 
 # Docs pessoais / rascunhos (não versionar)

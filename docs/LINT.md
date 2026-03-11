@@ -9,10 +9,10 @@ Configuração de ESLint replicada do padrão qa-mockserver-mcp, com **pastas di
 | Pasta        | Config                 | O que linta                          |
 |-------------|-------------------------|--------------------------------------|
 | **frontend**| `eslint-config-next`    | Next.js, React, TypeScript            |
-| **backend** | `eslint.config.js` (raiz) | API Express, Node.js               |
-| **tests**   | `eslint.config.js` (raiz) | Cypress, Playwright, Mocha          |
-| **agents**  | `eslint.config.js` (raiz) | Agentes MCP, scripts Node.js       |
-| **scripts** | `eslint.config.js` (raiz) | Utilitários na raiz                |
+| **backend** | `eslint.config.mjs` (raiz) | API Express, Node.js               |
+| **tests**   | `eslint.config.mjs` (raiz) | Cypress, Playwright, Mocha          |
+| **agents**  | `eslint.config.mjs` (raiz) | Agentes MCP, scripts Node.js       |
+| **scripts** | `eslint.config.mjs` (raiz) | Utilitários na raiz                |
 
 ---
 

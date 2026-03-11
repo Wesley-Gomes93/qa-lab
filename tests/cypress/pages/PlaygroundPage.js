@@ -302,7 +302,9 @@ function assertRegisterSuccessOrAlreadyExists() {
     .then(($pre) => {
       const text = $pre.text();
       const is201 = text.includes(texts.status201) && text.includes('"id"') && text.includes('"email"');
-      const is409 = text.includes(texts.status409) && (text.includes(texts.errorAlreadyExists) || text.includes(texts.errorEmailInUse));
+      const is409 =
+        text.includes(texts.status409) &&
+        (text.includes(texts.errorAlreadyExists) || text.includes(texts.errorEmailInUse));
       expect(is201 || is409, 'esperado Status 201 (criado) ou 409 (já existe)').to.be.true;
     });
 }

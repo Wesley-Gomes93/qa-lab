@@ -64,8 +64,12 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
     TEST_SUITE: suite ?? "",
   };
   if (registerName != null && String(registerName).trim()) env.CYPRESS_REGISTER_NAME = String(registerName).trim();
-  if (registerEmail != null && String(registerEmail).trim()) env.CYPRESS_REGISTER_EMAIL = String(registerEmail).trim();
-  if (registerPassword != null && String(registerPassword).trim()) env.CYPRESS_REGISTER_PASSWORD = String(registerPassword).trim();
+  if (registerEmail != null && String(registerEmail).trim()) {
+    env.CYPRESS_REGISTER_EMAIL = String(registerEmail).trim();
+  }
+  if (registerPassword != null && String(registerPassword).trim()) {
+    env.CYPRESS_REGISTER_PASSWORD = String(registerPassword).trim();
+  }
   if (editIdade != null && editIdade >= 18 && editIdade <= 80) env.CYPRESS_EDIT_IDADE = String(editIdade);
 
   return new Promise((resolve) => {
@@ -563,7 +567,7 @@ function parseCypressFailures(runOutput) {
 
   // AssertionError: Timed out retrying... Expected to find element: `[data-testid="btn-edit-2"]`, but never found it.
   const elementNotFoundRe = /Expected to find element:\s*`([^`]+)`,\s*but never found it/i;
-  const specFileRe = /at Context\.eval \(.*?\.\/(.+?)\)|Running:\s+(.+?)(?:\s+\(|\s*$)/;
+  const _specFileRe = /at Context\.eval \(.*?\.\/(.+?)\)|Running:\s+(.+?)(?:\s+\(|\s*$)/;
   const assertErrorRe = /AssertionError:\s*(.+)/;
 
   let currentSpec = "";
@@ -783,7 +787,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error("Erro no servidor MCP:", err);
   process.exit(1);
 });
