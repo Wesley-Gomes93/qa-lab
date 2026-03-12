@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.DS_Store
+api-tests/reports/*.html
+api-tests/reports/*.json
+!api-tests/reports/.gitkeep
+a11y-tests/reports/*.html
+a11y-tests/reports/*.json
+!a11y-tests/reports/.gitkeep

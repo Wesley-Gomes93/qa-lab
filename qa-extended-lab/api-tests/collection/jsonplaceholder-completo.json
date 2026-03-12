@@ -1,0 +1,99 @@
+{
+  "info": {
+    "name": "JSONPlaceholder API - Testes Completos",
+    "description": "Todos os testes de API possíveis: Users, Posts, Comments, Albums, Photos, Todos + CRUD + edge cases",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://jsonplaceholder.typicode.com" }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "GET List users",
+          "request": { "method": "GET", "url": "{{baseUrl}}/users" },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array', () => pm.expect(pm.response.json()).to.be.an('array'));", "pm.test('Users have id,name,email', () => { const j=pm.response.json(); if(j[0]) pm.expect(j[0]).to.have.keys(['id','name','username','email','address','phone','website','company']); });", "pm.test('Response time < 3s', () => pm.expect(pm.response.responseTime).to.be.below(3000));"], "type": "text/javascript"}}]
+        },
+        {"name": "GET Single user", "request": {"method": "GET", "url": "{{baseUrl}}/users/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has id,email', () => { const j=pm.response.json(); pm.expect(j).to.have.property('id'); pm.expect(j).to.have.property('email'); });"], "type": "text/javascript"}}]},
+        {"name": "GET User not found (404)", "request": {"method": "GET", "url": "{{baseUrl}}/users/99999"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]},
+        {"name": "POST Create user", "request": {"method": "POST", "url": "{{baseUrl}}/users", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"name\":\"Test User\",\"username\":\"testuser\",\"email\":\"test@test.com\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "pm.test('Returns id', () => pm.expect(pm.response.json()).to.have.property('id'));"], "type": "text/javascript"}}]},
+        {"name": "PUT Update user", "request": {"method": "PUT", "url": "{{baseUrl}}/users/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"id\":1,\"name\":\"Updated\",\"username\":\"updated\",\"email\":\"updated@test.com\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Name updated', () => pm.expect(pm.response.json().name).to.eql('Updated'));"], "type": "text/javascript"}}]},
+        {"name": "PATCH Partial update user", "request": {"method": "PATCH", "url": "{{baseUrl}}/users/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"email\":\"patched@test.com\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "DELETE User", "request": {"method": "DELETE", "url": "{{baseUrl}}/users/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]}
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {"name": "GET List posts", "request": {"method": "GET", "url": "{{baseUrl}}/posts"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array', () => pm.expect(pm.response.json()).to.be.an('array'));", "pm.test('Post has userId,id,title,body', () => { const j=pm.response.json(); if(j[0]) pm.expect(j[0]).to.have.keys(['userId','id','title','body']); });"], "type": "text/javascript"}}]},
+        {"name": "GET Single post", "request": {"method": "GET", "url": "{{baseUrl}}/posts/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has title,body', () => { const j=pm.response.json(); pm.expect(j).to.have.property('title'); pm.expect(j).to.have.property('body'); });"], "type": "text/javascript"}}]},
+        {"name": "GET Post not found (404)", "request": {"method": "GET", "url": "{{baseUrl}}/posts/99999"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]},
+        {"name": "GET Posts by user (query)", "request": {"method": "GET", "url": "{{baseUrl}}/posts?userId=1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('All have userId=1', () => { const j=pm.response.json(); j.forEach(p=>pm.expect(p.userId).to.eql(1)); });"], "type": "text/javascript"}}]},
+        {"name": "GET Comments of post", "request": {"method": "GET", "url": "{{baseUrl}}/posts/1/comments"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array of comments', () => pm.expect(pm.response.json()).to.be.an('array'));"], "type": "text/javascript"}}]},
+        {"name": "POST Create post", "request": {"method": "POST", "url": "{{baseUrl}}/posts", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Test Post\",\"body\":\"Test body\",\"userId\":1}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "pm.test('Returns id', () => pm.expect(pm.response.json()).to.have.property('id'));"], "type": "text/javascript"}}]},
+        {"name": "PUT Update post", "request": {"method": "PUT", "url": "{{baseUrl}}/posts/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"id\":1,\"title\":\"Updated\",\"body\":\"Updated body\",\"userId\":1}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "PATCH Partial update post", "request": {"method": "PATCH", "url": "{{baseUrl}}/posts/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Patched title\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "DELETE Post", "request": {"method": "DELETE", "url": "{{baseUrl}}/posts/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]}
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {"name": "GET List comments", "request": {"method": "GET", "url": "{{baseUrl}}/comments"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array', () => pm.expect(pm.response.json()).to.be.an('array'));", "pm.test('Comment has id,name,email,body', () => { const j=pm.response.json(); if(j[0]) pm.expect(j[0]).to.have.keys(['postId','id','name','email','body']); });"], "type": "text/javascript"}}]},
+        {"name": "GET Single comment", "request": {"method": "GET", "url": "{{baseUrl}}/comments/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has postId,body', () => { const j=pm.response.json(); pm.expect(j).to.have.property('postId'); pm.expect(j).to.have.property('body'); });"], "type": "text/javascript"}}]},
+        {"name": "GET Comments by postId", "request": {"method": "GET", "url": "{{baseUrl}}/comments?postId=1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('All have postId=1', () => { const j=pm.response.json(); j.forEach(c=>pm.expect(c.postId).to.eql(1)); });"], "type": "text/javascript"}}]},
+        {"name": "GET Comment not found (404)", "request": {"method": "GET", "url": "{{baseUrl}}/comments/99999"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]},
+        {"name": "POST Create comment", "request": {"method": "POST", "url": "{{baseUrl}}/comments", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"postId\":1,\"name\":\"Test\",\"email\":\"test@test.com\",\"body\":\"Test comment\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "pm.test('Returns id', () => pm.expect(pm.response.json()).to.have.property('id'));"], "type": "text/javascript"}}]},
+        {"name": "PUT Update comment", "request": {"method": "PUT", "url": "{{baseUrl}}/comments/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"postId\":1,\"id\":1,\"name\":\"Updated\",\"email\":\"u@test.com\",\"body\":\"Updated body\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "DELETE Comment", "request": {"method": "DELETE", "url": "{{baseUrl}}/comments/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]}
+      ]
+    },
+    {
+      "name": "Albums",
+      "item": [
+        {"name": "GET List albums", "request": {"method": "GET", "url": "{{baseUrl}}/albums"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array', () => pm.expect(pm.response.json()).to.be.an('array'));", "pm.test('Album has userId,id,title', () => { const j=pm.response.json(); if(j[0]) pm.expect(j[0]).to.have.keys(['userId','id','title']); });"], "type": "text/javascript"}}]},
+        {"name": "GET Single album", "request": {"method": "GET", "url": "{{baseUrl}}/albums/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has title', () => pm.expect(pm.response.json()).to.have.property('title'));"], "type": "text/javascript"}}]},
+        {"name": "GET Albums by userId", "request": {"method": "GET", "url": "{{baseUrl}}/albums?userId=1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('All have userId=1', () => { const j=pm.response.json(); j.forEach(a=>pm.expect(a.userId).to.eql(1)); });"], "type": "text/javascript"}}]},
+        {"name": "GET Album not found (404)", "request": {"method": "GET", "url": "{{baseUrl}}/albums/99999"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]},
+        {"name": "POST Create album", "request": {"method": "POST", "url": "{{baseUrl}}/albums", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Test Album\",\"userId\":1}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "pm.test('Returns id', () => pm.expect(pm.response.json()).to.have.property('id'));"], "type": "text/javascript"}}]},
+        {"name": "PUT Update album", "request": {"method": "PUT", "url": "{{baseUrl}}/albums/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"id\":1,\"title\":\"Updated Album\",\"userId\":1}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "DELETE Album", "request": {"method": "DELETE", "url": "{{baseUrl}}/albums/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]}
+      ]
+    },
+    {
+      "name": "Photos",
+      "item": [
+        {"name": "GET List photos", "request": {"method": "GET", "url": "{{baseUrl}}/photos"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array', () => pm.expect(pm.response.json()).to.be.an('array'));", "pm.test('Photo has albumId,id,title,url', () => { const j=pm.response.json(); if(j[0]) pm.expect(j[0]).to.have.keys(['albumId','id','title','url','thumbnailUrl']); });"], "type": "text/javascript"}}]},
+        {"name": "GET Single photo", "request": {"method": "GET", "url": "{{baseUrl}}/photos/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has url', () => pm.expect(pm.response.json()).to.have.property('url'));"], "type": "text/javascript"}}]},
+        {"name": "GET Photos by albumId", "request": {"method": "GET", "url": "{{baseUrl}}/photos?albumId=1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('All have albumId=1', () => { const j=pm.response.json(); j.forEach(p=>pm.expect(p.albumId).to.eql(1)); });"], "type": "text/javascript"}}]},
+        {"name": "GET Photo not found (404)", "request": {"method": "GET", "url": "{{baseUrl}}/photos/99999"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]},
+        {"name": "POST Create photo", "request": {"method": "POST", "url": "{{baseUrl}}/photos", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Test Photo\",\"url\":\"https://example.com/1.jpg\",\"thumbnailUrl\":\"https://example.com/1thumb.jpg\",\"albumId\":1}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "pm.test('Returns id', () => pm.expect(pm.response.json()).to.have.property('id'));"], "type": "text/javascript"}}]},
+        {"name": "PUT Update photo", "request": {"method": "PUT", "url": "{{baseUrl}}/photos/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"albumId\":1,\"id\":1,\"title\":\"Updated\",\"url\":\"https://example.com/1.jpg\",\"thumbnailUrl\":\"https://example.com/1thumb.jpg\"}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "DELETE Photo", "request": {"method": "DELETE", "url": "{{baseUrl}}/photos/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]}
+      ]
+    },
+    {
+      "name": "Todos",
+      "item": [
+        {"name": "GET List todos", "request": {"method": "GET", "url": "{{baseUrl}}/todos"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Array', () => pm.expect(pm.response.json()).to.be.an('array'));", "pm.test('Todo has userId,id,title,completed', () => { const j=pm.response.json(); if(j[0]) pm.expect(j[0]).to.have.keys(['userId','id','title','completed']); });"], "type": "text/javascript"}}]},
+        {"name": "GET Single todo", "request": {"method": "GET", "url": "{{baseUrl}}/todos/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Has completed boolean', () => pm.expect(pm.response.json().completed).to.be.a('boolean'));"], "type": "text/javascript"}}]},
+        {"name": "GET Todos by userId", "request": {"method": "GET", "url": "{{baseUrl}}/todos?userId=1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('All have userId=1', () => { const j=pm.response.json(); j.forEach(t=>pm.expect(t.userId).to.eql(1)); });"], "type": "text/javascript"}}]},
+        {"name": "GET Todos completed filter", "request": {"method": "GET", "url": "{{baseUrl}}/todos?completed=true"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('All completed=true', () => { const j=pm.response.json(); j.forEach(t=>pm.expect(t.completed).to.eql(true)); });"], "type": "text/javascript"}}]},
+        {"name": "GET Todo not found (404)", "request": {"method": "GET", "url": "{{baseUrl}}/todos/99999"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]},
+        {"name": "POST Create todo", "request": {"method": "POST", "url": "{{baseUrl}}/todos", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"title\":\"Test Todo\",\"completed\":false,\"userId\":1}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 201', () => pm.response.to.have.status(201));", "pm.test('Returns id', () => pm.expect(pm.response.json()).to.have.property('id'));"], "type": "text/javascript"}}]},
+        {"name": "PUT Update todo", "request": {"method": "PUT", "url": "{{baseUrl}}/todos/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"userId\":1,\"id\":1,\"title\":\"Updated Todo\",\"completed\":true}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "PATCH Partial update todo", "request": {"method": "PATCH", "url": "{{baseUrl}}/todos/1", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"completed\":true}"}}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]},
+        {"name": "DELETE Todo", "request": {"method": "DELETE", "url": "{{baseUrl}}/todos/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]}
+      ]
+    },
+    {
+      "name": "Headers e Performance",
+      "item": [
+        {"name": "Content-Type JSON", "request": {"method": "GET", "url": "{{baseUrl}}/users/1"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Content-Type inclui application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"], "type": "text/javascript"}}]},
+        {"name": "Response time OK", "request": {"method": "GET", "url": "{{baseUrl}}/posts"}, "event": [{"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));", "pm.test('Response < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"], "type": "text/javascript"}}]}
+      ]
+    }
+  ]
+}

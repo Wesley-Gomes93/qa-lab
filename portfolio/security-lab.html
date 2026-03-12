@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Lab — Wesley | Bug Bounty | Pentest | Hacking</title>
+  <meta name="description" content="Lab de segurança: Python, bug bounty, pentest e hacking. Recon, web apps, exploitation — stack equivalente ao Kali, roadmap zero → Jr.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .page-header { margin-bottom: 2rem; }
+    .page-header a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .page-header a:hover { text-decoration: underline; }
+    .stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .stack-category { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+    .stack-category h4 { font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--accent); }
+    .stack-category ul { list-style: none; font-size: 0.85rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="logo">Wesley</a>
+      <ul class="nav-links">
+        <li><a href="index.html#sobre">Sobre</a></li>
+        <li><a href="index.html#projetos">Projetos</a></li>
+        <li><a href="index.html#contato">Contato</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="section" style="padding-top: 6rem;">
+      <div class="page-header">
+        <a href="index.html#projetos">← Voltar aos projetos</a>
+      </div>
+
+      <h1>Security Lab</h1>
+      <p class="hero-subtitle" style="margin-bottom: 1.5rem;">
+        Python | Bug Bounty | Pentest | Hacking — Lab completo com ferramentas e conhecimentos equivalentes ao Kali Linux. Roadmap zero → Jr independente.
+      </p>
+
+      <h2 style="font-size: 1.1rem; margin-top: 2rem;">Objetivo</h2>
+      <p>
+        Preparar para bug bounty, pentest e hacking com prática real: recon, web apps, exploitation, targets vulneráveis em Docker. Tudo em Python, alinhado ao mercado de segurança.
+      </p>
+
+      <h2 style="font-size: 1.1rem; margin-top: 2rem;">Stack (equivalente ao Kali)</h2>
+      <div class="stack-grid">
+        <div class="stack-category">
+          <h4>Recon</h4>
+          <ul><li>subfinder</li><li>amass</li><li>httpx</li><li>nmap</li><li>theHarvester</li></ul>
+        </div>
+        <div class="stack-category">
+          <h4>Web / Bug Bounty</h4>
+          <ul><li>ffuf</li><li>nuclei</li><li>OWASP ZAP</li><li>sqlmap</li><li>feroxbuster</li></ul>
+        </div>
+        <div class="stack-category">
+          <h4>Exploitation</h4>
+          <ul><li>Metasploit</li><li>impacket</li><li>pwntools</li><li>sqlmap</li></ul>
+        </div>
+        <div class="stack-category">
+          <h4>Password</h4>
+          <ul><li>Hydra</li><li>John</li><li>hashcat</li></ul>
+        </div>
+      </div>
+
+      <h2 style="font-size: 1.1rem; margin-top: 2rem;">Python no centro</h2>
+      <p>
+        requests, pwntools, impacket, scapy, mitmproxy, BeautifulSoup — scripts custom, wrappers, automação e geração de relatórios.
+      </p>
+
+      <h2 style="font-size: 1.1rem; margin-top: 2rem;">Targets vulneráveis</h2>
+      <p>
+        DVWA, OWASP Juice Shop, WebGoat — apps intencionalmente vulneráveis para treino, via Docker.
+      </p>
+
+      <h2 style="font-size: 1.1rem; margin-top: 2rem;">Roadmap</h2>
+      <ul class="project-highlights">
+        <li>Fase 0: Setup e fundamentos</li>
+        <li>Fase 1: Recon (subfinder, amass, httpx)</li>
+        <li>Fase 2: Web e bug bounty (ffuf, nuclei, targets)</li>
+        <li>Fase 3: Exploitation e reports</li>
+        <li>Fase 4: Bug bounty ready</li>
+      </ul>
+
+      <div class="project-links" style="margin-top: 2rem;">
+        <a href="https://github.com/Wesley-Gomes93/security-lab" target="_blank" rel="noopener" class="btn btn-primary">Ver no GitHub</a>
+        <a href="index.html#projetos" class="btn btn-secondary">Ver todos os projetos</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Wesley — 2025</p>
+  </footer>
+</body>
+</html>

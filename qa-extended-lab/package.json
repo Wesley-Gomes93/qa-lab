@@ -1,0 +1,27 @@
+{
+  "name": "qa-extended-lab",
+  "version": "1.0.0",
+  "description": "API Testing (Newman) + Accessibility (axe-core) — extension of QA Lab",
+  "scripts": {
+    "test:api": "node api-tests/run-newman.js",
+    "test:api:full": "node api-tests/run-newman.js jsonplaceholder-completo.json",
+    "test:a11y": "node a11y-tests/scripts/run-a11y.js",
+    "test:all": "npm run test:api && npm run test:a11y",
+    "report:a11y": "open a11y-tests/reports/a11y-report-latest.html 2>/dev/null || echo 'Rode npm run test:a11y antes'"
+  },
+  "keywords": [
+    "qa",
+    "newman",
+    "postman",
+    "axe",
+    "accessibility",
+    "api-testing"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "playwright": "^1.49.0"
+  }
+}

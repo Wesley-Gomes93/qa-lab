@@ -26,6 +26,8 @@
 | **Pipeline** | [Actions → pipeline](https://github.com/Wesley-Gomes93/qa-lab/actions) |
 | **Demo** | _Add your Vercel/deploy URL when available_ |
 
+**See also:** [QA Extended Lab](qa-extended-lab/) (API + A11y) · [Security Lab](https://github.com/Wesley-Gomes93/security-lab) (roadmap)
+
 ---
 
 ## What I Learned
