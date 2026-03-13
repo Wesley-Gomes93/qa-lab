@@ -5,9 +5,9 @@ name: Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, dev]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev]
   workflow_dispatch:  # permite rodar manualmente e faz os status checks aparecerem
 
 jobs:
