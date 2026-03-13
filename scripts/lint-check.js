@@ -27,19 +27,23 @@ function runLint(cwd, targets = ["."]) {
     result.on("close", (code) => {
       let errors = 0;
       let warnings = 0;
+      const files = [];
       try {
         const data = JSON.parse(stdout || "[]");
         const list = Array.isArray(data) ? data : [data];
         for (const file of list) {
-          for (const msg of file.messages || []) {
+          if (!file.filePath) continue;
+          const msgs = file.messages || [];
+          for (const msg of msgs) {
             if (msg.severity === 2) errors++;
             else if (msg.severity === 1) warnings++;
           }
+          if (msgs.length > 0) files.push({ filePath: file.filePath, messages: msgs });
         }
       } catch {
         if (code !== 0) errors = 1;
       }
-      resolve({ code: code ?? 1, errors, warnings });
+      resolve({ code: code ?? 1, errors, warnings, files });
     });
   });
 }
@@ -56,10 +60,16 @@ async function main() {
   totalErrors += frontend.errors;
   totalWarnings += frontend.warnings;
 
-  // Backend, tests, agents, scripts: usa root eslint.config.mjs
-  console.log("\n🔍 Lint backend, tests, agents, scripts...\n");
-  const root = await runLint(ROOT, ["backend/", "tests/", "agents/", "scripts/"]);
-  results.push({ name: "backend+tests+agents", ...root });
+  // Backend, tests, agents, scripts, qa-extended-lab: usa root eslint.config.mjs
+  console.log("\n🔍 Lint backend, tests, agents, scripts, qa-extended-lab...\n");
+  const root = await runLint(ROOT, [
+    "backend/",
+    "tests/",
+    "agents/",
+    "scripts/",
+    "qa-extended-lab/",
+  ]);
+  results.push({ name: "backend+tests+agents+qa-extended-lab", ...root });
   totalErrors += root.errors;
   totalWarnings += root.warnings;
 
@@ -73,14 +83,29 @@ async function main() {
   console.log(`   Total:   ${totalErrors} erros, ${totalWarnings} warnings`);
   console.log("─".repeat(50));
 
+  if (totalErrors > 0 || totalWarnings > 0) {
+    console.log("\n📁 Detalhes:\n");
+    for (const r of results) {
+      for (const f of r.files || []) {
+        const relPath = path.relative(ROOT, f.filePath);
+        for (const msg of f.messages) {
+          const tipo = msg.severity === 2 ? "erro" : "warning";
+          const linha = msg.line ? `:${msg.line}` : "";
+          const col = msg.column ? `:${msg.column}` : "";
+          console.log(`   ${relPath}${linha}${col}  [${tipo}] ${msg.ruleId || "?"}: ${msg.message}`);
+        }
+      }
+    }
+    console.log("");
+  }
+
   if (totalErrors > 0) {
-    console.log("\n❌ Corrija os erros antes de fazer commit.");
-    console.log("   Execute 'npm run lint:all' para ver os detalhes.\n");
+    console.log("❌ Corrija os erros antes de fazer commit.\n");
     process.exit(1);
   }
 
   if (totalWarnings > 0) {
-    console.log("\n⚠️  Há warnings. Considere corrigir antes de fazer commit.\n");
+    console.log("⚠️  Há warnings. Considere corrigir antes de fazer commit.\n");
     process.exit(0);
   }
 

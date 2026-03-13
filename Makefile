@@ -31,7 +31,7 @@ db-down: ## Para PostgreSQL
 	npm run db:down
 
 # ---- Lint ----
-lint: ## Roda lint (backend, tests, agents, scripts)
+lint: ## Roda lint em todos os projetos (frontend, backend, tests, agents, scripts, qa-extended-lab)
 	npm run lint:check
 
 lint-all: ## Lint completo (frontend + resto)
