@@ -73,7 +73,7 @@ Referência rápida de **todos os comandos** executáveis pela raiz do projeto.
 | `npm run audit:context` | Gera contexto completo em `.audit/audit-context.txt` (1ª vez) |
 | `npm run audit:context:incremental` | Gera só o delta (o que mudou desde última auditoria) |
 
-**Uso:** Rode antes da auditoria no Cursor. O agente lê 1 arquivo em vez de vários — menos requisições. Veja [PROMPT-AGENTE-AUDITOR-PT.md](PROMPT-AGENTE-AUDITOR-PT.md).
+**Uso:** Rode antes da auditoria no Cursor. O agente lê 1 arquivo em vez de vários — menos requisições.
 
 ### Agentes
 

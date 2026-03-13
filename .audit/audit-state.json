@@ -1,0 +1,75 @@
+{
+  "updatedAt": "2026-03-13T22:47:07.319Z",
+  "fingerprints": {
+    "package.json": {
+      "hash": "c9a9a6613bf8deb5ec60b7d962324a14c0b0ed35489536e1572a4c199ae9c3b1",
+      "mtime": 1773441855170.6272,
+      "size": 2914
+    },
+    "README.md": {
+      "hash": "b80b0bd93b5b5fca3e95211ce6a7f1c842f547ac3bfd756e486cbf88e39173e9",
+      "mtime": 1773361042555.4666,
+      "size": 10710
+    },
+    "scripts/clean-test-users.js": {
+      "hash": "6380c62b0353e1e8023bdd00134ec51b3a09b879d8c51aa8d06a8f2e1ab969da",
+      "mtime": 1773017884448.048,
+      "size": 1123
+    },
+    "scripts/lint-check.js": {
+      "hash": "56b8496d181e5bab8f699fee6603632219f50d78358ec981479100a74ad702b6",
+      "mtime": 1773192047278.3125,
+      "size": 2772
+    },
+    "scripts/prepare-audit-context.js": {
+      "hash": "38cea5a4744fd4857f623c21bb0c3fc109f5123a575c971873b8e1a7d2c96bff",
+      "mtime": 1773442019553.315,
+      "size": 7492
+    },
+    "scripts/start-dev.js": {
+      "hash": "4288b180141c340810293fbf895fb755d5e16273fd0e051569ebc19ab67238f9",
+      "mtime": 1773107883146.8198,
+      "size": 3343
+    },
+    "tests/contract/validate-against-spec.js": {
+      "hash": "077d43e2a4a6b32872f397598e9bfdb4ba362d941a4aab7bf3985d1e6cef89e6",
+      "mtime": 1773106763286.029,
+      "size": 7520
+    },
+    "agents/failure-analyzer-agent.js": {
+      "hash": "a06a7bdf04dd4478bfb16345c6b5e78f66308f512c9c90db0031407828ffc493",
+      "mtime": 1773360973818.5632,
+      "size": 6848
+    },
+    "agents/llm.js": {
+      "hash": "cb4463ce96a95514e75a319c87438715d516d00ce763434bde1525f63f50cc5a",
+      "mtime": 1773194460251.0583,
+      "size": 3681
+    },
+    "agents/qa-agent.js": {
+      "hash": "b159478d3a096c49c65fa144c4382f393a5edc79b3fbb56365436bbf9c17634b",
+      "mtime": 1773360981173.9114,
+      "size": 17130
+    },
+    "agents/test-writer-agent.js": {
+      "hash": "fe2ba33fb3bf6ab472f69af5521405aa77239b0475daa52cd944f4c16d3d3e5f",
+      "mtime": 1773363040924.5317,
+      "size": 10698
+    },
+    ".github/workflows/agent.yml": {
+      "hash": "d7572ef22ca140976965d14f42577d5d805f1645fc713612f6a43d71613d3d24",
+      "mtime": 1773098871671.8333,
+      "size": 1648
+    },
+    ".github/workflows/pipeline.yml": {
+      "hash": "157caf558c1c8b287260522a7bee2bba3a3c2359ec8c6fbb25da84ea010028c6",
+      "mtime": 1773282161135.5283,
+      "size": 7057
+    },
+    ".github/workflows/qa-extended-lab.yml": {
+      "hash": "f9dd04d442998fdbc61ea9f4832abbbef3cd1266adcd71831a5baf7aa0826a10",
+      "mtime": 1773274704865.667,
+      "size": 1445
+    }
+  }
+}
