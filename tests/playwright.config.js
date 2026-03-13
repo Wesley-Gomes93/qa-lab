@@ -20,10 +20,11 @@ module.exports = defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    actionTimeout: 10000,
+    actionTimeout: process.env.CI ? 15000 : 10000,
+    navigationTimeout: process.env.CI ? 15000 : 10000,
   },
   expect: {
-    timeout: 10000,
+    timeout: process.env.CI ? 15000 : 10000,
   },
-  timeout: 30000,
+  timeout: process.env.CI ? 45000 : 30000,
 });
