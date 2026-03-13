@@ -21,6 +21,9 @@ tests/qa-lab-reports
 # Backend (logs temporários)
 backend/registros.txt
 
+# Auditoria (contexto + estado; gerado por audit:context)
+.audit/
+
 # Docs pessoais / rascunhos (não versionar)
 docs/feedback.txt
 docs/LINKEDIN-POST-*.md

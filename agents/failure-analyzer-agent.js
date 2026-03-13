@@ -109,6 +109,16 @@ async function main() {
       process.exit(0);
     }
 
+    // Detecta falhas de ambiente (Cypress não instalado) — não entra na análise de specs
+    const cypressMissing = /Cypress binary is missing|cypress\/not-installed|run 'cypress install'/i.test(runOutput || "");
+    if (cypressMissing) {
+      console.log("\n✗ Cypress não está instalado ou binário ausente.");
+      console.log("  Execute: cd tests && npx cypress install");
+      console.log("  Depois rode novamente: npm run agent:analyze-failures\n");
+      await client.close();
+      process.exit(1);
+    }
+
     console.log("\n✗ Testes falharam. Analisando e sugerindo correções...\n");
 
     if (!runOutput) {

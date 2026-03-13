@@ -169,6 +169,8 @@ npm run agent:test-writer -- --framework both "login flow"  # Cypress + Playwrig
 | [Reports](./docs/RELATORIOS.md) | Cypress, Playwright, unified reports |
 | [Test Writer Agent](./docs/AGENT-TEST-WRITER.md) | LLM-based test generation (Groq, Gemini, OpenAI) |
 | [Project Summary](./docs/RESUMO-DO-PROJETO.md) | Full reference — architecture, API, suites, agents |
+| [Comandos (all commands)](./docs/COMANDOS.md) | Quick reference — every `npm run` command |
+| [Fluxo GIF + Post](./docs/FLUXO-GIF-POST.md) | Checklist agentes 100%, gravar GIF, publicar post |
 | [About the project](./docs/SOBRE-O-PROJETO.md) | Origin, current state, roadmap |
 
 ---
@@ -195,14 +197,22 @@ qa-lab/
 
 ## All Commands
 
+### Environment & app
+
 | Command | Description |
 |---------|-------------|
+| `npm run dev` | Full environment (DB + backend + frontend) |
 | `npm run db:up` | Start PostgreSQL (Docker) |
 | `npm run db:down` | Stop PostgreSQL |
 | `npm run backend:install` | Install backend deps |
 | `npm run backend:dev` | Start backend (port 4000) |
 | `npm run frontend:install` | Install frontend deps |
 | `npm run frontend:dev` | Start frontend (port 3000) |
+
+### Tests (Cypress + Playwright)
+
+| Command | Description |
+|---------|-------------|
 | `npm run tests:install` | Install test deps |
 | `npm run tests:run` | Cypress E2E |
 | `npm run tests:pw` | Playwright E2E |
@@ -213,12 +223,33 @@ qa-lab/
 | `npm run tests:report` | Cypress with Mochawesome |
 | `npm run tests:clean-users` | Remove @teste.com users from DB |
 | `npm run tests:full` | Clean users + run tests with report |
+
+### QA Extended Lab (Newman + axe)
+
+| Command | Description |
+|---------|-------------|
+| `npm run extended:install` | Install QA Extended Lab deps |
+| `npm run extended:api` | Newman: API tests (JSONPlaceholder) |
+| `npm run extended:api:full` | Newman: full collection (48 tests) |
+| `npm run extended:a11y` | axe-core: accessibility tests |
+| `npm run extended:all` | Newman + axe |
+
+### Agents
+
+| Command | Description |
+|---------|-------------|
 | `npm run agents:install` | Install agent deps |
 | `npm run agent` | Connect to MCP (list tools) |
-| `npm run agent:run-tests` | Interactive menu to run Cypress |
+| `npm run agent:run-tests` | Interactive menu to run tests |
 | `npm run agent:analyze-failures` | Run tests and analyze failures |
-| `npm run agent:analyze-failures admin` | Analyze failures for admin suite only |
 | `npm run agent:full` | Clean users + run tests via agent |
-| `npm run agent:test-writer` | Test Writer (see guide above) |
-| `npm run dev` | Full environment (DB + backend + frontend) |
+| `npm run agent:test-writer` | Test Writer (LLM) — see guide above |
+
+### Lint
+
+| Command | Description |
+|---------|-------------|
 | `npm run lint:check` | ESLint errors and warnings |
+| `npm run lint:all` | Lint everything (frontend + backend + tests) |
+
+**→ Full reference:** [docs/COMANDOS.md](docs/COMANDOS.md)

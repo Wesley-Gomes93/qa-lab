@@ -110,6 +110,33 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
   });
 }
 
+/** Extrai métricas (cenários, tempo) do output do Cypress ou Playwright. */
+function parseRunMetrics(runOutput, framework) {
+  const out = runOutput || "";
+  const metrics = { testsTotal: 0, testsPassed: 0, testsFailed: 0, durationSec: null };
+
+  if (framework === "cypress") {
+    const passMatch = out.match(/(\d+)\s+passing/);
+    const failMatch = out.match(/(\d+)\s+failing/);
+    const durMatch = out.match(/\((\d+(?:\.\d+)?)s\)/) || out.match(/Duration:\s*(\d+)ms/);
+    metrics.testsPassed = passMatch ? parseInt(passMatch[1], 10) : 0;
+    metrics.testsFailed = failMatch ? parseInt(failMatch[1], 10) : 0;
+    metrics.testsTotal = metrics.testsPassed + metrics.testsFailed;
+    if (durMatch) {
+      metrics.durationSec = out.includes("Duration:") ? parseFloat(durMatch[1]) / 1000 : parseFloat(durMatch[1]);
+    }
+  } else {
+    const passMatch = out.match(/(\d+)\s+passed/);
+    const failMatch = out.match(/(\d+)\s+failed/);
+    const durMatch = out.match(/\((\d+(?:\.\d+)?)s\)/);
+    metrics.testsPassed = passMatch ? parseInt(passMatch[1], 10) : 0;
+    metrics.testsFailed = failMatch ? parseInt(failMatch[1], 10) : 0;
+    metrics.testsTotal = metrics.testsPassed + metrics.testsFailed;
+    if (durMatch) metrics.durationSec = parseFloat(durMatch[1]);
+  }
+  return metrics;
+}
+
 function runPlaywrightTests({ spec: specPath } = {}) {
   const testsDir = path.resolve(__dirname, "../../tests");
   const args = specPath ? ["playwright", "test", specPath] : ["run", "pw:test"];
@@ -202,6 +229,7 @@ server.registerTool(
 
     const passed = code === 0;
     const fwName = usePlaywright ? "Playwright" : "Cypress";
+    const metrics = parseRunMetrics(runOutput, usePlaywright ? "playwright" : "cypress");
 
     const structured = {
       status: passed ? "passed" : "failed",
@@ -209,6 +237,7 @@ server.registerTool(
         ? `Testes ${fwName} executados com sucesso.`
         : `Falha na execução dos testes ${fwName}. Verifique os logs.`,
       exitCode: code,
+      metrics,
       ...(runOutput && !passed && { runOutput }),
     };
 
@@ -489,7 +518,8 @@ server.registerTool(
       if (genCypress) {
         const cypressSystem = `Você é um engenheiro de QA especializado em Cypress. Gere APENAS o código do spec, sem explicações antes ou depois.
 Regras:
-- Use require('../../support/helpers') para API_BASE, randomEmail, randomName quando fizer sentido.
+- Use require('../../support/helpers') para API_BASE, ADMIN_EMAIL, ADMIN_PASSWORD, randomEmail, randomName quando fizer sentido.
+- OBRIGATÓRIO: Para login como admin ou testes de autenticação, use { API_BASE, ADMIN_EMAIL, ADMIN_PASSWORD } = require('../../support/helpers'). NUNCA use admin@example.com, admin123 ou Cypress.env().
 - API_BASE vem de helpers; base URL da API é http://localhost:4000.
 - Para testes de API: use cy.request() diretamente.
 - Mantenha padrão do projeto: describe + it, asserções com expect().
@@ -511,7 +541,8 @@ Gere um spec Cypress completo (describe + it). Target: ${target}. Suíte: ${suit
         const pwSystem = `Você é um engenheiro de QA especializado em Playwright. Gere APENAS o código do spec, sem explicações antes ou depois.
 Regras:
 - Use: const { test, expect } = require("@playwright/test");
-- Use require("../../support/helpers") para API_BASE_URL, randomEmail, randomName, ADMIN_TOKEN quando fizer sentido.
+- Use require("../../support/helpers") para API_BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD, randomEmail, randomName, ADMIN_TOKEN quando fizer sentido.
+- OBRIGATÓRIO: Para login como admin ou testes de autenticação, use ADMIN_EMAIL e ADMIN_PASSWORD de helpers. NUNCA use admin@example.com ou admin123.
 - API_BASE_URL vem de helpers; base URL da API é http://localhost:4000.
 - Para testes de API: use request.get/post/put/delete (fixture { request }).
 - Sintaxe: test.describe("Título", () => { test("nome", async ({ request }) => { ... }); });

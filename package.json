@@ -41,9 +41,19 @@
     "agents:install": "cd agents && npm install",
     "agent": "cd agents && node qa-agent.js",
     "agent:run-tests": "cd agents && node qa-agent.js run_tests",
+    "agent:run-tests:api": "cd agents && node qa-agent.js run_tests --suite api",
+    "agent:run-tests:spec": "cd agents && node qa-agent.js run_tests --spec cypress/e2e/api/api-health.cy.js",
+    "agent:demo": "npm run agent:run-tests:api",
     "agent:analyze-failures": "cd agents && node failure-analyzer-agent.js",
     "agent:full": "npm run tests:clean-users && cd agents && node qa-agent.js run_tests",
     "agent:test-writer": "cd agents && node test-writer-agent.js",
-    "dev": "node scripts/start-dev.js"
+    "dev": "node scripts/start-dev.js",
+    "extended:install": "cd qa-extended-lab && npm ci",
+    "extended:api": "cd qa-extended-lab && npm run test:api",
+    "extended:api:full": "cd qa-extended-lab && npm run test:api:full",
+    "extended:a11y": "cd qa-extended-lab && npm run test:a11y",
+    "extended:all": "cd qa-extended-lab && npm run test:all",
+    "audit:context": "node scripts/prepare-audit-context.js",
+    "audit:context:incremental": "node scripts/prepare-audit-context.js --incremental"
   }
 }

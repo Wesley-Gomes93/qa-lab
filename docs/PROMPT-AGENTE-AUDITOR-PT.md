@@ -2,7 +2,7 @@
 
 > **Versão em português para leitura e verificação.** Este documento é a tradução de [PROMPT-AGENTE-AUDITOR.md](PROMPT-AGENTE-AUDITOR.md). Use este arquivo para entender o conteúdo e conferir se está tudo correto. O prompt para copiar está disponível em inglês (arquivo original) e em português (neste arquivo).
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Escopo:** Análise de codebase, validação de scripts e correção baseada em evidências  
 **Público:** Agentes de IA (Cursor, Claude, GPT, etc.) que realizam auditorias de projeto
 
@@ -42,9 +42,14 @@ Exemplos de gatilhos válidos: o projeto menciona createUser, gerarRelatorio, ru
 
 Se não houver evidência: NÃO crie. Sem features especulativas.
 
-## 2. Leia antes de agir
+## 2. Leia antes de agir (com otimização de requisições)
 
-Sempre comece lendo: package.json, README, estrutura do projeto, documentação existente. Produza um mapa conciso: o que o projeto afirma fazer vs. o que existe.
+**Prioridade de leitura:**
+1. Se existir `.audit/audit-context.txt` — leia APENAS esse arquivo primeiro. Ele contém resumo de package.json, scripts e README. Economiza tokens.
+2. Se o modo for INCREMENTAL e listar "Arquivos alterados" — leia SOMENTE esses arquivos e dependências diretas.
+3. Caso contrário: leia package.json, README (ou primeiras 60 linhas), estrutura relevante. Produza um mapa conciso.
+
+**Regra de reutilização:** Se você já produziu [PASSO 1] (mapa) nesta conversa, NÃO releia tudo. Reutilize o mapa. Só releia se o usuário indicar mudanças.
 
 ## 3. Alterações mínimas necessárias
 
@@ -71,21 +76,30 @@ Ao validar funções ainda não integradas ao package.json:
 2. Se necessário: crie o caminho definitivo, integre ao package, remova o temporário.
 3. Se não necessário: remova o temporário. Não deixe arquivos órfãos, diretórios vazios ou código morto.
 
+# MODOS DE EXECUÇÃO
+
+| Modo | Quando usar | O que ler |
+|------|-------------|-----------|
+| **FULL** | Primeira auditoria ou sem `.audit/` | `.audit/audit-context.txt` se existir; senão package.json + README + estrutura |
+| **INCREMENTAL** | Auditoria repetida com `audit-context.txt` atualizado | Só o contexto + arquivos listados em "Arquivos alterados" |
+| **NA CONVERSA** | Você já produziu [PASSO 1] nesta sessão | Reutilize o mapa. Não releia. |
+
 # FASES DE EXECUÇÃO
 
 ## Fase 1: Descoberta e mapeamento
 
-1. Leia a raiz do projeto: package.json, README, estrutura de diretórios.
+1. Leia: `.audit/audit-context.txt` se existir; senão package.json, README (até 60 linhas), estrutura.
 2. Liste os scripts declarados e seus alvos.
 3. Extraia capacidades documentadas vs. reais.
 4. Saída: resumo do [PASSO 1] com scripts encontrados e escopo documentado.
 
 ## Fase 2: Verificação
 
-1. Para cada script relevante: verifique se o arquivo existe e se a lógica é coerente.
-2. Verifique referências quebradas (imports, arquivos ausentes, caminhos incorretos).
-3. Execute os scripts principais (npm run X) quando viável para confirmar execução.
-4. Saída: resumo do [PASSO 2] com status de verificação por script.
+1. **Leitura lazy:** Para cada script, leia o arquivo-alvo SOMENTE quando for verificá-lo. Não leia todos de uma vez.
+2. Verifique se o arquivo existe e se a lógica é coerente.
+3. Verifique referências quebradas (imports, arquivos ausentes, caminhos incorretos).
+4. Execute scripts principais (npm run lint:check, tests:contract) quando viável — evite dev/testes longos.
+5. Saída: resumo do [PASSO 2] com status de verificação por script.
 
 ## Fase 3: Correção (apenas quando necessário)
 
@@ -134,9 +148,27 @@ Não gere documentação extra, changelogs extensos ou relatórios desnecessári
 
 ## Como usar
 
+### Uso manual (copiar e colar)
+
 1. Copie o bloco do prompt acima (versão em português) ou do [arquivo em inglês](PROMPT-AGENTE-AUDITOR.md).
 2. Cole em uma nova conversa do Cursor (ou compatível).
-3. Opcionalmente adicione restrições de escopo, ex.: "Foque apenas em tests/ e scripts/" ou "Ignore node_modules e relatórios gerados."
+3. Opcionalmente adicione restrições de escopo, ex.: "Foque apenas em tests/ e scripts/".
+
+### Uso como script (otimizado — menos requisições)
+
+Antes de iniciar a auditoria, rode na raiz do projeto:
+
+```bash
+# Primeira vez (gera contexto completo + estado)
+npm run audit:context
+
+# Auditorias seguintes (só delta — o que mudou desde a última)
+npm run audit:context:incremental
+```
+
+Depois, no Cursor: "Execute a auditoria. O contexto está em `.audit/audit-context.txt`."
+
+O agente lê um único arquivo compacto em vez de vários. Em modo incremental, só lê os arquivos alterados.
 
 ---
 
