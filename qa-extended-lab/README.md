@@ -40,7 +40,8 @@ npm run test:all
 | `npm run test:all` | Run API + A11y |
 | `npm run report:a11y` | Open a11y HTML report |
 
-See [docs/COMANDOS-E-DEMOS.md](docs/COMANDOS-E-DEMOS.md) for GIF/post ideas and Newman deep dive.
+- [docs/COMANDOS-E-DEMOS.md](docs/COMANDOS-E-DEMOS.md) — Runs para GIFs/posts, Newman
+- [docs/RESUMO-DO-PROJETO.md](docs/RESUMO-DO-PROJETO.md) — Resumo completo do projeto
 
 ---
 

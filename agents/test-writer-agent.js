@@ -168,6 +168,7 @@ async function main() {
     console.log("");
 
     // 4. Run test(s)
+    const runResults = [];
     let allPassed = true;
     for (const { framework: f, path: specPath } of writtenPaths) {
       console.log(`4. Running ${f}...`);
@@ -178,6 +179,16 @@ async function main() {
       const runData = getStructured(runResult);
       const passed = runData?.status === "passed" && runData?.exitCode === 0;
       if (!passed) allPassed = false;
+      const metrics = runData?.metrics || {};
+      runResults.push({
+        framework: f,
+        spec: specPath,
+        passed,
+        testsTotal: metrics.testsTotal ?? 0,
+        testsPassed: metrics.testsPassed ?? 0,
+        testsFailed: metrics.testsFailed ?? 0,
+        durationSec: metrics.durationSec ?? null,
+      });
       console.log(`   ${passed ? "✓" : "✗"} ${f}: ${passed ? "passed" : "failed"}\n`);
     }
 
@@ -190,7 +201,42 @@ async function main() {
       console.log("   Use: npm run agent:analyze-failures for fix suggestions.");
     }
 
-    console.log("\n[Test Writer Agent] Done.\n");
+    // 6. Resumo (após execução)
+    console.log("\n  ═══════════════════════════════════════════════════════════");
+    console.log("  RESUMO DA EXECUÇÃO");
+    console.log("  ═══════════════════════════════════════════════════════════");
+    console.log(`  Prompt:     ${prompt}`);
+    console.log(`  Framework:  ${fw === "both" ? "Cypress + Playwright" : fw}`);
+    if (runResults.length === 1) {
+      const r = runResults[0];
+      console.log(`  Arquivo:    ${r.spec}`);
+      console.log(`  Cenários:   ${r.testsTotal || "—"} (${r.testsPassed ?? 0} ✓, ${r.testsFailed ?? 0} ✗)`);
+      console.log(`  Tempo:      ${r.durationSec != null ? `${r.durationSec.toFixed(1)}s` : "—"}`);
+      console.log(`  Resultado:  ${r.passed ? "✓ Passou" : "✗ Falhou"}`);
+    } else {
+      console.log("  Arquivos e resultado:");
+      runResults.forEach((r) => {
+        console.log(`    • ${r.framework}: ${r.spec}`);
+        console.log(`      Cenários: ${r.testsTotal || "—"} (${r.testsPassed ?? 0} ✓, ${r.testsFailed ?? 0} ✗)`);
+        console.log(`      Tempo: ${r.durationSec != null ? `${r.durationSec.toFixed(1)}s` : "—"}`);
+        console.log(`      → ${r.passed ? "✓ Passou" : "✗ Falhou"}`);
+      });
+      const [cy, pw] = runResults;
+      if (cy && pw && cy.durationSec != null && pw.durationSec != null && cy.durationSec > 0 && pw.durationSec > 0) {
+        const ratio = cy.durationSec / pw.durationSec;
+        const faster = ratio >= 1.05 ? "Playwright" : ratio <= 0.95 ? "Cypress" : null;
+        if (faster) {
+          const mult = faster === "Playwright" ? ratio : 1 / ratio;
+          console.log(`  Métrica:    ${faster} foi ${mult.toFixed(1)}x mais rápido que ${faster === "Playwright" ? "Cypress" : "Playwright"}`);
+        }
+      }
+      console.log(`  Geral:      ${allPassed ? "✓ Todos passaram" : "✗ Algum(ns) falharam"}`);
+    }
+    if (!allPassed) {
+      console.log("  Próximo:    npm run agent:analyze-failures ou revise o spec gerado.");
+    }
+    console.log("  ═══════════════════════════════════════════════════════════\n");
+    console.log("[Test Writer Agent] Done.\n");
     await client.close();
     process.exit(allPassed ? 0 : 1);
   } catch (err) {

@@ -3,8 +3,10 @@
  * Comando run_tests: menu interativo para escolher qual teste rodar.
  *
  * Uso:
- *   node qa-agent.js              → lista ferramentas
- *   node qa-agent.js run_tests    → menu interativo e executa o teste escolhido
+ *   node qa-agent.js                    → lista ferramentas
+ *   node qa-agent.js run_tests           → menu interativo e executa o teste escolhido
+ *   node qa-agent.js run_tests --suite api  → modo demo: roda suite API direto (sem menu)
+ *   node qa-agent.js run_tests --spec cypress/e2e/api/api-health.cy.js  → roda spec específico
  */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -225,8 +227,31 @@ async function showMenuAndRun(client, immersive = {}) {
   return showMenuAndRun(client, immersive);
 }
 
+function parseRunTestsArgs() {
+  const args = process.argv.slice(2);
+  const suiteIdx = args.indexOf("--suite");
+  const specIdx = args.indexOf("--spec");
+  const suite = suiteIdx >= 0 ? args[suiteIdx + 1] : null;
+  const spec = specIdx >= 0 ? args[specIdx + 1] : null;
+  return { suite, spec };
+}
+
+async function runTestsDirect(client, { suite, spec }, immersive = {}) {
+  const suiteId = suite || "all";
+  const specPath = spec || null;
+  const suiteObj = SUITES.find((s) => s.id === suiteId);
+  const label = specPath ? specPath : suiteObj?.label || suiteId;
+  console.log(`\n  [demo] Executando: ${label}\n`);
+  const result = await client.callTool({
+    name: "run_tests",
+    arguments: { suite: specPath ? undefined : suiteId, spec: specPath, ...immersive },
+  });
+  return result;
+}
+
 async function main() {
   const task = process.argv[2] || "list";
+  const runTestsArgs = parseRunTestsArgs();
 
   const transport = new StdioClientTransport({
     command: "node",
@@ -279,6 +304,20 @@ async function main() {
     }
 
     if (task === "run_tests") {
+      // Modo demo (--suite ou --spec): sem menu, roda direto
+      if (runTestsArgs.suite || runTestsArgs.spec) {
+        const result = await runTestsDirect(client, runTestsArgs, {});
+        if (result.isError) {
+          console.error("[agent] Erro:", result.content?.[0]?.text ?? result);
+          await client.close();
+          process.exit(1);
+        }
+        const text = result.content?.find((c) => c.type === "text")?.text;
+        if (text) console.log("\n" + text);
+        const exitCode = result.structuredContent?.exitCode ?? 0;
+        await client.close();
+        process.exit(exitCode === 0 ? 0 : 1);
+      }
       const immersive = await askImmersiveData();
       const result = await showMenuAndRun(client, immersive);
 
