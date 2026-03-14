@@ -29,7 +29,7 @@
     "tests:execution": "cd tests && npm run test:execution",
     "tests:contract": "node tests/contract/validate-against-spec.js",
     "tests:report": "cd tests && npm run test:report",
-    "lint": "eslint backend/ tests/ agents/ scripts/",
+    "lint": "eslint backend/ tests/ agents/ scripts/ qa-extended-lab/",
     "lint:frontend": "cd frontend && npm run lint",
     "lint:backend": "eslint backend/",
     "lint:tests": "eslint tests/",

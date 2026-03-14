@@ -5,9 +5,9 @@ name: Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, dev]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev]
   workflow_dispatch:  # permite rodar manualmente e faz os status checks aparecerem
 
 jobs:
@@ -106,7 +106,7 @@ jobs:
         run: cd frontend && npm run build
 
   tests:
-    name: tests
+    name: Cypress
     runs-on: ubuntu-latest
     needs: [build]
     steps:
@@ -147,9 +147,43 @@ jobs:
           cd frontend && PORT=3000 npm run start &
           sleep 8
 
-      - name: Run Cypress
-        run: cd tests && npx cypress run --browser chrome 2>/dev/null || npx cypress run
+      - name: Wait for API health (status ok + db ok)
+        run: |
+          for i in $(seq 1 45); do
+            resp=$(curl -sf http://localhost:4000/health 2>/dev/null) || true
+            if echo "$resp" | grep -q '"status":"ok"' && echo "$resp" | grep -q '"db":"ok"'; then
+              echo "API and DB ready"
+              break
+            fi
+            echo "Waiting for API/DB... ($i/45)"
+            sleep 2
+          done
+          resp=$(curl -sf http://localhost:4000/health 2>/dev/null) || true
+          echo "$resp" | grep -q '"db":"ok"' || { echo "API/DB not ready"; exit 1; }
+
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:3000 2>/dev/null; then
+              echo "Frontend ready"
+              break
+            fi
+            echo "Waiting for frontend... ($i/30)"
+            sleep 2
+          done
+          curl -sf -o /dev/null http://localhost:3000 || { echo "Frontend not ready"; exit 1; }
+
+      - name: Clean test users (evita conflito entre execuções)
+        run: node scripts/clean-test-users.js
         env:
+          QA_LAB_API_URL: ${{ vars.API_BASE_URL || 'http://localhost:4000' }}
+          ADMIN_TOKEN: admin-qa-lab
+        continue-on-error: true
+
+      - name: Run Cypress
+        run: cd tests && npx cypress run --browser chrome 2>/dev/null || npx cypress run --browser chrome
+        env:
+          CI: true
           CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL || 'http://localhost:3000' }}
           API_BASE_URL: ${{ vars.API_BASE_URL || 'http://localhost:4000' }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
@@ -164,7 +198,7 @@ jobs:
           if-no-files-found: ignore
 
   e2e:
-    name: e2e
+    name: Playwright
     runs-on: ubuntu-latest
     needs: [build]
     steps:
@@ -206,9 +240,43 @@ jobs:
           PORT=3000 npm run start &
           sleep 10
 
+      - name: Wait for API health (status ok + db ok)
+        run: |
+          for i in $(seq 1 45); do
+            resp=$(curl -sf http://localhost:4000/health 2>/dev/null) || true
+            if echo "$resp" | grep -q '"status":"ok"' && echo "$resp" | grep -q '"db":"ok"'; then
+              echo "API and DB ready"
+              break
+            fi
+            echo "Waiting for API/DB... ($i/45)"
+            sleep 2
+          done
+          resp=$(curl -sf http://localhost:4000/health 2>/dev/null) || true
+          echo "$resp" | grep -q '"db":"ok"' || { echo "API/DB not ready"; exit 1; }
+
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://localhost:3000 2>/dev/null; then
+              echo "Frontend ready"
+              break
+            fi
+            echo "Waiting for frontend... ($i/30)"
+            sleep 2
+          done
+          curl -sf -o /dev/null http://localhost:3000 || { echo "Frontend not ready"; exit 1; }
+
+      - name: Clean test users
+        run: node scripts/clean-test-users.js
+        env:
+          QA_LAB_API_URL: http://localhost:4000
+          ADMIN_TOKEN: admin-qa-lab
+        continue-on-error: true
+
       - name: Run Playwright
         run: cd tests && npx playwright test
         env:
+          CI: true
           FRONTEND_URL: ${{ vars.FRONTEND_URL || 'http://localhost:3000' }}
           API_BASE_URL: ${{ vars.API_BASE_URL || 'http://localhost:4000' }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}

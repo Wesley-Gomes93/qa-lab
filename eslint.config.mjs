@@ -146,6 +146,19 @@ async function createConfig() {
       plugins: { mocha: mocha.default },
       rules: baseRules,
     },
+    // QA-EXTENDED-LAB – testes API, a11y e scripts Node.js
+    {
+      files: ["qa-extended-lab/**/*.js"],
+      languageOptions: {
+        globals: nodeGlobals,
+        parserOptions: {
+          ecmaVersion: 2022,
+          sourceType: "commonjs",
+        },
+      },
+      plugins: { mocha: mocha.default },
+      rules: baseRules,
+    },
   ];
 }
 

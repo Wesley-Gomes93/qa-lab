@@ -232,7 +232,7 @@ const SOLUCOES_A11Y = {
 
 async function runA11y() {
   const results = [];
-  let hasViolations = false;
+  let _hasViolations = false;
 
   const browser = await chromium.launch({ headless: true });
 
@@ -244,7 +244,7 @@ async function runA11y() {
       const axeResults = await new AxeBuilder({ page }).analyze();
       const violations = axeResults.violations || [];
       results.push({ url, violations });
-      if (violations.length > 0) hasViolations = true;
+      if (violations.length > 0) _hasViolations = true;
       console.log(`${url}: ${violations.length} violation(s)`);
     } catch (err) {
       console.error(`Error testing ${url}:`, err.message);

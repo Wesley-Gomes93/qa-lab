@@ -1,0 +1,143 @@
+# CONTEXTO PARA AGENTE AUDITOR
+# Gerado em: 2026-03-13T22:47:07.316Z
+# Modo: COMPLETO
+
+## package.json (resumo)
+nome: qa-lab
+descrição: Playground full-stack para testes e automação (MCP + agente)
+
+## Scripts declarados e alvos
+  db:up: cd database && docker-compose up -d → (embutido) ✗
+  db:down: cd database && docker-compose down → (embutido) ✗
+  backend:install: cd backend && npm install → (embutido) ✗
+  backend:dev: cd backend && npm run dev → (embutido) ✗
+  frontend:install: cd frontend && npm install → (embutido) ✗
+  frontend:dev: cd frontend && npm run dev → (embutido) ✗
+  tests:install: cd tests && npm install → (embutido) ✗
+  test:cy: cd tests && npm test → (embutido) ✗
+  test:pw: cd tests && npm run pw:test → (embutido) ✗
+  test:all: cd tests && npm run test:cy && npm run test:pw → (embutido) ✗
+  tests:run: cd tests && npm test → (embutido) ✗
+  tests:pw: cd tests && npm run pw:test → (embutido) ✗
+  tests:pw:ui: cd tests && npm run pw:ui → (embutido) ✗
+  tests:pw:report: cd tests && npm run pw:report → (embutido) ✗
+  tests:report:unified: cd tests && npm run report:unified → (embutido) ✗
+  tests:report:execution: cd tests && npm run report:execution → (embutido) ✗
+  tests:execution: cd tests && npm run test:execution → (embutido) ✗
+  tests:contract: node tests/contract/validate-against-spec.js → tests/contract/validate-against-spec.js ✓
+  tests:report: cd tests && npm run test:report → (embutido) ✗
+  lint: eslint backend/ tests/ agents/ scripts/ → (embutido) ✗
+  lint:frontend: cd frontend && npm run lint → (embutido) ✗
+  lint:backend: eslint backend/ → (embutido) ✗
+  lint:tests: eslint tests/ → (embutido) ✗
+  lint:agents: eslint agents/ → (embutido) ✗
+  lint:check: node scripts/lint-check.js → scripts/lint-check.js ✓
+  lint:all: npm run lint:frontend && npm run lint → (embutido) ✗
+  tests:clean-users: node scripts/clean-test-users.js → scripts/clean-test-users.js ✓
+  tests:full: npm run tests:clean-users && npm run tests:report → (embutido) ✗
+  agents:install: cd agents && npm install → (embutido) ✗
+  agent: cd agents && node qa-agent.js → qa-agent.js ✓
+  agent:run-tests: cd agents && node qa-agent.js run_tests → qa-agent.js ✓
+  agent:run-tests:api: cd agents && node qa-agent.js run_tests --suite api → qa-agent.js ✓
+  agent:run-tests:spec: cd agents && node qa-agent.js run_tests --spec cypress/e2e/a → qa-agent.js ✓
+  agent:demo: npm run agent:run-tests:api → (embutido) ✗
+  agent:analyze-failures: cd agents && node failure-analyzer-agent.js → failure-analyzer-agent.js ✓
+  agent:full: npm run tests:clean-users && cd agents && node qa-agent.js r → qa-agent.js ✓
+  agent:test-writer: cd agents && node test-writer-agent.js → test-writer-agent.js ✓
+  dev: node scripts/start-dev.js → scripts/start-dev.js ✓
+  extended:install: cd qa-extended-lab && npm ci → (embutido) ✗
+  extended:api: cd qa-extended-lab && npm run test:api → (embutido) ✗
+  extended:api:full: cd qa-extended-lab && npm run test:api:full → (embutido) ✗
+  extended:a11y: cd qa-extended-lab && npm run test:a11y → (embutido) ✗
+  extended:all: cd qa-extended-lab && npm run test:all → (embutido) ✗
+  audit:context: node scripts/prepare-audit-context.js → scripts/prepare-audit-context.js ✓
+  audit:context:incremental: node scripts/prepare-audit-context.js --incremental → scripts/prepare-audit-context.js ✓
+
+## Resumo do projeto (primeiras linhas)
+```
+# QA Lab 🧪
+
+[![Pipeline](https://img.shields.io/github/actions/workflow/status/Wesley-Gomes93/qa-lab/pipeline.yml?branch=main&label=build)](https://github.com/Wesley-Gomes93/qa-lab/actions)
+[![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**Laboratório full-stack de QA com E2E duplo (Cypress + Playwright), testes de contrato, suíte de performance e geração de testes com LLM.**
+
+---
+
+## Problema → Solução → Resultado
+
+**Problema:** A automação de QA é difícil de escalar — testes manuais, ferramentas dispersas e sem pipeline claro para detectar bugs antes do merge.
+
+**Solução:** Um laboratório full-stack onde automação, agentes de IA e CI/CD trabalham juntos. Cada PR dispara um pipeline; cada falha bloqueia o merge.
+
+**Resultado:** Portas de qualidade automatizadas, feedback rápido (~5 min), relatórios unificados e geração de testes assistida por IA. O merge só ocorre quando tudo passa.
+
+---
+
+## Links
+
+| Link | URL |
+|------|-----|
+| **Repositório** | [github.com/Wesley-Gomes93/qa-lab](https://github.com/Wesley-Gomes93/qa-lab) |
+| **Pipeline** | [Actions → pipeline](https://github.com/Wesley-Gomes93/qa-lab/actions) |
+| **Demo** | _Adicione sua URL Vercel/deploy quando disponível_ |
+
+**Ver também:** [QA Extended Lab](qa-extended-lab/) (API + A11y) · [Security Lab](https://github.com/Wesley-Gomes93/security-lab) (roadmap)
+
+---
+
+## O que aprendi
+
+- **Stack E2E duplo** — Rodar Cypress e Playwright em paralelo ensinou a desenhar testes que rodam em ambos; specs centralizados para API reduziram duplicação.
+- **Testes de contrato** — Validação de schema OpenAPI detecta breaking changes antes do E2E; investimento pequeno com ROI alto.
+- **MCP e agentes** — Integração de geração de testes com LLM (Groq, Gemini, OpenAI) mostrou como IA estende fluxos de QA sem substituir pensamento crítico.
+- **Design do pipeline** — Lint → Build → Testes (paralelo) → Relatório cria feedback rápido; bloqueio de merge em falha reforça qualidade no gate.
+- **Performance como teste** — Métricas TICTAC (load, health, TTI) transformaram performance em requisito verificável.
+
+---
+
+## Decisões de arquitetura
+
+**Por que Cypress + Playwright?** Ambos rodam os mesmos cenários. Mantive os dois para comparar APIs, relatórios e custo de manutenção. Playwright tende a ser ~3x mais rápido no CI; Cypress tem ecossistema maior. Decisão baseada em dados, não em ferramenta.
+
+**Por que agentes de IA?** O Test Writer e o Failure Analyzer estendem QA sem substituir pensamento crítico. Mostram como integração LLM se encaixa em fluxos reais — gerando specs a partir de descrições e sugerindo correções quando testes falham.
+
+**Por que testes de contrato?** Validação OpenAPI detecta mudanças que quebram API antes do E2E. Investimento inicial pequeno evita bugs sutis nos testes de UI.
+
+**Trade-offs:** Não escolhi infra AWS completa (ECS, ALB, CDN) — ROI baixo para portfolio de QA. Também adiei notificações Slack/Teams e dashboards históricos; agregam valor em produção, menos para apresentação de portfolio.
+
+---
+
+## Destaques técnicos
+
+| Área | O que está no projeto |
+|------|------------------------|
+| **Pipeline CI/CD** | Lint → Build → Testes (Cypress \|\| Playwright) → Relatório Unificado. Merge bloqueado se qualquer etapa falhar. |
+| **Stack E2E duplo** | Cypress + Playwright rodam em paralelo. Specs centralizados para testes de API (uma fonte, dois runners). |
+| **Testes de contrato** | Validação de spec OpenAPI 3.0. Checagens de schema antes do deploy. |
+| **Testes de performance** | Suíte TICTAC: load, health, TTI, latência de path crítico do dashboard. |
+| **Agentes de IA** | 3 agentes: menu MCP (execuções interativas), Test Writer (LLM — Groq, Gemini, OpenAI), Failure Analyzer (diagnóstico e sugestões automáticos). |
+| **Relatórios** | Mochawesome (Cypress), Playwright HTML, relatório unificado QA Lab. |
+
+---
+
+## Fluxo do pipeline
+
+```
+PR aberto / push para main
+        ↓
+   Lint (ESLint)
+        ↓
+   Build (Next.js)
+        ↓
+   ┌────────────┬────────────┐
+   │  Cypress   │  Playwright │  ← rodam em paralelo
+   │   E2E      │     E2E     │
+   └────────────┴────────────┘
+[...]
+```
+
+
+## Estrutura relevante
+scripts/, tests/contract/, agents/, .github/workflows/
