@@ -4,6 +4,8 @@
 [![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+**QA portfolio.** Um lab que construí para praticar e aprofundar meu ofício — automação E2E, testes de API, validação de contrato e CI/CD. O que aprendi no caminho está documentado aqui.
+
 **Laboratório full-stack de QA com E2E duplo (Cypress + Playwright), testes de contrato, suíte de performance e geração de testes com LLM.**
 
 ---

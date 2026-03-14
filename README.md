@@ -4,7 +4,7 @@
 [![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Full-stack QA lab with dual E2E (Cypress + Playwright), contract testing, performance suite, and LLM-powered test generation.**
+**QA portfolio.** A lab I built to practice and deepen my craft — E2E automation, API testing, contract validation, and CI/CD. What I learned along the way is documented here.
 
 ---
 
