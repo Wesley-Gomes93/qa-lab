@@ -6,8 +6,9 @@ const connectionString =
 
 const pool = new Pool({ connectionString });
 
-const ADMIN_EMAIL = "admWesley@test.com.br";
-const ADMIN_PASSWORD = "senha12356";
+// Em CI: use GitHub Secrets. Local: .env ou valores padrão de teste
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admWesley@test.com.br";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "senha12356";
 
 async function initDb() {
   const client = await pool.connect();

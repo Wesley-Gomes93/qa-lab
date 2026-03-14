@@ -139,6 +139,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://qa:qa123@localhost:5432/qalab
           PORT: 4000
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
       - name: Start frontend
         run: |
@@ -148,7 +150,10 @@ jobs:
       - name: Run Cypress
         run: cd tests && npx cypress run --browser chrome 2>/dev/null || npx cypress run
         env:
-          CYPRESS_BASE_URL: http://localhost:3000
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL || 'http://localhost:3000' }}
+          API_BASE_URL: ${{ vars.API_BASE_URL || 'http://localhost:4000' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
       - name: Upload Cypress report
         if: always()
@@ -192,6 +197,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://qa:qa123@localhost:5432/qalab
           PORT: 4000
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
       - name: Build and start frontend
         run: |
@@ -202,8 +209,10 @@ jobs:
       - name: Run Playwright
         run: cd tests && npx playwright test
         env:
-          FRONTEND_URL: http://localhost:3000
-          API_BASE_URL: http://localhost:4000
+          FRONTEND_URL: ${{ vars.FRONTEND_URL || 'http://localhost:3000' }}
+          API_BASE_URL: ${{ vars.API_BASE_URL || 'http://localhost:4000' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
       - name: Upload Playwright report
         if: always()
