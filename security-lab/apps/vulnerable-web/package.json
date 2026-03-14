@@ -1,0 +1,13 @@
+{
+  "name": "vulnerable-web",
+  "version": "1.0.0",
+  "description": "Intentionally vulnerable web app for security testing practice",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "keywords": ["security", "vulnerable", "owasp", "xss"],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

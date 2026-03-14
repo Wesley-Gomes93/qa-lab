@@ -1,0 +1,16 @@
+{
+  "name": "security-lab",
+  "version": "1.0.0",
+  "description": "Security testing lab — OWASP, ZAP, Nuclei, Dependency-Check, Secrets",
+  "private": true,
+  "scripts": {
+    "scan": "./scripts/run-security-scan.sh",
+    "scan:zap": "./scripts/run-security-scan.sh zap",
+    "scan:nuclei": "./scripts/run-security-scan.sh nuclei",
+    "scan:deps": "./scripts/run-security-scan.sh deps",
+    "scan:secrets": "./scripts/run-security-scan.sh secrets",
+    "report": "./scripts/generate-report.sh"
+  },
+  "keywords": ["security", "owasp", "zap", "nuclei", "qa"],
+  "license": "MIT"
+}

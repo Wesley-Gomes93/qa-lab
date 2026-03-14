@@ -105,6 +105,23 @@ export default function Home() {
               {API_URL}
             </code>
           </p>
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="text-sm font-medium text-amber-900">
+              🔒 Security Lab — Passo a passo para testar vulnerabilidades
+            </p>
+            <p className="mt-1 text-xs text-amber-800">
+              Enquanto usa o lab, abra o Workshop em outra aba para praticar XSS, Open Redirect, Path Traversal e mais.
+            </p>
+            <a
+              href="http://localhost:3001/workshop.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
+              data-testid="link-security-workshop"
+            >
+              Abrir Workshop Security Lab →
+            </a>
+          </div>
         </header>
 
         <section className="rounded-lg bg-white p-4 shadow">

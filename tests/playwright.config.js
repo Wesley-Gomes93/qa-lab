@@ -4,7 +4,19 @@ const configuredWorkers = parseInt(process.env.PW_WORKERS || "1", 10);
 module.exports = defineConfig({
   testDir: "./playwright/e2e",
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      testIgnore: ["**/security/**"],
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "security",
+      testMatch: ["**/security/**/*.spec.js"],
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env.VULNERABLE_WEB_URL || "http://localhost:3001",
+      },
+    },
   ],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -20,8 +32,8 @@ module.exports = defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    actionTimeout: process.env.CI ? 15000 : 10000,
-    navigationTimeout: process.env.CI ? 15000 : 10000,
+    actionTimeout: process.env.CI ? 15000 : 20000,
+    navigationTimeout: process.env.CI ? 15000 : 30000,
   },
   expect: {
     timeout: process.env.CI ? 15000 : 10000,

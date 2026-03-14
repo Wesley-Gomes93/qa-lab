@@ -55,6 +55,7 @@ function runCypressTests({ suite, spec: specPath, registerName, registerEmail, r
     dashboard: "cypress/e2e/dashboard/**/*.cy.js",
     ui: "cypress/e2e/ui/**/*.cy.js",
     performance: "cypress/e2e/performance/**/*.cy.js",
+    fluxo_completo: "cypress/e2e/auth/register-login-logout-persist.cy.js",
   };
 
   const isAll = !suite || suite === "all";
@@ -137,17 +138,22 @@ function parseRunMetrics(runOutput, framework) {
   return metrics;
 }
 
-function runPlaywrightTests({ spec: specPath } = {}) {
+function runPlaywrightTests({ spec: specPath, registerName, registerEmail, registerPassword } = {}) {
   const testsDir = path.resolve(__dirname, "../../tests");
   const args = specPath ? ["playwright", "test", specPath] : ["run", "pw:test"];
   const cmd = specPath ? "npx" : "npm";
+
+  const env = { ...process.env };
+  if (registerName != null && String(registerName).trim()) env.CYPRESS_REGISTER_NAME = String(registerName).trim();
+  if (registerEmail != null && String(registerEmail).trim()) env.CYPRESS_REGISTER_EMAIL = String(registerEmail).trim();
+  if (registerPassword != null && String(registerPassword).trim()) env.CYPRESS_REGISTER_PASSWORD = String(registerPassword).trim();
 
   return new Promise((resolve) => {
     const child = spawn(cmd, args, {
       cwd: testsDir,
       stdio: ["inherit", "pipe", "pipe"],
       shell: process.platform === "win32",
-      env: { ...process.env },
+      env,
     });
 
     let stdout = "";
@@ -184,7 +190,7 @@ server.registerTool(
       suite: z
         .string()
         .optional()
-        .describe("Suite: 'all', 'admin', 'auth', 'api', 'dashboard', 'ui', 'performance'."),
+        .describe("Suite: 'all', 'admin', 'auth', 'api', 'dashboard', 'ui', 'performance', 'fluxo_completo'."),
       spec: z
         .string()
         .optional()
@@ -203,16 +209,47 @@ server.registerTool(
       message: z.string(),
       exitCode: z.number(),
       runOutput: z.string().optional().describe("Output quando falhou (para analyze_failures)."),
+      metrics: z
+        .object({
+          testsTotal: z.number(),
+          testsPassed: z.number(),
+          testsFailed: z.number(),
+          durationSec: z.number().nullable(),
+        })
+        .optional()
+        .describe("Métricas extraídas do output (cenários, tempo)."),
     }),
   },
   async ({ suite, spec: specPath, framework, registerName, registerEmail, registerPassword, editIdade }) => {
     const usePlaywright = framework === "playwright" || (specPath && specPath.endsWith(".spec.js"));
 
-    let code, runOutput;
-    if (usePlaywright) {
-      const result = await runPlaywrightTests({ spec: specPath });
+    // Fluxo completo: roda só Playwright
+    const isFluxoCompleto = !specPath && !framework && suite === "fluxo_completo";
+
+    let code, runOutput, metrics;
+
+    if (isFluxoCompleto) {
+      const pwSpec = "playwright/e2e/auth/register-login-logout-persist.spec.js";
+      const immersive = { registerName, registerEmail, registerPassword };
+
+      console.log("\n  [fluxo completo] Executando Playwright...\n");
+      const pwResult = await runPlaywrightTests({
+        spec: pwSpec,
+        ...immersive,
+      });
+      code = pwResult.code;
+      runOutput = pwResult.runOutput;
+      metrics = parseRunMetrics(runOutput, "playwright");
+    } else if (usePlaywright) {
+      const result = await runPlaywrightTests({
+        spec: specPath,
+        registerName,
+        registerEmail,
+        registerPassword,
+      });
       code = result.code;
       runOutput = result.runOutput;
+      metrics = parseRunMetrics(runOutput, "playwright");
     } else {
       const suiteParam = specPath ? undefined : (suite || "all");
       const result = await runCypressTests({
@@ -225,21 +262,28 @@ server.registerTool(
       });
       code = result.code;
       runOutput = result.runOutput;
+      metrics = parseRunMetrics(runOutput, "cypress");
     }
 
     const passed = code === 0;
-    const fwName = usePlaywright ? "Playwright" : "Cypress";
-    const metrics = parseRunMetrics(runOutput, usePlaywright ? "playwright" : "cypress");
-
+    const fwName = isFluxoCompleto ? "Playwright" : usePlaywright ? "Playwright" : "Cypress";
     const structured = {
       status: passed ? "passed" : "failed",
       message: passed
         ? `Testes ${fwName} executados com sucesso.`
         : `Falha na execução dos testes ${fwName}. Verifique os logs.`,
       exitCode: code,
-      metrics,
-      ...(runOutput && !passed && { runOutput }),
+      metrics: {
+        testsTotal: metrics.testsTotal,
+        testsPassed: metrics.testsPassed,
+        testsFailed: metrics.testsFailed,
+        durationSec: metrics.durationSec,
+      },
     };
+    // Inclui runOutput quando falhou; trunca para ~30k chars (evita estourar limite MCP)
+    if (runOutput && !passed) {
+      structured.runOutput = runOutput.length > 30000 ? runOutput.slice(-30000) : runOutput;
+    }
 
     return {
       content: [{ type: "text", text: structured.message }],

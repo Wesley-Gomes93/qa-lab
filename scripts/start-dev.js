@@ -3,11 +3,12 @@
  * Inicia o ambiente de desenvolvimento de forma dinâmica.
  * Verifica o que já está rodando e sobe apenas o que falta.
  *
- * Ordem: banco → backend → frontend
+ * Ordem: banco → backend → frontend → vulnerable-web (security lab)
  */
 const { spawn } = require("child_process");
 const net = require("net");
 const path = require("path");
+const fs = require("fs");
 
 const ROOT = path.resolve(__dirname, "..");
 
@@ -51,14 +52,17 @@ async function main() {
   if (dbRunning) {
     console.log("  ✓ Banco (PostgreSQL) já está rodando");
   } else {
-    console.log("  → Subindo banco (docker-compose)...");
+    console.log("  → Subindo banco (Docker)...");
+    const dbDir = path.join(ROOT, "database");
+    const composeCmd = process.platform === "win32" ? "docker-compose" : "docker";
+    const composeArgs = process.platform === "win32" ? ["up", "-d"] : ["compose", "up", "-d"];
     await new Promise((resolve, reject) => {
-      const proc = spawn("docker-compose", ["up", "-d"], {
-        cwd: path.join(ROOT, "database"),
+      const proc = spawn(composeCmd, composeArgs, {
+        cwd: dbDir,
         stdio: "inherit",
         shell: true,
       });
-      proc.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`docker-compose exit ${code}`))));
+      proc.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`Docker exit ${code}. Certifique-se de que o Docker está rodando.`))));
     });
     console.log("  ✓ Banco iniciado. Aguardando 3s...");
     await new Promise((r) => setTimeout(r, 3000));
@@ -95,9 +99,28 @@ async function main() {
     console.log("  ✓ Frontend iniciando (aguarde ~8s)");
   }
 
+  // 4. Vulnerable Web (3001) — Security Lab
+  const vulnWebUp = await checkPort("localhost", 3001);
+  if (vulnWebUp) {
+    console.log("  ✓ Vulnerable Web (Security Lab) já está rodando (porta 3001)");
+  } else {
+    const vulnWebPath = path.join(ROOT, "security-lab", "apps", "vulnerable-web");
+    if (fs.existsSync(path.join(vulnWebPath, "package.json"))) {
+      console.log("  → Iniciando Vulnerable Web (Security Lab)...");
+      spawn("npm", ["run", "dev"], {
+        cwd: vulnWebPath,
+        stdio: "inherit",
+        detached: true,
+        shell: true,
+      }).unref();
+      console.log("  ✓ Vulnerable Web iniciando em http://localhost:3001");
+    }
+  }
+
   console.log("\n[QA Lab] Ambiente pronto.");
-  console.log("  Backend:  http://localhost:4000");
-  console.log("  Frontend: http://localhost:3000");
+  console.log("  Backend:       http://localhost:4000");
+  console.log("  Frontend:      http://localhost:3000");
+  console.log("  Vulnerable Web: http://localhost:3001");
   console.log("  Para rodar testes: npm run tests:run");
   console.log("  Para o agent:      npm run agent:test-writer \"sua requisição\"\n");
 }

@@ -13,6 +13,7 @@ const nav = [
   { href: "/dashboard/testes", label: "Histórico de testes", testId: "nav-testes" },
   { href: "/dashboard/metricas", label: "Métricas", testId: "nav-metricas" },
   { href: "/dashboard/health", label: "Health", testId: "nav-health" },
+  { href: "http://localhost:3001/workshop.html", label: "Security Lab", testId: "nav-security-lab", external: true },
 ];
 
 export default function DashboardLayout({
@@ -79,20 +80,31 @@ export default function DashboardLayout({
         </div>
         {session.isAdmin && (
           <nav className="mx-auto flex max-w-6xl gap-1 px-4 pb-3">
-            {nav.map(({ href, label, testId }) => (
-              <Link
-                key={href}
-                href={href}
-                data-testid={testId}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
-                    ? "bg-white/10 text-emerald-400"
-                    : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {nav.map(({ href, label, testId, external }) => {
+              const isActive = !external && (pathname === href || (href !== "/dashboard" && pathname.startsWith(href)));
+              const cn = `rounded-lg px-3 py-2 text-sm font-medium transition ${
+                isActive ? "bg-white/10 text-emerald-400" : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+              }`;
+              if (external) {
+                return (
+                  <a
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid={testId}
+                    className={cn}
+                  >
+                    {label} ↗
+                  </a>
+                );
+              }
+              return (
+                <Link key={href} href={href} data-testid={testId} className={cn}>
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
         )}
       </header>

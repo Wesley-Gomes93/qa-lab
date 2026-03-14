@@ -38,9 +38,9 @@ function getRegisterPassword() {
   return process.env.PW_REGISTER_PASSWORD || process.env.CYPRESS_REGISTER_PASSWORD || "senha123";
 }
 
-// Page interactions
+// Page interactions (timeout 60s: Next.js dev compila na 1ª visita e make dev não espera ficar pronto)
 async function visitPlayground(page) {
-  await page.goto(FRONTEND_URL);
+  await page.goto(FRONTEND_URL, { timeout: 60000 });
 }
 
 async function fillRegisterForm(page, data = {}) {

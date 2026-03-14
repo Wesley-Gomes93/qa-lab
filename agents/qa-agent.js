@@ -28,6 +28,11 @@ const SUITES = [
     desc: "Roda a suíte completa: auth, api, admin e ui (pode demorar mais).",
   },
   {
+    id: "fluxo_completo",
+    label: "Fluxo completo: criar, login, logout, persistir e resumo",
+    desc: "Registra com seus dados, faz login e logout, verifica persistência no banco e mostra resumo (get_users_summary).",
+  },
+  {
     id: "admin",
     label: "Admin – painel do administrador",
     desc: "Testes do dashboard admin: editar idade (ids 1–3), validação 18–80, status inativo, filtro de pesquisa e excluir usuário inativo.",
@@ -74,6 +79,7 @@ const SPEC_DESCRIPTIONS = {
   "auth/register-fill-combinations.cy.js": "Auth: preencher formulário de registro (várias combinações)",
   "auth/register-full-flow.cy.js": "Auth: registrar e ver resumo de sucesso",
   "auth/register-title.cy.js": "Auth: título e campos do formulário de registro",
+  "auth/register-login-logout-persist.cy.js": "Fluxo completo: criar, login, logout, verificar persistência e resumo (seus dados)",
   "ui/ui-elements.cy.js": "UI: validar header, seções, formulários e botões da tela inicial",
   "performance/tictac.cy.js": "Performance: TICTAC – tempo de load, health, form visível e dashboard após login",
 };
@@ -182,17 +188,18 @@ async function showMenuAndRun(client, immersive = {}) {
 
   if (choice === "0" || Number.isNaN(num)) {
     console.log("  Saindo. Nenhum teste foi executado.");
-    return { isError: false, structuredContent: { exitCode: 0 } };
+    return { isError: false, structuredContent: { exitCode: 0 }, runInfo: null };
   }
 
   if (num >= 1 && num <= SUITES.length) {
     const suite = SUITES[num - 1].id;
-    console.log(`\n  Executando: ${SUITES[num - 1].label}\n`);
+    const label = SUITES[num - 1].label;
+    console.log(`\n  Executando: ${label}\n`);
     const result = await client.callTool({
       name: "run_tests",
       arguments: { suite, ...immersive },
     });
-    return result;
+    return { ...result, runInfo: { opcao: num, escolha: label, tipo: "suite" } };
   }
 
   if (num === suiteStart) {
@@ -220,7 +227,7 @@ async function showMenuAndRun(client, immersive = {}) {
       name: "run_tests",
       arguments: { spec: spec.path, ...immersive },
     });
-    return result;
+    return { ...result, runInfo: { opcao: subNum, escolha: spec.desc, tipo: "spec" } };
   }
 
   console.log("  Opção inválida. Leia a lista acima, escolha um número (0 a " + (SUITES.length + 1) + ") e tente de novo.");
@@ -236,15 +243,27 @@ function parseRunTestsArgs() {
   return { suite, spec };
 }
 
+const SPEC_BY_SUITE = {
+  admin: "cypress/e2e/admin/**/*.cy.js",
+  auth: "cypress/e2e/auth/**/*.cy.js",
+  api: "cypress/e2e/api/**/*.cy.js",
+  dashboard: "cypress/e2e/dashboard/**/*.cy.js",
+  ui: "cypress/e2e/ui/**/*.cy.js",
+  performance: "cypress/e2e/performance/**/*.cy.js",
+};
+
 async function runTestsDirect(client, { suite, spec }, immersive = {}) {
   const suiteId = suite || "all";
-  const specPath = spec || null;
+  const specPath = spec || (suiteId !== "all" && SPEC_BY_SUITE[suiteId]) || null;
   const suiteObj = SUITES.find((s) => s.id === suiteId);
   const label = specPath ? specPath : suiteObj?.label || suiteId;
   console.log(`\n  [demo] Executando: ${label}\n`);
+  const args = { ...immersive };
+  if (specPath) args.spec = specPath;
+  else if (suiteId !== "all") args.suite = suiteId;
   const result = await client.callTool({
     name: "run_tests",
-    arguments: { suite: specPath ? undefined : suiteId, spec: specPath, ...immersive },
+    arguments: args,
   });
   return result;
 }
@@ -314,7 +333,21 @@ async function main() {
         }
         const text = result.content?.find((c) => c.type === "text")?.text;
         if (text) console.log("\n" + text);
-        const exitCode = result.structuredContent?.exitCode ?? 0;
+        const sc = result.structuredContent || {};
+        const m = sc.metrics || {};
+        const passed = sc.status === "passed";
+        const label = runTestsArgs.spec
+          ? runTestsArgs.spec
+          : SUITES.find((s) => s.id === (runTestsArgs.suite || "all"))?.label || runTestsArgs.suite || "all";
+        console.log("\n  ═══════════════════════════════════════════════════════════");
+        console.log("  RESUMO DO TESTE");
+        console.log("  ═══════════════════════════════════════════════════════════");
+        console.log(`  Executado:        ${label}`);
+        console.log(`  Resultado:       ${passed ? "✓ Passou" : "✗ Falhou"}`);
+        if (m.testsTotal != null) console.log(`  Testes:          ${m.testsPassed ?? 0}/${m.testsTotal} passaram`);
+        if (m.durationSec != null) console.log(`  Duração:         ${m.durationSec.toFixed(1)}s`);
+        console.log("  ═══════════════════════════════════════════════════════════\n");
+        const exitCode = sc.exitCode ?? 0;
         await client.close();
         process.exit(exitCode === 0 ? 0 : 1);
       }
@@ -329,12 +362,45 @@ async function main() {
 
       const text = result.content?.find((c) => c.type === "text")?.text;
       if (text) console.log("\n" + text);
-      if (result.structuredContent) {
-        console.log("\n[resultado]", JSON.stringify(result.structuredContent, null, 2));
+
+      if (result.runInfo) {
+        const sc = result.structuredContent || {};
+        const m = sc.metrics || {};
+        const passed = sc.status === "passed";
+        // Quando falhou, mostrar o output do teste PRIMEIRO (causa da falha)
+        if (!passed && sc.runOutput) {
+          console.log("\n  ═══════════════════════════════════════════════════════════");
+          console.log("  CAUSA DA FALHA (output do Cypress/Playwright)");
+          console.log("  ═══════════════════════════════════════════════════════════\n");
+          // Mostrar só as últimas 150 linhas (onde costuma estar o erro)
+          const lines = sc.runOutput.split("\n");
+          const excerpt = lines.length > 150 ? lines.slice(-150).join("\n") : sc.runOutput;
+          console.log(excerpt);
+          console.log("\n  ─────────────────────────────────────────────────────────\n");
+        } else if (!passed) {
+          console.log("\n  [Dica] Para ver o erro detalhado, rode: cd tests && npx cypress run --spec cypress/e2e/auth/register-login-logout-persist.cy.js\n");
+        }
+        console.log("  ═══════════════════════════════════════════════════════════");
+        console.log("  RESUMO DO TESTE");
+        console.log("  ═══════════════════════════════════════════════════════════");
+        console.log(`  Opção escolhida:  ${result.runInfo.opcao} – ${result.runInfo.escolha}`);
+        console.log(`  Resultado:        ${passed ? "✓ Passou" : "✗ Falhou"}`);
+        if (m.testsTotal != null) console.log(`  Testes:           ${m.testsPassed ?? 0}/${m.testsTotal} passaram`);
+        if (m.testsFailed != null && m.testsFailed > 0) console.log(`  Falhas:           ${m.testsFailed}`);
+        if (m.durationSec != null) console.log(`  Duração:          ${m.durationSec.toFixed(1)}s`);
+        if (Object.keys(immersive).length > 0) {
+          const parts = [];
+          if (immersive.registerName) parts.push(`nome=${immersive.registerName}`);
+          if (immersive.registerEmail) parts.push(`email=${immersive.registerEmail}`);
+          if (immersive.registerPassword) parts.push(`senha=***`);
+          if (immersive.editIdade != null) parts.push(`idade=${immersive.editIdade}`);
+          if (parts.length) console.log(`  Dados informados: ${parts.join(" | ")}`);
+        }
+        console.log("  ═══════════════════════════════════════════════════════════\n");
       }
 
       const exitCode = result.structuredContent?.exitCode ?? 0;
-      if (exitCode === 0) {
+      if (exitCode === 0 && result.runInfo) {
         try {
           const summaryResult = await client.callTool({ name: "get_users_summary", arguments: {} });
           if (!summaryResult.isError && summaryResult.content?.[0]?.text) {

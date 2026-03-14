@@ -5,7 +5,7 @@
 # Docs: docs/MAKEFILE-GUIA.md
 # =============================================================================
 
-.PHONY: help install dev lint qa qa-extended ci audit clean
+.PHONY: help install dev lint qa qa-all qa-extended security ci audit agent-demo agent-run agent-write backend-test load-test clean
 
 # ---- Default: mostra ajuda ----
 .DEFAULT_GOAL := help
@@ -50,6 +50,9 @@ qa-cy: ## QA: Cypress E2E
 qa-pw: ## QA: Playwright E2E
 	npm run tests:pw
 
+qa-pw-security: ## QA: Playwright E2E Security (vulnerable-web :3001)
+	npm run tests:pw:security
+
 qa-tests: ## QA: Cypress + Playwright em sequência
 	npm run tests:run && npm run tests:pw
 
@@ -63,9 +66,73 @@ qa: qa-lint qa-contract qa-tests qa-report ## QA Lab completo (lint + contract +
 qa-extended-install: ## Instala deps do QA Extended
 	npm run extended:install
 
+qa-a11y-install-browsers: ## Instala Chromium para testes a11y (requer rede)
+	cd qa-extended-lab && npm run install:browsers
+
 qa-extended: ## QA Extended: Newman + axe
 	npm run extended:all
 	@echo "✓ QA Extended concluído"
+
+report-a11y: ## Gera e abre relatório visual de acessibilidade (axe)
+	@echo "Pré-requisitos: make dev rodando (frontend :3000, vulnerable-web :3001)"
+	@echo "Se Chromium não estiver instalado: make qa-a11y-install-browsers"
+	@cd qa-extended-lab && (npm run test:a11y && open a11y-tests/reports/a11y-report-latest.html) || (echo ""; echo "Erro: 1) Rode 'make dev' em outro terminal"; echo "      2) Instale Chromium: make qa-a11y-install-browsers"; echo "      3) Tente novamente: make report-a11y")
+
+# ---- Backend + Load ----
+backend-test: ## Testes unitários da API (supertest)
+	npm run backend:test
+
+backend-coverage: ## Coverage da API (c8) — requer make db-up
+	npm run backend:coverage
+
+load-test: ## Load test na API (autocannon) — requer API rodando
+	npm run load:test
+
+# ---- Security Lab ----
+security-scan: ## Security Lab: ZAP, Nuclei, dependency-check, secrets
+	npm run security:scan
+	@echo "✓ Security scan concluído"
+
+security-e2e: ## Security E2E: Playwright contra vulnerable-web (requer make dev)
+	npm run tests:pw:security
+	@echo "✓ Security E2E concluído"
+
+security-report: ## Security Lab: gera relatório unificado
+	cd security-lab && ./scripts/generate-report.sh
+
+security: security-scan security-report ## Security Lab completo
+
+# ---- QA All (tudo em sequência) ----
+# Pré-requisito: make dev rodando em outro terminal (DB + backend + frontend + vulnerable-web)
+qa-all: ## QA completo: backend, load, lint, contract, E2E (Cypress+Playwright), extended, security
+	@echo ""
+	@echo "=========================================="
+	@echo "  QA All — rodando todos os testes"
+	@echo "  (Certifique-se de que 'make dev' está rodando)"
+	@echo "=========================================="
+	$(MAKE) backend-test
+	$(MAKE) lint
+	$(MAKE) qa-contract
+	$(MAKE) load-test
+	$(MAKE) qa-cy
+	$(MAKE) qa-pw
+	$(MAKE) qa-extended
+	$(MAKE) security-scan
+	$(MAKE) qa-report
+	@echo ""
+	@echo "=========================================="
+	@echo "✓ QA All: todos os testes concluídos"
+	@echo "=========================================="
+
+# ---- Agent ----
+agent-demo: ## Agente: executa testes via MCP (API suite)
+	npm run agent:demo
+
+agent-run: ## Agente: menu interativo para rodar testes
+	npm run agent:run-tests
+
+agent-write: ## Agente: gera teste com LLM — use: make agent-write PROMPT="descrição"
+	@npm run agent:test-writer -- "$(PROMPT)" 2>/dev/null || echo "Use: make agent-write PROMPT=\"teste de login\""
 
 # ---- CI local (simula pipeline) ----
 ci: lint qa-contract qa-tests ## Simula pipeline CI (lint + contract + E2E)
@@ -111,8 +178,9 @@ help: ## Mostra esta ajuda
 	@echo ""
 	@echo "Exemplos:"
 	@echo "  make install    # Instala tudo"
-	@echo "  make dev        # Sobe ambiente"
-	@echo "  make qa         # QA completo"
-	@echo "  make ci         # Simula pipeline"
+	@echo "  make dev        # Sobe ambiente (em outro terminal)"
+	@echo "  make qa-all     # TODOS os testes (backend, load, E2E, security, agent)"
+	@echo "  make qa         # QA padrão (lint + contract + E2E)"
+	@echo "  make agent-write PROMPT=\"teste de login\"  # Gera teste com LLM"
 	@echo "  make help       # Esta ajuda"
 	@echo ""

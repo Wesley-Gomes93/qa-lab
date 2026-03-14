@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DOM XSS Demo</title>
+</head>
+<body>
+  <h1>DOM-based XSS</h1>
+  <p>This page reads from the URL fragment (#) and renders it directly — vulnerable to DOM XSS.</p>
+  <div id="output"></div>
+  <a href="/">Back</a>
+
+  <script>
+    // Vulnerable: reads from hash and sets innerHTML
+    const hash = window.location.hash.slice(1) || "no payload";
+    document.getElementById("output").innerHTML = "<p>You entered: " + hash + "</p>";
+    // Try: dom-xss.html#<img src=x onerror=alert(1)>
+  </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 [![Pipeline](https://img.shields.io/github/actions/workflow/status/Wesley-Gomes93/qa-lab/pipeline.yml?branch=main&label=build)](https://github.com/Wesley-Gomes93/qa-lab/actions)
 [![Node](https://img.shields.io/badge/node-20.x-brightgreen)](https://nodejs.org/)
+[![Coverage](https://img.shields.io/badge/coverage-backend%20(c8)-blue)](https://github.com/Wesley-Gomes93/qa-lab)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **QA portfolio.** A lab I built to practice and deepen my craft — E2E automation, API testing, contract validation, and CI/CD. What I learned along the way is documented here.
@@ -28,7 +29,12 @@ O **QA Lab** é um laboratório full-stack para automação de testes. Ele combi
 
 - **E2E duplo** — Cypress e Playwright rodando os mesmos cenários em paralelo
 - **Contract testing** — Validação da API contra schema OpenAPI
+- **Code coverage** — Backend com c8 + supertest (health, auth, users)
+- **Acessibilidade (a11y)** — axe-core em Playwright (WCAG 2A/2AA)
+- **Visual regression** — Screenshot comparison (Playwright)
+- **Load testing** — autocannon na API (req/s, latência)
 - **Performance** — Suite TICTAC (load, health, TTI)
+- **Security Lab** — Vulnerable app (OWASP), workshop interativo
 - **Agentes de IA** — Test Writer (gera testes com LLM) e Failure Analyzer (analisa falhas)
 - **CI/CD** — Pipeline que bloqueia merge em caso de falha
 - **Makefile** — Orquestrador local para lint, testes e relatórios

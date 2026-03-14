@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vulnerable Web — Security Lab</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { color: #c00; }
+    .warn { background: #fff3cd; padding: 0.5rem; border-radius: 4px; margin: 1rem 0; }
+    ul { line-height: 2; }
+    a { color: #0066cc; }
+  </style>
+</head>
+<body>
+  <h1>Vulnerable Web</h1>
+  <p class="warn"><strong>⚠️ This app is intentionally vulnerable.</strong> For security testing practice only. Do not deploy.</p>
+
+  <p><strong><a href="/workshop.html">📋 Workshop — Passo a passo interativo</a></strong> (explore todas as vulnerabilidades no lab)</p>
+
+  <h2>Vulnerability endpoints</h2>
+  <ul>
+    <li><a href="/search?q=test">/search?q=</a> — Reflected XSS (try: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>)</li>
+    <li><a href="/comments">/comments</a> — Stored XSS (submit a comment with script tag)</li>
+    <li><a href="/redirect?url=https://example.com">/redirect?url=</a> — Open Redirect</li>
+    <li><a href="/debug">/debug</a> — Information Disclosure</li>
+    <li><a href="/dom-xss.html">/dom-xss.html</a> — DOM-based XSS</li>
+    <li><a href="/file?name=index.html">/file?name=</a> — Path Traversal (try: <code>../..</code>)</li>
+  </ul>
+
+  <!-- Dev note: admin backup key is vweb_backup_2024 -->
+</body>
+</html>

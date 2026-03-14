@@ -258,13 +258,18 @@ app.use("/api", testRunsRouter);
 
 const PORT = process.env.PORT || 4000;
 
-initDb()
-  .then(() => {
-    app.listen(PORT, () => {
-      logger.info("API rodando", { port: PORT });
+// Permitir testes com supertest sem iniciar o servidor
+if (require.main !== module) {
+  module.exports = app;
+} else {
+  initDb()
+    .then(() => {
+      app.listen(PORT, () => {
+        logger.info("API rodando", { port: PORT });
+      });
+    })
+    .catch((err) => {
+      logger.error("Erro ao conectar no banco", { error: err.message });
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    logger.error("Erro ao conectar no banco", { error: err.message });
-    process.exit(1);
-  });
+}

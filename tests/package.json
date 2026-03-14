@@ -9,8 +9,18 @@
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "pw:test": "playwright test",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
     "pw:ui": "playwright test --ui",
     "pw:report": "playwright show-report",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
+    "pw:security": "playwright test --project=security",
     "report:unified": "node scripts/generate-qa-report.js",
     "report:execution": "node scripts/execution-report.js",
     "test": "cypress run",
@@ -19,6 +29,7 @@
     "report-to-api": "node scripts/report-to-api.js"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.58.2",
     "cypress": "^15.11.0",
     "cypress-mochawesome-reporter": "^3.8.4"

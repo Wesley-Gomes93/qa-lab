@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "API Testing (Newman) + Accessibility (axe-core) — extension of QA Lab",
   "scripts": {
+    "install:browsers": "playwright install chromium",
     "test:api": "node api-tests/run-newman.js",
     "test:api:full": "node api-tests/run-newman.js jsonplaceholder-completo.json",
     "test:a11y": "node a11y-tests/scripts/run-a11y.js",

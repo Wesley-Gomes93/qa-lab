@@ -1,0 +1,35 @@
+# Security Lab — pipeline de segurança
+# Roda: dependency-check, secrets scan, ZAP baseline (opcional)
+name: Security Scan
+
+on:
+  push:
+    branches: [main, lab-security]
+  pull_request:
+    branches: [main, lab-security]
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    name: dependency-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          path: "."
+          format: "HTML"
+          args: --enableRetired
+
+  secrets-scan:
+    name: secrets-scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2

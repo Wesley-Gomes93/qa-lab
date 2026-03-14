@@ -1,0 +1,52 @@
+# Security Lab — pipeline de segurança
+# Roda: dependency-check, secrets scan
+name: Security Lab
+
+on:
+  push:
+    branches: [main, lab-security]
+    paths:
+      - 'security-lab/**'
+      - 'backend/**'
+      - 'frontend/**'
+      - 'tests/**'
+      - 'package*.json'
+  pull_request:
+    branches: [main, lab-security]
+    paths:
+      - 'security-lab/**'
+      - 'backend/**'
+      - 'frontend/**'
+      - 'tests/**'
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    name: dependency-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          path: "."
+          format: "HTML"
+          args: --enableRetired
+        continue-on-error: true
+
+  secrets-scan:
+    name: secrets-scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2

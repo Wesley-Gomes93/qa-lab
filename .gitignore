@@ -18,8 +18,9 @@ tests/test-results
 tests/playwright/.cache
 tests/qa-lab-reports
 
-# Backend (logs temporários)
+# Backend (logs temporários + cobertura)
 backend/registros.txt
+backend/.nyc_output
 
 # Auditoria (contexto + estado; gerado por audit:context)
 .audit/
