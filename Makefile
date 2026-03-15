@@ -18,6 +18,8 @@ install: ## Instala todas as dependências do projeto
 	cd tests && npm install
 	cd agents && npm install
 	cd qa-extended-lab && npm ci
+	cd security-lab/apps/vulnerable-web && npm install
+	cd security-lab/apps/practice-web && npm install
 	@echo "✓ Instalação concluída"
 
 # ---- Ambiente ----

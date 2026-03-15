@@ -14,6 +14,7 @@
 - [Sobre o projeto](#sobre-o-projeto)
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação](#instalação)
+- [Primeiros passos](#primeiros-passos)
 - [Como rodar](#como-rodar)
 - [Comandos principais](#comandos-principais)
 - [Estrutura do projeto](#estrutura-do-projeto)
@@ -67,7 +68,7 @@ O **QA Lab** é um laboratório full-stack para automação de testes. Ele combi
 git clone https://github.com/Wesley-Gomes93/qa-lab.git
 cd qa-lab
 
-# Instale todas as dependências (raiz, frontend, backend, tests, agents, qa-extended)
+# Instala tudo (raiz, frontend, backend, tests, agents, qa-extended, security-lab apps)
 make install
 ```
 
@@ -86,6 +87,8 @@ cd backend && npm install && cd ..
 cd tests && npm install && cd ..
 cd agents && npm install && cd ..
 cd qa-extended-lab && npm ci && cd ..
+cd security-lab/apps/vulnerable-web && npm install && cd ../../..
+cd security-lab/apps/practice-web && npm install && cd ../../..
 ```
 
 ### QA Extended (acessibilidade)
@@ -95,6 +98,21 @@ Para rodar testes de acessibilidade (axe), instale o Chromium no Playwright:
 ```bash
 cd qa-extended-lab && npx playwright install chromium && cd ..
 ```
+
+---
+
+## Primeiros passos
+
+**Primeiro dia no lab?** Siga o passo a passo completo: [PRIMEIRO-DIA-NO-LAB.md](docs/PRIMEIRO-DIA-NO-LAB.md)
+
+Resumo rápido:
+
+| Ordem | Lab | O que fazer |
+|-------|-----|-------------|
+| 1 | **QA Lab (app)** | `make install` → `make dev` → `make qa` |
+| 2 | **QA Extended** | Newman + axe (roda sem subir o app) |
+
+**Problemas?** Veja [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md).
 
 ---
 
@@ -189,6 +207,10 @@ qa-lab/
 │   ├── playwright/      # E2E Playwright
 │   └── contract/         # Validação contra OpenAPI
 ├── qa-extended-lab/     # Newman + axe (API pública, a11y)
+├── security-lab/        # Vulnerable apps (OWASP), scanners, testes de segurança
+│   ├── apps/            # vulnerable-web (:3001), practice-web (:3002)
+│   ├── docs/            # Guias passo a passo
+│   └── scanners/       # ZAP, Nuclei, dependency-check, secrets
 ├── docs/                # Documentação
 └── scripts/             # start-dev, lint-check
 ```
@@ -210,7 +232,7 @@ qa-lab/
 
 ### Como instalo tudo de uma vez?
 
-Use `make install`. Ele instala dependências da raiz, frontend, backend, tests, agents e qa-extended-lab.
+Use `make install`. Ele instala dependências da raiz, frontend, backend, tests, agents, qa-extended-lab e apps do Security Lab (vulnerable-web, practice-web).
 
 ### Preciso rodar o backend antes dos testes?
 
@@ -240,9 +262,12 @@ Recomenda-se WSL. Ou instale Make via [Chocolatey](https://chocolatey.org/packag
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [docs/README.md](docs/README.md) | Índice completo da documentação |
 | [MAKEFILE-GUIA.md](docs/MAKEFILE-GUIA.md) | Sintaxe do Make, targets, boas práticas |
 | [COMANDOS.md](docs/COMANDOS.md) | Referência de todos os comandos |
+| [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md) | Subir ambiente e resolver erros comuns |
 | [api-spec.yaml](docs/api-spec.yaml) | Contrato OpenAPI da API |
+| [security-lab/docs/](security-lab/docs/) | Guias Security Lab: explorar vulnerable-web, passo a passo XSS, OWASP |
 
 ---
 
@@ -253,6 +278,7 @@ Recomenda-se WSL. Ou instale Make via [Chocolatey](https://chocolatey.org/packag
 | **Repositório** | [github.com/Wesley-Gomes93/qa-lab](https://github.com/Wesley-Gomes93/qa-lab) |
 | **Pipeline** | [Actions](https://github.com/Wesley-Gomes93/qa-lab/actions) |
 | **QA Extended Lab** | [qa-extended-lab/](qa-extended-lab/) (Newman + axe) |
+| **Security Lab** | [security-lab/](security-lab/) (vulnerable-web, practice-web, scanners) |
 
 ---
 

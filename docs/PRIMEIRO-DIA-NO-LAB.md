@@ -1,0 +1,112 @@
+# Primeiro dia no lab
+
+Guia passo a passo para quem acabou de clonar o QA Lab e quer rodar os primeiros testes. **Estimativa:** 15–20 minutos.
+
+---
+
+## Pré-requisitos (antes de começar)
+
+| Item | Como verificar |
+|------|----------------|
+| **Node.js 20.x** | `node -v` → deve mostrar v20.x |
+| **Docker** | `docker --version` — o **Docker Desktop precisa estar aberto e rodando** |
+| **Make** | `make -v` (já vem no macOS/Linux) |
+
+---
+
+## Passo 1: Clonar e instalar
+
+```bash
+git clone https://github.com/Wesley-Gomes93/qa-lab.git
+cd qa-lab
+
+make install
+```
+
+O `make install` instala dependências da raiz, frontend, backend, tests, agents e qa-extended-lab. Ao final, deve aparecer: `✓ Instalação concluída`.
+
+---
+
+## Passo 2: Subir o ambiente
+
+```bash
+make dev
+```
+
+Isso sobe, na ordem:
+- **PostgreSQL** (Docker) — banco de dados
+- **Backend** — API em http://localhost:4000
+- **Frontend** — app em http://localhost:3000
+
+Deixe esse terminal rodando. Em outro terminal, continue o passo 3.
+
+---
+
+## Passo 3: Rodar os testes E2E
+
+No **novo terminal**, ainda na pasta `qa-lab`:
+
+```bash
+make qa
+```
+
+Esse comando executa:
+- Lint
+- Contract testing (OpenAPI)
+- Cypress E2E
+- Playwright E2E
+- Relatório unificado
+
+No fim, os relatórios ficam em `tests/qa-lab-reports/`.
+
+---
+
+## Passo 4: Explorar o QA Extended Lab
+
+O QA Extended usa **API pública** (JSONPlaceholder) e **acessibilidade (axe)**. Não precisa do app rodando.
+
+```bash
+# Instalar Chromium para testes de acessibilidade (só na primeira vez)
+cd qa-extended-lab && npx playwright install chromium && cd ..
+
+# Rodar Newman (API) + axe (a11y)
+make qa-extended
+```
+
+Relatórios:
+- Newman: `qa-extended-lab/api-tests/reports/`
+- axe: `qa-extended-lab/a11y-tests/reports/`
+
+---
+
+## Resumo do fluxo (copy-paste)
+
+```bash
+# 1. Instalar
+make install
+
+# 2. Subir ambiente (deixe rodando)
+make dev
+
+# 3. Em outro terminal: rodar testes
+make qa
+
+# 4. QA Extended (opcional, não precisa do app)
+make qa-extended
+```
+
+---
+
+## Problemas?
+
+- **Docker não sobe:** Abra o Docker Desktop e aguarde iniciar. Rode `make dev` de novo.
+- **Porta em uso:** Veja [AMBIENTE-TROUBLESHOOTING.md](AMBIENTE-TROUBLESHOOTING.md).
+- **Backend não conecta no banco:** Crie o `.env`: `cp backend/.env.example backend/.env`.
+
+---
+
+## Próximos passos
+
+- [COMANDOS.md](COMANDOS.md) — lista completa de comandos
+- [MAKEFILE-GUIA.md](MAKEFILE-GUIA.md) — entender o Makefile
+- [qa-extended-lab/README.md](../qa-extended-lab/README.md) — detalhes do Newman e axe
