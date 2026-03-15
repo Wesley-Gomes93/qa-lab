@@ -234,6 +234,8 @@ Recomenda-se WSL. Ou instale Make via [Chocolatey](https://chocolatey.org/packag
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [PRIMEIRO-DIA-NO-LAB.md](docs/PRIMEIRO-DIA-NO-LAB.md) | **Primeiro dia** — passo a passo do clone até rodar os primeiros testes |
+| [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md) | Subir ambiente e resolver erros comuns |
 | [MAKEFILE-GUIA.md](docs/MAKEFILE-GUIA.md) | Sintaxe do Make, targets, boas práticas |
 | [COMANDOS.md](docs/COMANDOS.md) | Referência de todos os comandos |
 | [api-spec.yaml](docs/api-spec.yaml) | Contrato OpenAPI da API |
@@ -247,6 +249,21 @@ Recomenda-se WSL. Ou instale Make via [Chocolatey](https://chocolatey.org/packag
 | **Repositório** | [github.com/Wesley-Gomes93/qa-lab](https://github.com/Wesley-Gomes93/qa-lab) |
 | **Pipeline** | [Actions](https://github.com/Wesley-Gomes93/qa-lab/actions) |
 | **QA Extended Lab** | [qa-extended-lab/](qa-extended-lab/) (Newman + axe) |
+
+---
+
+## Primeiros passos (First Day)
+
+**Primeiro dia no lab?** Siga o passo a passo completo: [PRIMEIRO-DIA-NO-LAB.md](docs/PRIMEIRO-DIA-NO-LAB.md)
+
+Resumo rápido:
+
+| Ordem | Lab | O que fazer |
+|-------|-----|-------------|
+| 1 | **QA Lab (app)** | `make install` → `make dev` → `make qa` |
+| 2 | **QA Extended** | Newman + axe (roda sem subir o app) |
+
+**Problemas?** Veja [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md).
 
 ---
 
