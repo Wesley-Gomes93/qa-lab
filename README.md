@@ -30,6 +30,21 @@
 
 ---
 
+## Primeiros passos (First Day)
+
+**Primeiro dia no lab?** Siga o passo a passo completo: [PRIMEIRO-DIA-NO-LAB.md](docs/PRIMEIRO-DIA-NO-LAB.md)
+
+Resumo rápido:
+
+| Ordem | Lab | O que fazer |
+|-------|-----|-------------|
+| 1 | **QA Lab (app)** | `make install` → `make dev` → `make qa` |
+| 2 | **QA Extended** | Newman + axe (roda sem subir o app) |
+
+**Problemas?** Veja [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md) (se existir).
+
+---
+
 ## What I Learned
 
 - **Dual E2E stack** — Running Cypress and Playwright in parallel taught me to design tests that can run on both; centralized specs for API tests reduced duplication.

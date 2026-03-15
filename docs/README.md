@@ -8,6 +8,7 @@ Documentation index. For overview and commands, see the [main README](../README.
 
 | Document | Content |
 |----------|---------|
+| [PRIMEIRO-DIA-NO-LAB.md](./PRIMEIRO-DIA-NO-LAB.md) | **Primeiro dia** — passo a passo do clone até rodar seus primeiros testes |
 | [PASSO-A-PASSO-DO-ZERO-AO-PIPELINE.md](./PASSO-A-PASSO-DO-ZERO-AO-PIPELINE.md) | From zero to full pipeline |
 | [AGENT-TEST-WRITER.md](./AGENT-TEST-WRITER.md) | Generate tests with LLM (Groq, Gemini, OpenAI) |
 | [RODAR-TESTES.md](./RODAR-TESTES.md) | How to run Cypress and Playwright tests |
