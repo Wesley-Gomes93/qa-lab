@@ -29,12 +29,25 @@ security-lab/
 ## Quick Start
 
 ```bash
-# Run security scan
-./scripts/run-security-scan.sh
+# 1. Na raiz do qa-lab: instale e suba o ambiente
+make install
+make dev
 
-# Or use npm (from qa-lab root)
-npm run security:scan
+# 2. Vulnerable Web sobe em http://localhost:3001
+# Practice Web (portal normal) em http://localhost:3002
+
+# 3. Teste manualmente ou rode o scan
+npm run security:scan   # ZAP, Nuclei, dependency-check, secrets
 ```
+
+## Passo a passo (juniors)
+
+| Guia | Conteúdo |
+|------|----------|
+| [EXPLORAR-VULNERABLE-WEB.md](docs/EXPLORAR-VULNERABLE-WEB.md) | Passo a passo por vulnerabilidade (XSS, redirect, debug) — URLs e payloads |
+| [passo-a-passo-teste-vulnerabilidades.md](docs/passo-a-passo-teste-vulnerabilidades.md) | Checklist genérico (onde testar, o que testar) |
+
+**Dica:** Acesse `http://localhost:3001/workshop.html` para links "Testar" de cada vulnerabilidade.
 
 ## Docs
 

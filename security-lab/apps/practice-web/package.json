@@ -1,0 +1,12 @@
+{
+  "name": "practice-web",
+  "version": "1.0.0",
+  "description": "Portal normal para prática de security testing (sem hints)",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

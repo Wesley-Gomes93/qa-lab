@@ -79,6 +79,72 @@ Relatórios:
 
 ---
 
+## Onde ficam os testes e como criar um
+
+### Pastas de teste
+
+| Framework | Pasta | Extensão |
+|-----------|-------|----------|
+| **Cypress** | `tests/cypress/e2e/` | `*.cy.js` |
+| **Playwright** | `tests/playwright/e2e/` | `*.spec.js` |
+
+Estrutura das pastas (organizadas por área):
+
+```
+tests/
+├── cypress/e2e/
+│   ├── api/       → testes de API (health, register, login)
+│   ├── auth/      → registro, login, logout
+│   ├── admin/     → painel admin (CRUD usuários)
+│   ├── dashboard/ → métricas, health, navegação
+│   ├── ui/        → elementos da tela
+│   └── performance/ → TICTAC (load, health, TTI)
+│
+└── playwright/e2e/
+    ├── api/       → mesmos cenários em .spec.js
+    ├── auth/
+    ├── admin/
+    ...
+```
+
+### Como criar um teste
+
+**Opção 1: Com o Test Writer (LLM)** — mais rápido
+
+```bash
+# Precisa de API key no agents/.env (GROQ_API_KEY ou GEMINI_API_KEY)
+npm run agent:test-writer "GET /health retorna 200 e JSON com status ok"
+
+# Gera em Cypress e Playwright
+npm run agent:test-writer -- --framework both "teste de login como admin"
+```
+
+O agente lê o projeto, gera o spec, grava o arquivo e roda o teste.
+
+**Opção 2: Manualmente**
+
+1. **Cypress:** crie um arquivo em `tests/cypress/e2e/<área>/nome-do-teste.cy.js`
+2. **Playwright:** crie em `tests/playwright/e2e/<área>/nome-do-teste.spec.js`
+
+Exemplo mínimo (Cypress, API):
+
+```javascript
+// tests/cypress/e2e/api/meu-teste.cy.js
+const { API_BASE } = require('../../support/helpers');
+
+describe('API /health', () => {
+  it('retorna 200', () => {
+    cy.request('GET', `${API_BASE}/health`).then((res) => {
+      expect(res.status).to.equal(200);
+    });
+  });
+});
+```
+
+Detalhes: [tests/cypress/e2e/README.md](../tests/cypress/e2e/README.md) e [tests/playwright/README.md](../tests/playwright/README.md).
+
+---
+
 ## Resumo do fluxo (copy-paste)
 
 ```bash

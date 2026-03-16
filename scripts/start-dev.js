@@ -117,10 +117,29 @@ async function main() {
     }
   }
 
+  // 5. Practice Web (3002) — Portal normal para exploração manual
+  const practiceWebUp = await checkPort("localhost", 3002);
+  if (practiceWebUp) {
+    console.log("  ✓ Practice Web (portal normal) já está rodando (porta 3002)");
+  } else {
+    const practiceWebPath = path.join(ROOT, "security-lab", "apps", "practice-web");
+    if (fs.existsSync(path.join(practiceWebPath, "package.json"))) {
+      console.log("  → Iniciando Practice Web (portal para exploração)...");
+      spawn("npm", ["run", "dev"], {
+        cwd: practiceWebPath,
+        stdio: "inherit",
+        detached: true,
+        shell: true,
+      }).unref();
+      console.log("  ✓ Practice Web em http://localhost:3002");
+    }
+  }
+
   console.log("\n[QA Lab] Ambiente pronto.");
   console.log("  Backend:       http://localhost:4000");
   console.log("  Frontend:      http://localhost:3000");
   console.log("  Vulnerable Web: http://localhost:3001");
+  console.log("  Practice Web:   http://localhost:3002 (portal normal)");
   console.log("  Para rodar testes: npm run tests:run");
   console.log("  Para o agent:      npm run agent:test-writer \"sua requisição\"\n");
 }
