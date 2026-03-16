@@ -9,6 +9,10 @@
     "eslint-plugin-mocha": "^10",
     "globals": "^15"
   },
+  "bin"{
+
+ "qa-lab":"./agents/mcp-sever/server.js",
+  },
   "scripts": {
     "db:up": "cd database && docker-compose up -d",
     "db:down": "cd database && docker-compose down",
