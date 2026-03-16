@@ -11,7 +11,7 @@
   },
   "bin":{
 
- "qa-lab":"./agents/mcp-sever/server.js",
+ "qa-lab":"./agents/mcp-server/server.js",
   },
   "scripts": {
     "db:up": "cd database && docker-compose up -d",
