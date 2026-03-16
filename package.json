@@ -9,7 +9,7 @@
     "eslint-plugin-mocha": "^10",
     "globals": "^15"
   },
-  "bin"{
+  "bin":{
 
  "qa-lab":"./agents/mcp-sever/server.js",
   },
