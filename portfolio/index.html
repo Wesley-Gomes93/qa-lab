@@ -55,8 +55,7 @@
         </ul>
         <div class="pipeline-preview">
           <p class="pipeline-label">Pipeline em produção</p>
-          <img src="images/pipeline-verde.png" alt="Pipeline CI/CD passando: lint, build, tests, e2e, report" class="pipeline-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling?.classList?.remove('hidden');">
-          <p class="pipeline-fallback hidden">Screenshot da pipeline disponível no repositório.</p>
+          <img src="images/qa-lab-pipeline.png" alt="Pipeline CI/CD: lint (frontend/backend/tests/agents) → build → Cypress (3m 23s) → Playwright (2m 2s) → CI (2s) → report (6s)" class="pipeline-img" loading="lazy">
         </div>
         <div class="project-stack">
           <span>Next.js</span>
@@ -74,6 +73,30 @@
       </article>
 
       <div class="project-grid">
+        <article class="project project-card">
+          <div class="project-badge">Novo</div>
+          <h3>MCP Lab Agent</h3>
+          <p class="project-desc">
+            Agente MCP universal para Cursor IDE: detecta automaticamente frameworks de teste (E2E, Unit, Mobile, API, Python), estrutura de projetos e executa QA workflows sem configuração manual.
+          </p>
+          <ul class="project-highlights">
+            <li>Suporte universal: Cypress, Playwright, WebdriverIO, Jest, Vitest, Mocha, Appium, Detox, Robot Framework, pytest</li>
+            <li>Execução de testes (backend, frontend, mobile, API), geração de casos, análise de falhas e sugestões de correção</li>
+            <li>Linter, coverage, bug reports e templates de teste</li>
+            <li>Zero config: use com <code>npx -y github:Wesley-Gomes93/qa-lab-agent-mcp</code></li>
+          </ul>
+          <div class="project-stack">
+            <span>MCP</span>
+            <span>Node.js</span>
+            <span>Python</span>
+            <span>AI Agents</span>
+            <span>Cursor IDE</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/Wesley-Gomes93/qa-lab-agent-mcp" target="_blank" rel="noopener" class="btn btn-primary">Ver no GitHub</a>
+          </div>
+        </article>
+
         <article class="project project-card">
           <h3>QA Extended Lab</h3>
           <p class="project-desc">
