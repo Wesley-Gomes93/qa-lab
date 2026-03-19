@@ -19,7 +19,9 @@ import { spawn } from "node:child_process";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MCP_SERVER_PATH = path.join(__dirname, "mcp-server", "server.js");
+const distPath = path.join(__dirname, "dist", "server.js");
+const srcPath = path.join(__dirname, "mcp-server", "server.js");
+const MCP_SERVER_PATH = fs.existsSync(distPath) ? distPath : srcPath;
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const SPEC_BASE = path.join(PROJECT_ROOT, "tests", "cypress", "e2e");
 const TESTS_DIR = path.join(PROJECT_ROOT, "tests");

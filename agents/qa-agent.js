@@ -18,7 +18,9 @@ import fs from "node:fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MCP_SERVER_PATH = path.join(__dirname, "mcp-server", "server.js");
+const distPath = path.join(__dirname, "dist", "server.js");
+const srcPath = path.join(__dirname, "mcp-server", "server.js");
+const MCP_SERVER_PATH = fs.existsSync(distPath) ? distPath : srcPath;
 const E2E_DIR = path.resolve(__dirname, "..", "tests", "cypress", "e2e");
 
 const SUITES = [

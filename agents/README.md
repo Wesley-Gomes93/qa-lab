@@ -41,14 +41,17 @@ O **Failure Analyzer** (`agent:analyze-failures`) já executa a limpeza automati
 - Node.js 18+
 - Na raiz do projeto: pasta `tests/` com Cypress configurado (`npm test` = `cypress run`).
 
-## Instalação
+## Instalação e Build (TSUP)
 
 Na pasta **`agents/`**:
 
 ```bash
 cd agents
 npm install
+npm run build
 ```
+
+O `npm run build` usa **TSUP** e gera `dist/server.js` – um bundle único para uso no Cursor ou como binário. Os agentes usam `dist/server.js` quando existir; caso contrário, usam o source `mcp-server/server.js`.
 
 (O `mcp-server` tem suas próprias dependências em `mcp-server/node_modules`; o agente usa as de `agents/node_modules`.)
 

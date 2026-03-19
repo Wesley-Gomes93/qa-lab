@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "qa-lab": {
+      "command": "npx",
+      "args": ["-y", "github:Wesley-Gomes93/qa-lab-agent-mcp"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}

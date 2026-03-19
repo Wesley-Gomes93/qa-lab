@@ -9,11 +9,11 @@
     "eslint-plugin-mocha": "^10",
     "globals": "^15"
   },
-  "bin":{
-
- "qa-lab":"./agents/mcp-server/server.js"
+  "bin": {
+    "qa-lab": "./agents/dist/server.js"
   },
   "scripts": {
+    "postinstall": "npm run agents:install && npm run agents:build",
     "db:up": "cd database && docker-compose up -d",
     "db:down": "cd database && docker-compose down",
     "backend:install": "cd backend && npm install",
@@ -43,6 +43,8 @@
     "tests:clean-users": "node scripts/clean-test-users.js",
     "tests:full": "npm run tests:clean-users && npm run tests:report",
     "agents:install": "cd agents && npm install",
+    "agents:build": "cd agents && npm run build",
+    "mcp-lab-agent:build": "cd packages/mcp-lab-agent && npm run build",
     "agent": "cd agents && node qa-agent.js",
     "agent:run-tests": "cd agents && node qa-agent.js run_tests",
     "agent:run-tests:api": "cd agents && node qa-agent.js run_tests --suite api",

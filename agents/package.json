@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "qa-lab": "dist/server.js"
+  },
   "scripts": {
-    "start:mcp": "node mcp-server/server.js",
+    "build": "tsup",
+    "start:mcp": "node dist/server.js",
+    "start:mcp:dev": "node mcp-server/server.js",
     "agent": "node qa-agent.js",
     "agent:run-tests": "node qa-agent.js run_tests",
     "agent:analyze-failures": "node failure-analyzer-agent.js",
@@ -14,5 +20,9 @@
     "@modelcontextprotocol/sdk": "^1.27.1",
     "dotenv": "^16.4.5",
     "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5"
   }
 }

@@ -20,12 +20,15 @@ import { config } from "dotenv";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MCP_SERVER_PATH = path.join(__dirname, "mcp-server", "server.js");
+const distPath = path.join(__dirname, "dist", "server.js");
+const srcPath = path.join(__dirname, "mcp-server", "server.js");
+const MCP_SERVER_PATH = fs.existsSync(distPath) ? distPath : srcPath;
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 
 // Carrega .env da raiz do projeto (antes de conectar ao MCP)

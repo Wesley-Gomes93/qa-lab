@@ -30,6 +30,7 @@ O **QA Lab** é um laboratório full-stack para automação de testes. Ele combi
 - **Contract testing** — Validação da API contra schema OpenAPI
 - **Performance** — Suite TICTAC (load, health, TTI)
 - **Agentes de IA** — Test Writer (gera testes com LLM) e Failure Analyzer (analisa falhas)
+- **MCP para Cursor** — Use as ferramentas de QA direto no Cursor (run_tests, generate_tests, analyze_failures)
 - **CI/CD** — Pipeline que bloqueia merge em caso de falha
 - **Makefile** — Orquestrador local para lint, testes e relatórios
 
@@ -235,6 +236,7 @@ Recomenda-se WSL. Ou instale Make via [Chocolatey](https://chocolatey.org/packag
 | Documento | Conteúdo |
 |-----------|----------|
 | [PRIMEIRO-DIA-NO-LAB.md](docs/PRIMEIRO-DIA-NO-LAB.md) | **Primeiro dia** — passo a passo do clone até rodar os primeiros testes |
+| [CURSOR-MCP.md](docs/CURSOR-MCP.md) | **MCP no Cursor** — use as ferramentas de QA direto no Cursor |
 | [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md) | Subir ambiente e resolver erros comuns |
 | [MAKEFILE-GUIA.md](docs/MAKEFILE-GUIA.md) | Sintaxe do Make, targets, boas práticas |
 | [COMANDOS.md](docs/COMANDOS.md) | Referência de todos os comandos |
@@ -262,8 +264,28 @@ Resumo rápido:
 |-------|-----|-------------|
 | 1 | **QA Lab (app)** | `make install` → `make dev` → `make qa` |
 | 2 | **QA Extended** | Newman + axe (roda sem subir o app) |
+| 3 | **MCP no Cursor** | Clone → abra no Cursor → ferramentas de QA disponíveis no chat |
 
 **Problemas?** Veja [AMBIENTE-TROUBLESHOOTING.md](docs/AMBIENTE-TROUBLESHOOTING.md).
+
+---
+
+## Usar MCP no Cursor
+
+O projeto já vem configurado com **`.cursor/mcp.json`**. Basta clonar e abrir no Cursor:
+
+```bash
+git clone https://github.com/Wesley-Gomes93/qa-lab.git
+cd qa-lab
+# Abrir no Cursor
+```
+
+O MCP detecta automaticamente e você pode usar no chat:
+- "Rode os testes da API"
+- "Gere um teste para o login"
+- "Analise as falhas dos testes"
+
+Veja [CURSOR-MCP.md](docs/CURSOR-MCP.md) para detalhes.
 
 ---
 

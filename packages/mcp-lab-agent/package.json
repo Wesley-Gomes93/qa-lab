@@ -1,0 +1,38 @@
+{
+  "name": "mcp-lab-agent",
+  "version": "1.0.0",
+  "description": "MCP + agentes de QA (run_tests, generate_tests, analyze_failures, etc.) — use no Cursor",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "mcp-lab-agent": "dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "qa",
+    "testing",
+    "cypress",
+    "playwright",
+    "cursor",
+    "ai-agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wesley-Gomes93/qa-lab"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5"
+  }
+}

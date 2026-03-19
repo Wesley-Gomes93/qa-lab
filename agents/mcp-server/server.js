@@ -5,12 +5,10 @@ import { z } from "zod";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import fs from "node:fs";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PROJECT_ROOT = path.resolve(__dirname, "../..");
+// PROJECT_ROOT: usar cwd (Cursor/spawn) ou QA_LAB_PROJECT_ROOT para uso distribuído
+const PROJECT_ROOT = process.env.QA_LAB_PROJECT_ROOT
+  ? path.resolve(process.env.QA_LAB_PROJECT_ROOT)
+  : path.resolve(process.cwd());
 
 // Carrega .env da raiz (para OPENAI_API_KEY / QA_LAB_LLM_API_KEY)
 config({ path: path.join(PROJECT_ROOT, ".env") });
@@ -46,7 +44,7 @@ async function getUsersSummary() {
 }
 
 function runCypressTests({ suite, spec: specPath, registerName, registerEmail, registerPassword, editIdade } = {}) {
-  const testsDir = path.resolve(__dirname, "../../tests");
+  const testsDir = path.join(PROJECT_ROOT, "tests");
 
   const specBySuite = {
     admin: "cypress/e2e/admin/**/*.cy.js",
@@ -138,7 +136,7 @@ function parseRunMetrics(runOutput, framework) {
 }
 
 function runPlaywrightTests({ spec: specPath } = {}) {
-  const testsDir = path.resolve(__dirname, "../../tests");
+  const testsDir = path.join(PROJECT_ROOT, "tests");
   const args = specPath ? ["playwright", "test", specPath] : ["run", "pw:test"];
   const cmd = specPath ? "npx" : "npm";
 
